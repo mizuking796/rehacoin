@@ -603,6 +603,242 @@ body {
   font-weight: 600;
 }
 
+/* === Mining Overlay === */
+.mining-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: fadeIn 0.2s ease;
+}
+
+.mining-content {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.mining-icon {
+  font-size: 3rem;
+  animation: miningBounce 0.6s ease infinite alternate;
+}
+
+@keyframes miningBounce {
+  from { transform: translateY(0) rotate(-10deg); }
+  to { transform: translateY(-8px) rotate(10deg); }
+}
+
+.mining-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 12px;
+  color: var(--text);
+}
+
+.mining-nonce {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mining-hash {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-top: 6px;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.mining-progress {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mining-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  animation: miningBar 1.2s ease-in-out infinite;
+}
+
+@keyframes miningBar {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+/* === History Tabs === */
+.history-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 12px;
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.history-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.history-tab.active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* === Verify Button === */
+.btn-verify {
+  width: 100%;
+  height: var(--touch-min);
+  padding: 0 20px;
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background 0.15s;
+}
+
+.btn-verify:active {
+  background: var(--accent-light);
+}
+
+/* === Verify Result === */
+.verify-result {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.verify-result.valid {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #A5D6A7;
+}
+
+.verify-result.invalid {
+  background: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #EF9A9A;
+}
+
+/* === Chain List (Blockchain Viewer) === */
+.chain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.chain-block {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  position: relative;
+}
+
+.chain-link {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+.chain-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.chain-block-num {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.chain-block-time {
+  font-size: 0.7rem;
+  color: var(--text-light);
+}
+
+.chain-block-activity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chain-block-activity .cb-icon {
+  font-size: 1.2rem;
+}
+
+.chain-block-activity .cb-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.chain-block-meta {
+  font-size: 0.65rem;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  color: var(--text-light);
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.chain-block-meta span {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.chain-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 /* === Reduced Motion === */
 @media (prefers-reduced-motion: reduce) {
   .screen {

@@ -4,14 +4,26 @@ const App = (() => {
   let currentScreen = 'screen-home';
   let currentCategoryCode = null;
   let searchDebounceTimer = null;
+  let isMining = false;
 
   // --- 初期化 ---
   async function init() {
     await Data.init();
+
+    // ブロックチェーン初期化（既存データのマイグレーション）
+    const migrationOverlay = document.getElementById('migration-overlay');
+    const migrationProgress = document.getElementById('migration-progress');
+    const migrated = await Blockchain.init((current, total) => {
+      migrationOverlay.hidden = false;
+      migrationProgress.textContent = `${current} / ${total} ブロック生成中...`;
+    });
+    migrationOverlay.hidden = true;
+
     bindNav();
     bindSearch();
     bindFreeInput();
     bindSettings();
+    bindHistoryTabs();
     renderHome();
     updateHeaderCoins();
   }
@@ -182,10 +194,12 @@ const App = (() => {
     });
   }
 
-  // --- 記録フロー ---
-  function recordActivity(activity, stayInCategory = false) {
-    Store.addRecord(activity, !activity.id);
-    showToast();
+  // --- 記録フロー（非同期：マイニング演出付き） ---
+  async function recordActivity(activity, stayInCategory = false) {
+    if (isMining) return; // 二重防止
+
+    // 即座にレコード保存
+    const record = Store.addRecord(activity, !activity.id);
 
     // ハプティックフィードバック
     if (navigator.vibrate) {
@@ -203,11 +217,61 @@ const App = (() => {
     if (currentScreen === 'screen-home') {
       renderHome();
     }
+
+    // マイニング演出
+    isMining = true;
+    showMiningOverlay();
+
+    const blockData = {
+      recordId: record.id,
+      activityId: record.activityId,
+      label: record.label,
+      icon: record.icon,
+      categoryCode: record.categoryCode
+    };
+
+    const block = await Blockchain.mineBlock(blockData, (nonce, hash) => {
+      updateMiningOverlay(nonce, hash);
+    });
+
+    hideMiningOverlay();
+    isMining = false;
+
+    // ブロック確認Toast
+    const shortHash = block.hash.slice(0, 10) + '...';
+    showToastCustom(`⛓️ Block #${block.index} 確認！ ${shortHash}`);
+
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 50, 100]);
+    }
+  }
+
+  // --- マイニングオーバーレイ ---
+  function showMiningOverlay() {
+    const overlay = document.getElementById('mining-overlay');
+    document.getElementById('mining-nonce-val').textContent = '0';
+    document.getElementById('mining-hash-val').textContent = 'Hash: 計算中...';
+    overlay.hidden = false;
+  }
+
+  function updateMiningOverlay(nonce, hash) {
+    document.getElementById('mining-nonce-val').textContent = nonce.toLocaleString();
+    document.getElementById('mining-hash-val').textContent = 'Hash: ' + hash.slice(0, 24) + '...';
+  }
+
+  function hideMiningOverlay() {
+    document.getElementById('mining-overlay').hidden = true;
   }
 
   // --- Toast ---
   function showToast() {
+    showToastCustom('🪙 リハコイン +1');
+  }
+
+  function showToastCustom(text) {
     const toast = document.getElementById('toast');
+    const toastText = document.getElementById('toast-text');
+    toastText.textContent = text;
     toast.hidden = false;
     // 強制リフロー
     toast.offsetHeight;
@@ -215,8 +279,11 @@ const App = (() => {
 
     setTimeout(() => {
       toast.classList.remove('show');
-      setTimeout(() => { toast.hidden = true; }, 200);
-    }, 1500);
+      setTimeout(() => {
+        toast.hidden = true;
+        toastText.textContent = '🪙 リハコイン +1';
+      }, 200);
+    }, 2000);
   }
 
   // --- 検索 ---
@@ -317,6 +384,87 @@ const App = (() => {
     renderHistoryList();
   }
 
+  // --- 履歴タブ切り替え ---
+  function bindHistoryTabs() {
+    document.querySelectorAll('.history-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.history-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+
+        if (tab.dataset.tab === 'chain') {
+          renderChainView();
+        }
+      });
+    });
+
+    // チェーン検証ボタン
+    document.getElementById('btn-verify-chain').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-verify-chain');
+      btn.disabled = true;
+      btn.textContent = '🔍 検証中...';
+
+      const result = await Blockchain.verifyChain();
+      const el = document.getElementById('verify-result');
+      el.hidden = false;
+
+      if (result.valid) {
+        el.className = 'verify-result valid';
+        el.textContent = `✅ チェーン正常（${result.length} ブロック）`;
+      } else {
+        el.className = 'verify-result invalid';
+        el.innerHTML = `❌ 改ざん検知！（${result.errors.length} 件のエラー）<br>` +
+          result.errors.map(e => `Block #${e.index}: ${escapeHtml(e.message)}`).join('<br>');
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🔍 チェーン検証';
+    });
+  }
+
+  // --- ブロックチェーンビューア ---
+  function renderChainView() {
+    const container = document.getElementById('chain-list');
+    const chain = Blockchain.getChain();
+
+    if (chain.length === 0) {
+      container.innerHTML = '<div class="chain-empty">ブロックチェーンが空です</div>';
+      return;
+    }
+
+    // 新しい順に表示（最大50件）
+    const blocks = chain.slice().reverse().slice(0, 50);
+
+    container.innerHTML = blocks.map((block, i) => {
+      const time = new Date(block.timestamp);
+      const timeStr = `${time.getFullYear()}/${(time.getMonth() + 1).toString().padStart(2, '0')}/${time.getDate().toString().padStart(2, '0')} ${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+
+      const isGenesis = block.index === 0;
+      const activityHtml = isGenesis
+        ? `<div class="chain-block-activity"><span class="cb-icon">🌱</span><span class="cb-label">Genesis Block</span></div>`
+        : `<div class="chain-block-activity"><span class="cb-icon">${block.data.icon || '📝'}</span><span class="cb-label">${escapeHtml(block.data.label || '')}</span></div>`;
+
+      const linkHtml = i < blocks.length - 1 ? '<div class="chain-link">⛓️</div>' : '';
+
+      return `
+        <div class="chain-block">
+          <div class="chain-block-header">
+            <span class="chain-block-num">#${block.index}</span>
+            <span class="chain-block-time">${timeStr}</span>
+          </div>
+          ${activityHtml}
+          <div class="chain-block-meta">
+            <span>Hash:</span> ${block.hash.slice(0, 16)}...<br>
+            <span>Prev:</span> ${block.prevHash.slice(0, 16)}...<br>
+            <span>Nonce:</span> ${block.nonce}
+          </div>
+        </div>
+        ${linkHtml}
+      `;
+    }).join('');
+  }
+
   function renderStats() {
     const container = document.getElementById('stats-summary');
     const total = Store.getTotalCoins();
@@ -404,11 +552,7 @@ const App = (() => {
         updateHeaderCoins();
         if (currentScreen === 'screen-history') renderHistory();
         if (currentScreen === 'screen-home') renderHome();
-        showToast();
-        document.getElementById('toast-text').textContent = 'データを削除しました';
-        setTimeout(() => {
-          document.getElementById('toast-text').textContent = '🪙 リハコイン +1';
-        }, 2000);
+        showToastCustom('データを削除しました');
       }
     });
   }

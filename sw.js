@@ -1,10 +1,11 @@
-const CACHE_NAME = 'rehacoin-v1';
+const CACHE_NAME = 'rehacoin-v2';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './js/data.js',
   './js/store.js',
+  './js/blockchain.js',
   './js/app.js',
   './categories.json',
   './activities.json',

@@ -181,6 +181,7 @@ const Store = (() => {
   // 全削除
   function clearAll() {
     localStorage.removeItem(RECORDS_KEY);
+    Blockchain.clearChain();
   }
 
   return {

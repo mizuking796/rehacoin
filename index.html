@@ -68,10 +68,24 @@
   <!-- 履歴画面 -->
   <main id="screen-history" class="screen">
     <h2 class="screen-title-fixed">きろく</h2>
-    <!-- 統計サマリ -->
-    <div id="stats-summary" class="stats-summary"></div>
-    <!-- 日付別記録 -->
-    <div id="history-list" class="history-list"></div>
+    <!-- タブ切り替え -->
+    <div class="history-tabs">
+      <button class="history-tab active" data-tab="records">📊 記録</button>
+      <button class="history-tab" data-tab="chain">⛓️ チェーン</button>
+    </div>
+    <!-- 記録タブ -->
+    <div id="tab-records" class="tab-content active">
+      <!-- 統計サマリ -->
+      <div id="stats-summary" class="stats-summary"></div>
+      <!-- 日付別記録 -->
+      <div id="history-list" class="history-list"></div>
+    </div>
+    <!-- チェーンタブ -->
+    <div id="tab-chain" class="tab-content">
+      <button id="btn-verify-chain" class="btn-verify">🔍 チェーン検証</button>
+      <div id="verify-result" class="verify-result" hidden></div>
+      <div id="chain-list" class="chain-list"></div>
+    </div>
   </main>
 
   <!-- 設定画面 -->
@@ -90,6 +104,26 @@
       </div>
     </div>
   </main>
+
+  <!-- マイニングオーバーレイ -->
+  <div id="mining-overlay" class="mining-overlay" hidden>
+    <div class="mining-content">
+      <div class="mining-icon">⛏️</div>
+      <div class="mining-title">マイニング中...</div>
+      <div class="mining-nonce">Nonce: <span id="mining-nonce-val">0</span></div>
+      <div class="mining-hash" id="mining-hash-val">Hash: 計算中...</div>
+      <div class="mining-progress"></div>
+    </div>
+  </div>
+
+  <!-- マイグレーションオーバーレイ -->
+  <div id="migration-overlay" class="mining-overlay" hidden>
+    <div class="mining-content">
+      <div class="mining-icon">⛓️</div>
+      <div class="mining-title">ブロックチェーン初期化中...</div>
+      <div class="mining-nonce" id="migration-progress">準備中...</div>
+    </div>
+  </div>
 
   <!-- Toast -->
   <div id="toast" class="toast" hidden>
@@ -114,6 +148,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/blockchain.js"></script>
   <script src="js/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
