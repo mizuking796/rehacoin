@@ -8,12 +8,22 @@ const Data = (() => {
   let activitiesByCategory = {}; // code -> [activity]
 
   async function init() {
-    const [catRes, actRes] = await Promise.all([
-      fetch('categories.json'),
-      fetch('activities.json')
-    ]);
-    categories = await catRes.json();
-    activities = await actRes.json();
+    try {
+      const [catRes, actRes] = await Promise.all([
+        fetch('categories.json'),
+        fetch('activities.json')
+      ]);
+      if (!catRes.ok || !actRes.ok) {
+        throw new Error(`Fetch failed: categories=${catRes.status}, activities=${actRes.status}`);
+      }
+      categories = await catRes.json();
+      activities = await actRes.json();
+    } catch (e) {
+      console.error('Data.init failed:', e);
+      // フォールバック: 空データで動作（再読み込みで復帰）
+      categories = categories.length ? categories : [];
+      activities = activities.length ? activities : [];
+    }
 
     // ルックアップマップ構築
     for (const cat of categories) {

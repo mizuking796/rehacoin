@@ -604,6 +604,10 @@ body {
 }
 
 /* === Mining Overlay === */
+.mining-overlay[hidden] {
+  display: none;
+}
+
 .mining-overlay {
   position: fixed;
   inset: 0;
