@@ -29,6 +29,8 @@ const App = (() => {
     bindFreeInput();
     bindSettings();
     bindHistoryTabs();
+    bindExchange();
+    bindWitness();
     renderHome();
     updateHeaderCoins();
   }
@@ -49,6 +51,8 @@ const App = (() => {
       renderHome();
     } else if (screenId === 'screen-history') {
       renderHistory();
+    } else if (screenId === 'screen-exchange') {
+      renderExchange();
     }
 
     // スクロールを先頭に
@@ -65,7 +69,7 @@ const App = (() => {
 
   // --- ヘッダーのコイン数 ---
   function updateHeaderCoins() {
-    document.getElementById('header-coins').textContent = Store.getTotalCoins() + ' コイン';
+    document.getElementById('header-coins').textContent = Store.getBalance() + ' コイン';
   }
 
   // --- ホーム画面 ---
@@ -254,6 +258,25 @@ const App = (() => {
       hideMiningOverlay();
       isMining = false;
     }
+
+    // バッジ解放チェック
+    checkBadgeUnlock();
+  }
+
+  // --- バッジ解放チェック ---
+  function checkBadgeUnlock() {
+    const unlocked = Store.getUnlockedBadges();
+    const shown = JSON.parse(localStorage.getItem('rehacoin_badges_shown') || '[]');
+    for (const badge of unlocked) {
+      if (!shown.includes(badge.id)) {
+        shown.push(badge.id);
+        localStorage.setItem('rehacoin_badges_shown', JSON.stringify(shown));
+        setTimeout(() => {
+          showToastCustom(`${badge.icon} バッジ解放！ ${badge.label}`);
+        }, 2500);
+        break; // 1つずつ表示
+      }
+    }
   }
 
   // --- マイニングオーバーレイ ---
@@ -283,7 +306,6 @@ const App = (() => {
     const toastText = document.getElementById('toast-text');
     toastText.textContent = text;
     toast.hidden = false;
-    // 強制リフロー
     toast.offsetHeight;
     toast.classList.add('show');
 
@@ -314,7 +336,6 @@ const App = (() => {
       }, 200);
     });
 
-    // Escape でクリア
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         input.value = '';
@@ -355,7 +376,6 @@ const App = (() => {
         const act = Data.getActivity(item.dataset.id);
         if (act) {
           recordActivity(act);
-          // 検索をクリア
           document.getElementById('search-input').value = '';
           results.hidden = true;
           results.innerHTML = '';
@@ -409,7 +429,6 @@ const App = (() => {
       });
     });
 
-    // チェーン検証ボタン
     document.getElementById('btn-verify-chain').addEventListener('click', async () => {
       const btn = document.getElementById('btn-verify-chain');
       btn.disabled = true;
@@ -443,7 +462,6 @@ const App = (() => {
       return;
     }
 
-    // 新しい順に表示（最大50件）
     const blocks = chain.slice().reverse().slice(0, 50);
 
     container.innerHTML = blocks.map((block, i) => {
@@ -515,10 +533,14 @@ const App = (() => {
       const items = group.records.map(r => {
         const time = new Date(r.timestamp);
         const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+        const witnessHtml = r.witnessed
+          ? '<span class="hi-witnessed">👁️ 確認済</span>'
+          : `<button class="hi-witness" data-id="${r.id}" title="目撃確認">👁️</button>`;
         return `
           <div class="history-item">
             <span class="hi-icon">${r.icon}</span>
             <span class="hi-label">${escapeHtml(r.label)}</span>
+            ${witnessHtml}
             <span class="hi-time">${timeStr}</span>
             <button class="hi-delete" data-id="${r.id}" aria-label="削除">×</button>
           </div>
@@ -533,14 +555,150 @@ const App = (() => {
       `;
     }).join('');
 
+    // 削除ボタン（確認付き）
     container.querySelectorAll('.hi-delete').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (!confirm('この記録を削除しますか？')) return;
         Store.deleteRecord(btn.dataset.id);
         renderHistory();
         updateHeaderCoins();
       });
     });
+
+    // 目撃ボタン
+    container.querySelectorAll('.hi-witness').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openWitnessModal(btn.dataset.id);
+      });
+    });
+  }
+
+  // --- 目撃確認 ---
+  function bindWitness() {
+    document.getElementById('btn-witness-cancel').addEventListener('click', () => {
+      document.getElementById('witness-overlay').hidden = true;
+    });
+
+    document.getElementById('btn-witness-confirm').addEventListener('click', () => {
+      const recordId = document.getElementById('witness-overlay').dataset.recordId;
+      const input = document.getElementById('witness-code-input');
+      const expected = Store.getWitnessCode(recordId);
+      const errorEl = document.getElementById('witness-error');
+
+      if (input.value === expected) {
+        Store.setWitnessed(recordId);
+        document.getElementById('witness-overlay').hidden = true;
+        showToastCustom('👁️ 目撃確認！ +1 ボーナスコイン');
+        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
+        updateHeaderCoins();
+        if (currentScreen === 'screen-history') renderHistoryList();
+      } else {
+        errorEl.hidden = false;
+        input.value = '';
+        input.focus();
+      }
+    });
+
+    // Enterキーでも確認
+    document.getElementById('witness-code-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-witness-confirm').click();
+      }
+    });
+  }
+
+  function openWitnessModal(recordId) {
+    const overlay = document.getElementById('witness-overlay');
+    const records = Store.getRecords();
+    const record = records.find(r => r.id === recordId);
+    if (!record) return;
+
+    overlay.dataset.recordId = recordId;
+    document.getElementById('witness-activity-label').textContent = record.icon + ' ' + record.label;
+    document.getElementById('witness-code-display').textContent = Store.getWitnessCode(recordId);
+    document.getElementById('witness-code-input').value = '';
+    document.getElementById('witness-error').hidden = true;
+    overlay.hidden = false;
+
+    setTimeout(() => document.getElementById('witness-code-input').focus(), 100);
+  }
+
+  // --- 交換画面 ---
+  function bindExchange() {
+    document.getElementById('btn-add-reward').addEventListener('click', () => {
+      const nameInput = document.getElementById('reward-name-input');
+      const costInput = document.getElementById('reward-cost-input');
+      const name = nameInput.value.trim();
+      const cost = parseInt(costInput.value);
+
+      if (!name || !cost || cost < 1) return;
+
+      Store.addReward(name, cost);
+      nameInput.value = '';
+      costInput.value = '';
+      renderExchange();
+    });
+  }
+
+  function renderExchange() {
+    // 残高
+    document.getElementById('exchange-balance').textContent = Store.getBalance();
+
+    // バッジ
+    const badgeList = document.getElementById('badge-list');
+    const badges = Store.getAllBadges();
+    badgeList.innerHTML = badges.map(b => `
+      <div class="badge-card ${b.unlocked ? '' : 'locked'}">
+        <span class="badge-icon">${b.icon}</span>
+        <span class="badge-label">${b.label}</span>
+        <span class="badge-coins">${b.coins} コイン</span>
+      </div>
+    `).join('');
+
+    // ご褒美
+    const rewardList = document.getElementById('reward-list');
+    const rewards = Store.getRewards();
+    const balance = Store.getBalance();
+
+    if (rewards.length === 0) {
+      rewardList.innerHTML = '<div class="reward-empty">ご褒美を追加しましょう！<br>「50コインでカフェ」「100コインで映画」など</div>';
+    } else {
+      rewardList.innerHTML = rewards.map(r => `
+        <div class="reward-item">
+          <span class="rw-label">${escapeHtml(r.label)}</span>
+          <span class="rw-cost">🪙 ${r.cost}</span>
+          <button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>交換</button>
+          <button class="rw-del" data-id="${r.id}" aria-label="削除">×</button>
+        </div>
+      `).join('');
+
+      // 交換ボタン
+      rewardList.querySelectorAll('.rw-use').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cost = parseInt(btn.dataset.cost);
+          if (confirm(`${cost} コインを使って交換しますか？`)) {
+            if (Store.spendCoins(cost)) {
+              showToastCustom('🎉 ご褒美と交換しました！');
+              if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+              renderExchange();
+              updateHeaderCoins();
+            }
+          }
+        });
+      });
+
+      // 削除ボタン
+      rewardList.querySelectorAll('.rw-del').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (confirm('このご褒美を削除しますか？')) {
+            Store.deleteReward(btn.dataset.id);
+            renderExchange();
+          }
+        });
+      });
+    }
   }
 
   // --- 設定 ---

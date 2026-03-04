@@ -178,9 +178,101 @@ const Store = (() => {
     return JSON.stringify(getRecords(), null, 2);
   }
 
+
+  // --- ご褒美管理 ---
+  const REWARDS_KEY = 'rehacoin_rewards';
+  const SPENT_KEY = 'rehacoin_spent';
+
+  function getRewards() {
+    try { return JSON.parse(localStorage.getItem(REWARDS_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveRewards(rewards) {
+    localStorage.setItem(REWARDS_KEY, JSON.stringify(rewards));
+  }
+
+  function addReward(label, cost) {
+    const rewards = getRewards();
+    rewards.push({
+      id: 'rwd_' + Date.now(),
+      label,
+      cost: parseInt(cost),
+      createdAt: Date.now()
+    });
+    saveRewards(rewards);
+  }
+
+  function deleteReward(id) {
+    saveRewards(getRewards().filter(r => r.id !== id));
+  }
+
+  function getSpentCoins() {
+    return parseInt(localStorage.getItem(SPENT_KEY)) || 0;
+  }
+
+  function getBalance() {
+    return getTotalCoins() + getWitnessBonus() - getSpentCoins();
+  }
+
+  function spendCoins(amount) {
+    const balance = getBalance();
+    if (balance < amount) return false;
+    localStorage.setItem(SPENT_KEY, (getSpentCoins() + amount).toString());
+    return true;
+  }
+
+  // --- 目撃確認 ---
+  function setWitnessed(recordId) {
+    const records = getRecords();
+    const rec = records.find(r => r.id === recordId);
+    if (rec && !rec.witnessed) {
+      rec.witnessed = true;
+      rec.witnessedAt = Date.now();
+      saveRecords(records);
+      return true;
+    }
+    return false;
+  }
+
+  function getWitnessBonus() {
+    return getRecords().filter(r => r.witnessed).length;
+  }
+
+  function getWitnessCode(recordId) {
+    // 4桁コード: recordIdからハッシュ的に生成
+    let hash = 0;
+    for (let i = 0; i < recordId.length; i++) {
+      hash = ((hash << 5) - hash + recordId.charCodeAt(i)) | 0;
+    }
+    return String(Math.abs(hash) % 10000).padStart(4, '0');
+  }
+
+  // --- バッジ ---
+  const BADGES = [
+    { id: 'b1', coins: 10, icon: '🥉', label: 'はじめの一歩' },
+    { id: 'b2', coins: 50, icon: '🥈', label: '習慣マスター' },
+    { id: 'b3', coins: 100, icon: '🥇', label: 'リハビリスト' },
+    { id: 'b4', coins: 250, icon: '💎', label: 'ゴールドリハビリスト' },
+    { id: 'b5', coins: 500, icon: '👑', label: 'プラチナリハビリスト' },
+    { id: 'b6', coins: 1000, icon: '🏆', label: 'レジェンド' }
+  ];
+
+  function getUnlockedBadges() {
+    const total = getTotalCoins() + getWitnessBonus();
+    return BADGES.filter(b => total >= b.coins);
+  }
+
+  function getAllBadges() {
+    const total = getTotalCoins() + getWitnessBonus();
+    return BADGES.map(b => ({ ...b, unlocked: total >= b.coins }));
+  }
+
   // 全削除
   function clearAll() {
     localStorage.removeItem(RECORDS_KEY);
+    localStorage.removeItem(REWARDS_KEY);
+    localStorage.removeItem(SPENT_KEY);
     Blockchain.clearChain();
   }
 
@@ -189,6 +281,10 @@ const Store = (() => {
     getTotalCoins, getTodayCount, getStreak,
     getRecentRecords, getFrequentActivities,
     getMonthlyCounts, getActivityMonthlyCounts, getTopCategory,
-    getRecordsByDate, exportData, clearAll
+    getRecordsByDate, exportData, clearAll,
+    getRewards, addReward, deleteReward,
+    getSpentCoins, getBalance, spendCoins,
+    setWitnessed, getWitnessBonus, getWitnessCode,
+    getUnlockedBadges, getAllBadges
   };
 })();
