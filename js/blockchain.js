@@ -7,11 +7,21 @@ const Blockchain = (() => {
   const MIN_MINE_MS = 800;
   const MAX_MINE_MS = 2500;
 
-  // --- SHA-256 (Web Crypto API) ---
+  // --- SHA-256 (Web Crypto API with fallback) ---
   async function sha256(text) {
-    const data = new TextEncoder().encode(text);
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    try {
+      const data = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch {
+      // フォールバック: 簡易ハッシュ（crypto.subtle非対応環境）
+      let hash = 0x811c9dc5;
+      for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+      }
+      return ('00000000' + (hash >>> 0).toString(16)).slice(-8).repeat(8);
+    }
   }
 
   // --- チェーン永続化 ---

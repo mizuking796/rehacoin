@@ -13,11 +13,16 @@ const App = (() => {
     // ブロックチェーン初期化（既存データのマイグレーション）
     const migrationOverlay = document.getElementById('migration-overlay');
     const migrationProgress = document.getElementById('migration-progress');
-    const migrated = await Blockchain.init((current, total) => {
-      migrationOverlay.hidden = false;
-      migrationProgress.textContent = `${current} / ${total} ブロック生成中...`;
-    });
-    migrationOverlay.hidden = true;
+    try {
+      await Blockchain.init((current, total) => {
+        migrationOverlay.hidden = false;
+        migrationProgress.textContent = `${current} / ${total} ブロック生成中...`;
+      });
+    } catch (e) {
+      console.error('Blockchain init failed:', e);
+    } finally {
+      migrationOverlay.hidden = true;
+    }
 
     bindNav();
     bindSearch();
@@ -222,27 +227,32 @@ const App = (() => {
     isMining = true;
     showMiningOverlay();
 
-    const blockData = {
-      recordId: record.id,
-      activityId: record.activityId,
-      label: record.label,
-      icon: record.icon,
-      categoryCode: record.categoryCode
-    };
+    try {
+      const blockData = {
+        recordId: record.id,
+        activityId: record.activityId,
+        label: record.label,
+        icon: record.icon,
+        categoryCode: record.categoryCode
+      };
 
-    const block = await Blockchain.mineBlock(blockData, (nonce, hash) => {
-      updateMiningOverlay(nonce, hash);
-    });
+      const block = await Blockchain.mineBlock(blockData, (nonce, hash) => {
+        updateMiningOverlay(nonce, hash);
+      });
 
-    hideMiningOverlay();
-    isMining = false;
+      // ブロック確認Toast
+      const shortHash = block.hash.slice(0, 10) + '...';
+      showToastCustom(`⛓️ Block #${block.index} 確認！ ${shortHash}`);
 
-    // ブロック確認Toast
-    const shortHash = block.hash.slice(0, 10) + '...';
-    showToastCustom(`⛓️ Block #${block.index} 確認！ ${shortHash}`);
-
-    if (navigator.vibrate) {
-      navigator.vibrate([50, 50, 100]);
+      if (navigator.vibrate) {
+        navigator.vibrate([50, 50, 100]);
+      }
+    } catch (e) {
+      console.error('Mining failed:', e);
+      showToastCustom('🪙 リハコイン +1');
+    } finally {
+      hideMiningOverlay();
+      isMining = false;
     }
   }
 
