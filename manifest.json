@@ -1,0 +1,17 @@
+{
+  "name": "リハコイン",
+  "short_name": "リハコイン",
+  "description": "3タップで活動記録。毎日の「できた」をコインに。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5F3F0",
+  "theme_color": "#4A90D9",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

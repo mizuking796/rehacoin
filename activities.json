@@ -1,0 +1,2698 @@
+[
+  {
+    "id": "d1-01",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "本・雑誌・新聞を読んだ",
+    "sources": [
+      "ICF-d166",
+      "興味関心CS"
+    ],
+    "icon": "📚"
+  },
+  {
+    "id": "d1-02",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "新しいことを覚えた・学んだ",
+    "sources": [
+      "ICF-d155"
+    ],
+    "icon": "🧠"
+  },
+  {
+    "id": "d1-03",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "インターネットで調べものをした",
+    "sources": [
+      "ICF-d160"
+    ],
+    "icon": "🔍"
+  },
+  {
+    "id": "d1-04",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "問題を自分で考えて解決した",
+    "sources": [
+      "ICF-d175"
+    ],
+    "icon": "💡"
+  },
+  {
+    "id": "d1-05",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "大事なことを自分で決めた（意思決定）",
+    "sources": [
+      "ICF-d177"
+    ],
+    "icon": "✅"
+  },
+  {
+    "id": "d1-06",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "集中して何かに取り組んだ",
+    "sources": [
+      "ICF-d160"
+    ],
+    "icon": "🎯"
+  },
+  {
+    "id": "d1-07",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "手順を覚えて実行した",
+    "sources": [
+      "ICF-d155"
+    ],
+    "icon": "📝"
+  },
+  {
+    "id": "d1-08",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "人のやり方を見てまねた",
+    "sources": [
+      "ICF-d130"
+    ],
+    "icon": "👀"
+  },
+  {
+    "id": "d1-09",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "文章やメモを書いた",
+    "sources": [
+      "ICF-d170"
+    ],
+    "icon": "✏️"
+  },
+  {
+    "id": "d1-10",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "計算をした（家計・買い物など）",
+    "sources": [
+      "ICF-d172"
+    ],
+    "icon": "🔢"
+  },
+  {
+    "id": "d1-11",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "講座・教室・勉強会に参加した",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🏫"
+  },
+  {
+    "id": "d1-12",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "資格・検定の勉強をした",
+    "sources": [
+      "NPI"
+    ],
+    "icon": "📜"
+  },
+  {
+    "id": "d1-13",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "語学（英語・中国語など）を学んだ",
+    "sources": [
+      "NPI"
+    ],
+    "icon": "🌍"
+  },
+  {
+    "id": "d1-14",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "パソコン・スマホの操作を覚えた",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "💻"
+  },
+  {
+    "id": "d1-15",
+    "category": "まなぶ・考える",
+    "categoryCode": "d1",
+    "label": "クイズ・パズル・脳トレをした",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🧩"
+  },
+  {
+    "id": "d2-01",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "1日の予定・スケジュールを立てた",
+    "sources": [
+      "ICF-d230"
+    ],
+    "icon": "📅"
+  },
+  {
+    "id": "d2-02",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "やることリストを作って実行した",
+    "sources": [
+      "ICF-d210"
+    ],
+    "icon": "☑️"
+  },
+  {
+    "id": "d2-03",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "時間を意識して行動できた",
+    "sources": [
+      "ICF-d230"
+    ],
+    "icon": "⏰"
+  },
+  {
+    "id": "d2-04",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "複数のことを順番にこなした",
+    "sources": [
+      "ICF-d220"
+    ],
+    "icon": "🔄"
+  },
+  {
+    "id": "d2-05",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "自分のペースで活動を調整した",
+    "sources": [
+      "ICF-d240"
+    ],
+    "icon": "⚖️"
+  },
+  {
+    "id": "d2-06",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "いつもの日課（ルーティン）をこなした",
+    "sources": [
+      "ICF-d230"
+    ],
+    "icon": "🔁"
+  },
+  {
+    "id": "d2-07",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "ストレスにうまく対処できた",
+    "sources": [
+      "ICF-d240",
+      "COPM"
+    ],
+    "icon": "🌊"
+  },
+  {
+    "id": "d2-08",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "困ったことに冷静に対応した",
+    "sources": [
+      "ICF-d240"
+    ],
+    "icon": "🧘"
+  },
+  {
+    "id": "d2-09",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "誰かに相談して助けを求めた",
+    "sources": [
+      "COPM"
+    ],
+    "icon": "🙋"
+  },
+  {
+    "id": "d2-10",
+    "category": "段取り・やりくり",
+    "categoryCode": "d2",
+    "label": "責任のあることをやり遂げた",
+    "sources": [
+      "ICF-d240"
+    ],
+    "icon": "🏆"
+  },
+  {
+    "id": "d3-01",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "人と会話した",
+    "sources": [
+      "ICF-d350"
+    ],
+    "icon": "🗣️"
+  },
+  {
+    "id": "d3-02",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "電話・ビデオ通話をした",
+    "sources": [
+      "ICF-d360"
+    ],
+    "icon": "📞"
+  },
+  {
+    "id": "d3-03",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "自分の気持ちや考えを伝えた",
+    "sources": [
+      "ICF-d350"
+    ],
+    "icon": "💭"
+  },
+  {
+    "id": "d3-04",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "人の話をじっくり聞いた",
+    "sources": [
+      "ICF-d310"
+    ],
+    "icon": "👂"
+  },
+  {
+    "id": "d3-05",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "手紙・ハガキ・年賀状を書いた",
+    "sources": [
+      "ICF-d345"
+    ],
+    "icon": "✉️"
+  },
+  {
+    "id": "d3-06",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "メール・LINEでメッセージを送った",
+    "sources": [
+      "ICF-d345"
+    ],
+    "icon": "📩"
+  },
+  {
+    "id": "d3-07",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "必要な情報を人に伝えた",
+    "sources": [
+      "ICF-d350"
+    ],
+    "icon": "📢"
+  },
+  {
+    "id": "d3-08",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "身振り・表情で気持ちを表した",
+    "sources": [
+      "ICF-d335"
+    ],
+    "icon": "🤗"
+  },
+  {
+    "id": "d3-09",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "文章を読んで内容を理解した",
+    "sources": [
+      "ICF-d325"
+    ],
+    "icon": "📄"
+  },
+  {
+    "id": "d3-10",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "説明書やお知らせを読んだ",
+    "sources": [
+      "ICF-d325"
+    ],
+    "icon": "📑"
+  },
+  {
+    "id": "d3-11",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "グループの話し合いに参加した",
+    "sources": [
+      "ICF-d355",
+      "FIM"
+    ],
+    "icon": "👥"
+  },
+  {
+    "id": "d3-12",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "初対面の人と話した",
+    "sources": [
+      "ICF-d350"
+    ],
+    "icon": "🤝"
+  },
+  {
+    "id": "d3-13",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "窓口や電話で用件を伝えた",
+    "sources": [
+      "ICF-d350",
+      "COPM"
+    ],
+    "icon": "🏦"
+  },
+  {
+    "id": "d3-14",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "SNSに投稿・コメントした",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "📲"
+  },
+  {
+    "id": "d3-15",
+    "category": "伝える・受けとる",
+    "categoryCode": "d3",
+    "label": "写真や絵で伝えた",
+    "sources": [
+      "ICF-d340"
+    ],
+    "icon": "🖼️"
+  },
+  {
+    "id": "d4-01",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "自分で起き上がった",
+    "sources": [
+      "ICF-d410",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "🛏️"
+  },
+  {
+    "id": "d4-02",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "座ったり立ったりした",
+    "sources": [
+      "ICF-d410"
+    ],
+    "icon": "🪑"
+  },
+  {
+    "id": "d4-03",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "ベッドから車椅子（椅子）に移った",
+    "sources": [
+      "ICF-d420",
+      "FIM"
+    ],
+    "icon": "♿"
+  },
+  {
+    "id": "d4-04",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "家の中を歩いた・移動した",
+    "sources": [
+      "ICF-d450",
+      "FIM"
+    ],
+    "icon": "🏠"
+  },
+  {
+    "id": "d4-05",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "階段を上り下りした",
+    "sources": [
+      "ICF-d455",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "🪜"
+  },
+  {
+    "id": "d4-06",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "屋外を歩いた",
+    "sources": [
+      "ICF-d460"
+    ],
+    "icon": "🌳"
+  },
+  {
+    "id": "d4-07",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "杖・歩行器・車椅子で移動した",
+    "sources": [
+      "ICF-d465"
+    ],
+    "icon": "🦯"
+  },
+  {
+    "id": "d4-08",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "自転車に乗った",
+    "sources": [
+      "ICF-d475"
+    ],
+    "icon": "🚲"
+  },
+  {
+    "id": "d4-09",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "車を運転した",
+    "sources": [
+      "ICF-d475"
+    ],
+    "icon": "🚗"
+  },
+  {
+    "id": "d4-10",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "バス・電車・タクシーに乗った",
+    "sources": [
+      "ICF-d470"
+    ],
+    "icon": "🚌"
+  },
+  {
+    "id": "d4-11",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "物を持ち上げた・運んだ",
+    "sources": [
+      "ICF-d430"
+    ],
+    "icon": "📦"
+  },
+  {
+    "id": "d4-12",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "手で細かい作業をした（ボタン・箸など）",
+    "sources": [
+      "ICF-d440"
+    ],
+    "icon": "🤏"
+  },
+  {
+    "id": "d4-13",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "手を伸ばして物を取った",
+    "sources": [
+      "ICF-d445"
+    ],
+    "icon": "🫴"
+  },
+  {
+    "id": "d4-14",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "ドアノブ・蓋を回して開けた",
+    "sources": [
+      "ICF-d440"
+    ],
+    "icon": "🚪"
+  },
+  {
+    "id": "d4-15",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "しゃがんだ・かがんだ",
+    "sources": [
+      "ICF-d410"
+    ],
+    "icon": "⬇️"
+  },
+  {
+    "id": "d4-16",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "長い距離を歩いた（散歩含む）",
+    "sources": [
+      "ICF-d460"
+    ],
+    "icon": "🚶‍♂️"
+  },
+  {
+    "id": "d4-17",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "走った・早歩きをした",
+    "sources": [
+      "ICF-d455"
+    ],
+    "icon": "🏃"
+  },
+  {
+    "id": "d4-18",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "坂道や段差を越えた",
+    "sources": [
+      "ICF-d460"
+    ],
+    "icon": "⛰️"
+  },
+  {
+    "id": "d4-19",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "初めての場所に行けた",
+    "sources": [
+      "ICF-d460"
+    ],
+    "icon": "🗺️"
+  },
+  {
+    "id": "d4-20",
+    "category": "からだを動かす・移動する",
+    "categoryCode": "d4",
+    "label": "乗り物の乗り降りを自分でした",
+    "sources": [
+      "ICF-d470"
+    ],
+    "icon": "🚏"
+  },
+  {
+    "id": "d5-01",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "顔を洗った",
+    "sources": [
+      "ICF-d510",
+      "FIM"
+    ],
+    "icon": "🫧"
+  },
+  {
+    "id": "d5-02",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "歯を磨いた",
+    "sources": [
+      "ICF-d520",
+      "FIM"
+    ],
+    "icon": "🪥"
+  },
+  {
+    "id": "d5-03",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "お風呂・シャワーに入った",
+    "sources": [
+      "ICF-d510",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "🛁"
+  },
+  {
+    "id": "d5-04",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "髪をとかした・整えた",
+    "sources": [
+      "ICF-d520",
+      "FIM"
+    ],
+    "icon": "💇"
+  },
+  {
+    "id": "d5-05",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "爪を切った",
+    "sources": [
+      "ICF-d520"
+    ],
+    "icon": "💅"
+  },
+  {
+    "id": "d5-06",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "ひげを剃った・化粧をした",
+    "sources": [
+      "ICF-d520"
+    ],
+    "icon": "🪒"
+  },
+  {
+    "id": "d5-07",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "服を自分で着替えた",
+    "sources": [
+      "ICF-d540",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "👕"
+  },
+  {
+    "id": "d5-08",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "靴を履いた・脱いだ",
+    "sources": [
+      "ICF-d540"
+    ],
+    "icon": "👟"
+  },
+  {
+    "id": "d5-09",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "トイレに自分で行けた",
+    "sources": [
+      "ICF-d530",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "🚻"
+  },
+  {
+    "id": "d5-10",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "食事を自分で食べた",
+    "sources": [
+      "ICF-d550",
+      "FIM",
+      "Barthel"
+    ],
+    "icon": "🍽️"
+  },
+  {
+    "id": "d5-11",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "飲み物を自分で飲んだ",
+    "sources": [
+      "ICF-d560"
+    ],
+    "icon": "🥤"
+  },
+  {
+    "id": "d5-12",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "薬を自分で管理・服用した",
+    "sources": [
+      "ICF-d570",
+      "Lawton-IADL"
+    ],
+    "icon": "💊"
+  },
+  {
+    "id": "d5-13",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "体調に気をつけて過ごした",
+    "sources": [
+      "ICF-d570"
+    ],
+    "icon": "🌡️"
+  },
+  {
+    "id": "d5-14",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "適切な服を選んで着た",
+    "sources": [
+      "ICF-d540"
+    ],
+    "icon": "👔"
+  },
+  {
+    "id": "d5-15",
+    "category": "身のまわりのこと",
+    "categoryCode": "d5",
+    "label": "身だしなみを整えて外出した",
+    "sources": [
+      "ICF-d520",
+      "興味関心CS"
+    ],
+    "icon": "✨"
+  },
+  {
+    "id": "d6-01",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "料理・食事の準備をした",
+    "sources": [
+      "ICF-d630",
+      "興味関心CS",
+      "Lawton-IADL"
+    ],
+    "icon": "🍳"
+  },
+  {
+    "id": "d6-02",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "簡単な調理をした（お茶・トースト等）",
+    "sources": [
+      "ICF-d630"
+    ],
+    "icon": "☕"
+  },
+  {
+    "id": "d6-03",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "食器を洗った・片付けた",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🍽️"
+  },
+  {
+    "id": "d6-04",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "掃除をした",
+    "sources": [
+      "ICF-d640",
+      "Lawton-IADL"
+    ],
+    "icon": "🧹"
+  },
+  {
+    "id": "d6-05",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "洗濯をした",
+    "sources": [
+      "ICF-d640",
+      "Lawton-IADL"
+    ],
+    "icon": "👚"
+  },
+  {
+    "id": "d6-06",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "洗濯物をたたんだ・しまった",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🧺"
+  },
+  {
+    "id": "d6-07",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "ゴミを出した・分別した",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🗑️"
+  },
+  {
+    "id": "d6-08",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "買い物に行った",
+    "sources": [
+      "ICF-d620",
+      "Lawton-IADL",
+      "興味関心CS"
+    ],
+    "icon": "🛒"
+  },
+  {
+    "id": "d6-09",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "日用品・食材を選んで買った",
+    "sources": [
+      "ICF-d620"
+    ],
+    "icon": "🏪"
+  },
+  {
+    "id": "d6-10",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "家の整理整頓をした",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🗄️"
+  },
+  {
+    "id": "d6-11",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "布団の上げ下ろしをした",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🛌"
+  },
+  {
+    "id": "d6-12",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "家電を使った（洗濯機・電子レンジ等）",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "🔌"
+  },
+  {
+    "id": "d6-13",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "家の修理・メンテナンスをした",
+    "sources": [
+      "ICF-d650"
+    ],
+    "icon": "🔧"
+  },
+  {
+    "id": "d6-14",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "庭・ベランダの手入れをした",
+    "sources": [
+      "ICF-d650",
+      "興味関心CS"
+    ],
+    "icon": "🌿"
+  },
+  {
+    "id": "d6-15",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "ペット・動物の世話をした",
+    "sources": [
+      "ICF-d650",
+      "興味関心CS"
+    ],
+    "icon": "🐕"
+  },
+  {
+    "id": "d6-16",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "植物・花の水やりをした",
+    "sources": [
+      "ICF-d650"
+    ],
+    "icon": "🌺"
+  },
+  {
+    "id": "d6-17",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "家計を管理した・帳簿をつけた",
+    "sources": [
+      "Lawton-IADL"
+    ],
+    "icon": "💰"
+  },
+  {
+    "id": "d6-18",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "宅配便・郵便物を受け取った",
+    "sources": [
+      "ICF-d620"
+    ],
+    "icon": "📬"
+  },
+  {
+    "id": "d6-19",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "家族の食事を作った・配膳した",
+    "sources": [
+      "ICF-d630"
+    ],
+    "icon": "🍱"
+  },
+  {
+    "id": "d6-20",
+    "category": "家のこと",
+    "categoryCode": "d6",
+    "label": "季節の衣替え・収納をした",
+    "sources": [
+      "ICF-d640"
+    ],
+    "icon": "📦"
+  },
+  {
+    "id": "d7-01",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "家族と過ごした・団らんした",
+    "sources": [
+      "ICF-d760"
+    ],
+    "icon": "👨‍👩‍👧‍👦"
+  },
+  {
+    "id": "d7-02",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "友人と会った・遊んだ",
+    "sources": [
+      "ICF-d750",
+      "興味関心CS"
+    ],
+    "icon": "👫"
+  },
+  {
+    "id": "d7-03",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "ご近所の人とあいさつ・会話した",
+    "sources": [
+      "ICF-d710"
+    ],
+    "icon": "🏘️"
+  },
+  {
+    "id": "d7-04",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "初めて会う人と話した",
+    "sources": [
+      "ICF-d730"
+    ],
+    "icon": "🙌"
+  },
+  {
+    "id": "d7-05",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "誰かを助けた・手伝った",
+    "sources": [
+      "ICF-d710",
+      "Role Checklist"
+    ],
+    "icon": "🤲"
+  },
+  {
+    "id": "d7-06",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "誰かに「ありがとう」と伝えた",
+    "sources": [
+      "PERMA-R"
+    ],
+    "icon": "🙏"
+  },
+  {
+    "id": "d7-07",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "誰かに「ありがとう」と言われた",
+    "sources": [
+      "PERMA-R"
+    ],
+    "icon": "😊"
+  },
+  {
+    "id": "d7-08",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "人の気持ちに寄り添えた",
+    "sources": [
+      "ICF-d710"
+    ],
+    "icon": "💕"
+  },
+  {
+    "id": "d7-09",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "意見が違う人と穏やかに話せた",
+    "sources": [
+      "ICF-d720"
+    ],
+    "icon": "🕊️"
+  },
+  {
+    "id": "d7-10",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "一緒に何かを楽しんだ",
+    "sources": [
+      "ICF-d750",
+      "PERMA-R"
+    ],
+    "icon": "🎉"
+  },
+  {
+    "id": "d7-11",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "久しぶりの人と連絡を取った",
+    "sources": [
+      "ICF-d750"
+    ],
+    "icon": "📱"
+  },
+  {
+    "id": "d7-12",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "パートナー・配偶者と過ごした",
+    "sources": [
+      "ICF-d770"
+    ],
+    "icon": "💑"
+  },
+  {
+    "id": "d7-13",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "孫・子どもと遊んだ",
+    "sources": [
+      "ICF-d760",
+      "興味関心CS"
+    ],
+    "icon": "👶"
+  },
+  {
+    "id": "d7-14",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "仲間・グループの中で自分の役割を果たした",
+    "sources": [
+      "Role Checklist",
+      "COPM"
+    ],
+    "icon": "🎭"
+  },
+  {
+    "id": "d7-15",
+    "category": "人とかかわる",
+    "categoryCode": "d7",
+    "label": "新しい人間関係を作れた",
+    "sources": [
+      "ICF-d750"
+    ],
+    "icon": "🌱"
+  },
+  {
+    "id": "d8-01",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "仕事をした（フルタイム・パートなど）",
+    "sources": [
+      "ICF-d850",
+      "Role Checklist"
+    ],
+    "icon": "🏢"
+  },
+  {
+    "id": "d8-02",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "在宅で仕事・作業をした",
+    "sources": [
+      "ICF-d850"
+    ],
+    "icon": "🏡"
+  },
+  {
+    "id": "d8-03",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "就職活動・面接を受けた",
+    "sources": [
+      "ICF-d855"
+    ],
+    "icon": "🤵"
+  },
+  {
+    "id": "d8-04",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "職場で自分の役割を果たした",
+    "sources": [
+      "ICF-d850",
+      "Role Checklist"
+    ],
+    "icon": "👷"
+  },
+  {
+    "id": "d8-05",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "シルバー人材・内職の仕事をした",
+    "sources": [
+      "ICF-d850"
+    ],
+    "icon": "🧓"
+  },
+  {
+    "id": "d8-06",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "学校・教室に行った",
+    "sources": [
+      "ICF-d820"
+    ],
+    "icon": "🎒"
+  },
+  {
+    "id": "d8-07",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "授業や研修を受けた",
+    "sources": [
+      "ICF-d820"
+    ],
+    "icon": "📖"
+  },
+  {
+    "id": "d8-08",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "試験・テストを受けた",
+    "sources": [
+      "ICF-d820"
+    ],
+    "icon": "📝"
+  },
+  {
+    "id": "d8-09",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "職業訓練・実習に参加した",
+    "sources": [
+      "ICF-d840"
+    ],
+    "icon": "🔨"
+  },
+  {
+    "id": "d8-10",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "お金の支払い・やりとりをした",
+    "sources": [
+      "ICF-d860",
+      "Lawton-IADL"
+    ],
+    "icon": "💳"
+  },
+  {
+    "id": "d8-11",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "ATM・銀行で手続きをした",
+    "sources": [
+      "ICF-d860",
+      "Lawton-IADL"
+    ],
+    "icon": "🏧"
+  },
+  {
+    "id": "d8-12",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "役所・窓口で手続きをした",
+    "sources": [
+      "ICF-d870"
+    ],
+    "icon": "🏛️"
+  },
+  {
+    "id": "d8-13",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "家計簿をつけた・見直した",
+    "sources": [
+      "Lawton-IADL"
+    ],
+    "icon": "📒"
+  },
+  {
+    "id": "d8-14",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "保険・年金の管理をした",
+    "sources": [
+      "ICF-d870"
+    ],
+    "icon": "📋"
+  },
+  {
+    "id": "d8-15",
+    "category": "仕事・学校・お金",
+    "categoryCode": "d8",
+    "label": "ネットバンキング・電子決済を使った",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "💹"
+  },
+  {
+    "id": "d9-01",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "地域の集まり・サロンに参加した",
+    "sources": [
+      "ICF-d910",
+      "興味関心CS"
+    ],
+    "icon": "🏠"
+  },
+  {
+    "id": "d9-02",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "町内会・自治会の活動をした",
+    "sources": [
+      "ICF-d910"
+    ],
+    "icon": "📣"
+  },
+  {
+    "id": "d9-03",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "老人クラブの活動に参加した",
+    "sources": [
+      "ICF-d910",
+      "興味関心CS"
+    ],
+    "icon": "🎎"
+  },
+  {
+    "id": "d9-04",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "ボランティア活動をした",
+    "sources": [
+      "ICF-d910",
+      "Role Checklist"
+    ],
+    "icon": "🤝"
+  },
+  {
+    "id": "d9-05",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "募金・寄付をした",
+    "sources": [
+      "ICF-d910"
+    ],
+    "icon": "💝"
+  },
+  {
+    "id": "d9-06",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "選挙に行った",
+    "sources": [
+      "ICF-d950"
+    ],
+    "icon": "🗳️"
+  },
+  {
+    "id": "d9-07",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "地域の清掃・美化活動に参加した",
+    "sources": [
+      "ICF-d910"
+    ],
+    "icon": "🧤"
+  },
+  {
+    "id": "d9-08",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "子どもの見守り・登下校支援をした",
+    "sources": [
+      "Role Checklist"
+    ],
+    "icon": "🚸"
+  },
+  {
+    "id": "d9-09",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "防災・防犯活動に参加した",
+    "sources": [
+      "ICF-d910"
+    ],
+    "icon": "🦺"
+  },
+  {
+    "id": "d9-10",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "デイサービス・デイケアに行った",
+    "sources": [
+      "ICF-d920"
+    ],
+    "icon": "🏥"
+  },
+  {
+    "id": "d9-11",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "介護予防教室に参加した",
+    "sources": [
+      "ICF-d920"
+    ],
+    "icon": "🏋️"
+  },
+  {
+    "id": "d9-12",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "認知症カフェ・当事者の会に参加した",
+    "sources": [
+      "ICF-d920"
+    ],
+    "icon": "☕"
+  },
+  {
+    "id": "d9-13",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "病院・施設でのイベントに参加した",
+    "sources": [
+      "ICF-d920"
+    ],
+    "icon": "🎊"
+  },
+  {
+    "id": "d9-14",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "民生委員・相談員の活動をした",
+    "sources": [
+      "ICF-d910",
+      "Role Checklist"
+    ],
+    "icon": "🧑‍⚖️"
+  },
+  {
+    "id": "d9-15",
+    "category": "社会に参加する",
+    "categoryCode": "d9",
+    "label": "NPO・市民団体の活動に参加した",
+    "sources": [
+      "ICF-d910"
+    ],
+    "icon": "🌐"
+  },
+  {
+    "id": "sp-01",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "体操・ストレッチをした",
+    "sources": [
+      "興味関心CS",
+      "ADOC"
+    ],
+    "icon": "🤸"
+  },
+  {
+    "id": "sp-02",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ラジオ体操をした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "📻"
+  },
+  {
+    "id": "sp-03",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "散歩・ウォーキングをした",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🚶‍♀️"
+  },
+  {
+    "id": "sp-04",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ノルディックウォーキングをした",
+    "sources": [
+      "ACS"
+    ],
+    "icon": "🥾"
+  },
+  {
+    "id": "sp-05",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ジョギング・ランニングをした",
+    "sources": [
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🏃‍♂️"
+  },
+  {
+    "id": "sp-06",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "水泳・水中ウォーキングをした",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🏊"
+  },
+  {
+    "id": "sp-07",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ヨガ・太極拳をした",
+    "sources": [
+      "NPI"
+    ],
+    "icon": "🧘"
+  },
+  {
+    "id": "sp-08",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ゲートボール・グラウンドゴルフをした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🏑"
+  },
+  {
+    "id": "sp-09",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "卓球をした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🏓"
+  },
+  {
+    "id": "sp-10",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ゴルフをした",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "⛳"
+  },
+  {
+    "id": "sp-11",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "テニス・バドミントンをした",
+    "sources": [
+      "NPI",
+      "ACS"
+    ],
+    "icon": "🎾"
+  },
+  {
+    "id": "sp-12",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ダンス・フォークダンスをした",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "💃"
+  },
+  {
+    "id": "sp-13",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "自転車でサイクリングした",
+    "sources": [
+      "ACS"
+    ],
+    "icon": "🚴"
+  },
+  {
+    "id": "sp-14",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "登山・ハイキングをした",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🥾"
+  },
+  {
+    "id": "sp-15",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "釣りに行った",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🎣"
+  },
+  {
+    "id": "sp-16",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "リハビリの自主トレーニングをした",
+    "sources": [
+      "ADOC"
+    ],
+    "icon": "💪"
+  },
+  {
+    "id": "sp-17",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "筋トレ・腕立て・スクワットをした",
+    "sources": [
+      "NPI"
+    ],
+    "icon": "🏋️‍♂️"
+  },
+  {
+    "id": "sp-18",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "ボウリングをした",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🎳"
+  },
+  {
+    "id": "sp-19",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "スポーツ観戦をした（野球・相撲等）",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "📺"
+  },
+  {
+    "id": "sp-20",
+    "category": "スポーツ・運動",
+    "categoryCode": "sp",
+    "label": "その他のスポーツをした",
+    "sources": [
+      "ACS"
+    ],
+    "icon": "🥇"
+  },
+  {
+    "id": "hb-01",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "読書をした",
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "NPI"
+    ],
+    "icon": "📖"
+  },
+  {
+    "id": "hb-02",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "俳句・短歌・川柳を作った",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🖊️"
+  },
+  {
+    "id": "hb-03",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "書道・習字をした",
+    "sources": [
+      "興味関心CS",
+      "ADOC"
+    ],
+    "icon": "🖌️"
+  },
+  {
+    "id": "hb-04",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "絵を描いた・絵手紙を書いた",
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🎨"
+  },
+  {
+    "id": "hb-05",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "水彩画・油絵を描いた",
+    "sources": [
+      "NPI",
+      "ACS"
+    ],
+    "icon": "🖼️"
+  },
+  {
+    "id": "hb-06",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "写真を撮った",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "📷"
+  },
+  {
+    "id": "hb-07",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "映画・ドラマを観た",
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🎬"
+  },
+  {
+    "id": "hb-08",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "演劇・落語・コンサートに行った",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🎭"
+  },
+  {
+    "id": "hb-09",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "歌を歌った・カラオケに行った",
+    "sources": [
+      "興味関心CS",
+      "ADOC"
+    ],
+    "icon": "🎤"
+  },
+  {
+    "id": "hb-10",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "楽器を演奏した",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🎵"
+  },
+  {
+    "id": "hb-11",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "音楽を聴いた",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🎶"
+  },
+  {
+    "id": "hb-12",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "お茶・お花を楽しんだ（茶道・華道）",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🍵"
+  },
+  {
+    "id": "hb-13",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "将棋・囲碁をした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "♟️"
+  },
+  {
+    "id": "hb-14",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "麻雀をした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🀄"
+  },
+  {
+    "id": "hb-15",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "トランプ・カードゲームをした",
+    "sources": [
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🃏"
+  },
+  {
+    "id": "hb-16",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "パズル・クロスワードをした",
+    "sources": [
+      "NPI",
+      "ACS"
+    ],
+    "icon": "🧩"
+  },
+  {
+    "id": "hb-17",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "編み物・手芸をした",
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🧶"
+  },
+  {
+    "id": "hb-18",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "刺繍・パッチワークをした",
+    "sources": [
+      "NPI",
+      "ACS"
+    ],
+    "icon": "🪡"
+  },
+  {
+    "id": "hb-19",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "陶芸・焼き物をした",
+    "sources": [
+      "興味関心CS",
+      "NPI"
+    ],
+    "icon": "🏺"
+  },
+  {
+    "id": "hb-20",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "木工・日曜大工をした",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🪚"
+  },
+  {
+    "id": "hb-21",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "折り紙・切り紙をした",
+    "sources": [
+      "ADOC"
+    ],
+    "icon": "🦢"
+  },
+  {
+    "id": "hb-22",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "料理・お菓子作りを楽しんだ",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🧁"
+  },
+  {
+    "id": "hb-23",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "園芸・ガーデニングをした",
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🌻"
+  },
+  {
+    "id": "hb-24",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "家庭菜園の世話をした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🥬"
+  },
+  {
+    "id": "hb-25",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "盆栽の手入れをした",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🌲"
+  },
+  {
+    "id": "hb-26",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "日記・自分史を書いた",
+    "sources": [
+      "ADOC",
+      "NPI"
+    ],
+    "icon": "📔"
+  },
+  {
+    "id": "hb-27",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "手紙・年賀状を書いた",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "💌"
+  },
+  {
+    "id": "hb-28",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "アルバム整理・写真の整理をした",
+    "sources": [
+      "ACS"
+    ],
+    "icon": "📸"
+  },
+  {
+    "id": "hb-29",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "模型・プラモデルを作った",
+    "sources": [
+      "ACS",
+      "NPI"
+    ],
+    "icon": "✈️"
+  },
+  {
+    "id": "hb-30",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "旅行・温泉に行った",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "♨️"
+  },
+  {
+    "id": "hb-31",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "ドライブ・外出を楽しんだ",
+    "sources": [
+      "興味関心CS",
+      "ACS"
+    ],
+    "icon": "🚗"
+  },
+  {
+    "id": "hb-32",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "居酒屋・外食を楽しんだ",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🍻"
+  },
+  {
+    "id": "hb-33",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "ペットとふれあった",
+    "sources": [
+      "ACS",
+      "NPI"
+    ],
+    "icon": "🐾"
+  },
+  {
+    "id": "hb-34",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "自然の中で過ごした（森林浴・花見など）",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🌸"
+  },
+  {
+    "id": "hb-35",
+    "category": "趣味・創作・文化",
+    "categoryCode": "hb",
+    "label": "競馬・パチンコなど娯楽を楽しんだ",
+    "sources": [
+      "興味関心CS"
+    ],
+    "icon": "🎰"
+  },
+  {
+    "id": "em-01",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "楽しいと感じた",
+    "sources": [
+      "PERMA-P"
+    ],
+    "icon": "😄"
+  },
+  {
+    "id": "em-02",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "嬉しいことがあった",
+    "sources": [
+      "PERMA-P"
+    ],
+    "icon": "🥰"
+  },
+  {
+    "id": "em-03",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "ホッとした・安心した",
+    "sources": [
+      "WHOQOL-心理"
+    ],
+    "icon": "😌"
+  },
+  {
+    "id": "em-04",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "感謝の気持ちを持てた",
+    "sources": [
+      "PERMA-M"
+    ],
+    "icon": "🙏"
+  },
+  {
+    "id": "em-05",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "「できた！」と達成感を感じた",
+    "sources": [
+      "PERMA-A"
+    ],
+    "icon": "🎊"
+  },
+  {
+    "id": "em-06",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "自分を褒めてあげた",
+    "sources": [
+      "WHOQOL-心理"
+    ],
+    "icon": "👏"
+  },
+  {
+    "id": "em-07",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "希望や目標を持てた",
+    "sources": [
+      "PERMA-M"
+    ],
+    "icon": "⭐"
+  },
+  {
+    "id": "em-08",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "誰かの役に立てたと感じた",
+    "sources": [
+      "PERMA-M"
+    ],
+    "icon": "🌟"
+  },
+  {
+    "id": "em-09",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "自分らしくいられた",
+    "sources": [
+      "WHOQOL-心理"
+    ],
+    "icon": "🦋"
+  },
+  {
+    "id": "em-10",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "美しいものに感動した",
+    "sources": [
+      "PERMA-P"
+    ],
+    "icon": "✨"
+  },
+  {
+    "id": "em-11",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "泣けた・感情を出せた",
+    "sources": [
+      "WHOQOL-心理"
+    ],
+    "icon": "😢"
+  },
+  {
+    "id": "em-12",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "怒りや不満を適切に表現できた",
+    "sources": [
+      "WHOQOL-心理"
+    ],
+    "icon": "😤"
+  },
+  {
+    "id": "em-13",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "不安や心配ごとに向き合えた",
+    "sources": [
+      "SF-36-MH"
+    ],
+    "icon": "🤔"
+  },
+  {
+    "id": "em-14",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "昨日より気分が良かった",
+    "sources": [
+      "SF-36-VT"
+    ],
+    "icon": "📈"
+  },
+  {
+    "id": "em-15",
+    "category": "気持ち・こころ",
+    "categoryCode": "em",
+    "label": "「生きていてよかった」と思えた",
+    "sources": [
+      "PERMA-M",
+      "WHOQOL-心理"
+    ],
+    "icon": "🌈"
+  },
+  {
+    "id": "rs-01",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "よく眠れた",
+    "sources": [
+      "SF-36-VT",
+      "WHOQOL-身体"
+    ],
+    "icon": "😴"
+  },
+  {
+    "id": "rs-02",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "昼寝・うたた寝をした",
+    "sources": [
+      "WHOQOL-身体"
+    ],
+    "icon": "💤"
+  },
+  {
+    "id": "rs-03",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "深呼吸・リラックスした",
+    "sources": [
+      "SF-36-VT"
+    ],
+    "icon": "🌬️"
+  },
+  {
+    "id": "rs-04",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "瞑想・マインドフルネスをした",
+    "sources": [
+      "WHOQOL-身体"
+    ],
+    "icon": "🧘‍♀️"
+  },
+  {
+    "id": "rs-05",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "お風呂でゆっくりした",
+    "sources": [
+      "ICF-d5補完"
+    ],
+    "icon": "♨️"
+  },
+  {
+    "id": "rs-06",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "好きな音楽を聴いてくつろいだ",
+    "sources": [
+      "SF-36-VT"
+    ],
+    "icon": "🎧"
+  },
+  {
+    "id": "rs-07",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "何もしない時間を持てた",
+    "sources": [
+      "WHOQOL-身体"
+    ],
+    "icon": "☁️"
+  },
+  {
+    "id": "rs-08",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "自分のペースで過ごせた",
+    "sources": [
+      "WHOQOL-身体"
+    ],
+    "icon": "🐢"
+  },
+  {
+    "id": "rs-09",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "痛みが少なく過ごせた",
+    "sources": [
+      "SF-36-BP",
+      "WHOQOL-身体"
+    ],
+    "icon": "😊"
+  },
+  {
+    "id": "rs-10",
+    "category": "休む・ととのえる",
+    "categoryCode": "rs",
+    "label": "体調が良い1日だった",
+    "sources": [
+      "SF-36-GH",
+      "WHOQOL-身体"
+    ],
+    "icon": "🌞"
+  },
+  {
+    "id": "dg-01",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "LINEでやりとりした",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "💬"
+  },
+  {
+    "id": "dg-02",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "ビデオ通話をした（Zoom・FaceTime等）",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "📹"
+  },
+  {
+    "id": "dg-03",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "SNSを見た・投稿した",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "📱"
+  },
+  {
+    "id": "dg-04",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "YouTubeを見た",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "▶️"
+  },
+  {
+    "id": "dg-05",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "ネットで買い物をした",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "🛍️"
+  },
+  {
+    "id": "dg-06",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "ネットで情報を調べた",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "🔎"
+  },
+  {
+    "id": "dg-07",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "オンライン講座・学習をした",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "🎓"
+  },
+  {
+    "id": "dg-08",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "脳トレ・ゲームアプリで遊んだ",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "🎮"
+  },
+  {
+    "id": "dg-09",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "写真を撮って共有した",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "📸"
+  },
+  {
+    "id": "dg-10",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "電子書籍・ニュースアプリを読んだ",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "📰"
+  },
+  {
+    "id": "dg-11",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "オンラインで手続き・申請をした",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "🖥️"
+  },
+  {
+    "id": "dg-12",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "キャッシュレス決済を使った",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "💳"
+  },
+  {
+    "id": "dg-13",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "健康アプリ・歩数計を使った",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "⌚"
+  },
+  {
+    "id": "dg-14",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "音楽・ポッドキャストを聴いた",
+    "sources": [
+      "現代補完"
+    ],
+    "icon": "🎧"
+  },
+  {
+    "id": "dg-15",
+    "category": "ネット・デジタル",
+    "categoryCode": "dg",
+    "label": "オンラインで誰かと交流した",
+    "sources": [
+      "高齢者ICT活用データ"
+    ],
+    "icon": "🌐"
+  },
+  {
+    "id": "ev-01",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "お参り・お墓参りに行った",
+    "sources": [
+      "ICF-d930",
+      "文化的活動調査"
+    ],
+    "icon": "🪦"
+  },
+  {
+    "id": "ev-02",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "神社・お寺を参拝した",
+    "sources": [
+      "ICF-d930"
+    ],
+    "icon": "⛩️"
+  },
+  {
+    "id": "ev-03",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "座禅・写経をした",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "📿"
+  },
+  {
+    "id": "ev-04",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "お祈り・礼拝をした",
+    "sources": [
+      "ICF-d930"
+    ],
+    "icon": "🙏"
+  },
+  {
+    "id": "ev-05",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "地域のお祭りに参加した",
+    "sources": [
+      "ICF-d930",
+      "興味関心CS"
+    ],
+    "icon": "🏮"
+  },
+  {
+    "id": "ev-06",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "季節の行事を楽しんだ（正月・節分・花見等）",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🎍"
+  },
+  {
+    "id": "ev-07",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "お盆の準備・迎えをした",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🕯️"
+  },
+  {
+    "id": "ev-08",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "年賀状・お歳暮の準備をした",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🎁"
+  },
+  {
+    "id": "ev-09",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "伝統行事を次の世代に伝えた",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "👴"
+  },
+  {
+    "id": "ev-10",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "民謡・盆踊りに参加した",
+    "sources": [
+      "興味関心CS",
+      "文化的活動調査"
+    ],
+    "icon": "🥁"
+  },
+  {
+    "id": "ev-11",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "冠婚葬祭に参列した",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "💐"
+  },
+  {
+    "id": "ev-12",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "季節の花・紅葉・雪を楽しんだ",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🍁"
+  },
+  {
+    "id": "ev-13",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "節目のお祝いをした（誕生日・記念日等）",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🎂"
+  },
+  {
+    "id": "ev-14",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "地域の伝統文化を守る活動をした",
+    "sources": [
+      "ICF-d930",
+      "文化的活動調査"
+    ],
+    "icon": "🏯"
+  },
+  {
+    "id": "ev-15",
+    "category": "季節・行事・信仰",
+    "categoryCode": "ev",
+    "label": "先祖・故人を偲ぶ時間を持った",
+    "sources": [
+      "文化的活動調査"
+    ],
+    "icon": "🕊️"
+  },
+  {
+    "id": "cr-01",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "孫や子どもの世話をした",
+    "sources": [
+      "ICF-d660",
+      "Role Checklist"
+    ],
+    "icon": "👶"
+  },
+  {
+    "id": "cr-02",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "子どもの送り迎えをした",
+    "sources": [
+      "ICF-d660"
+    ],
+    "icon": "🚙"
+  },
+  {
+    "id": "cr-03",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "子どもと遊んだ・勉強を見た",
+    "sources": [
+      "ICF-d660",
+      "興味関心CS"
+    ],
+    "icon": "🎈"
+  },
+  {
+    "id": "cr-04",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "子ども・孫に昔のことを話した",
+    "sources": [
+      "文化的活動"
+    ],
+    "icon": "👴"
+  },
+  {
+    "id": "cr-05",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "家族の介護・見守りをした",
+    "sources": [
+      "ICF-d660",
+      "Role Checklist"
+    ],
+    "icon": "🏥"
+  },
+  {
+    "id": "cr-06",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "家族を病院に連れて行った",
+    "sources": [
+      "ICF-d660"
+    ],
+    "icon": "🚑"
+  },
+  {
+    "id": "cr-07",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "家族の服薬・健康を管理した",
+    "sources": [
+      "ICF-d660"
+    ],
+    "icon": "💊"
+  },
+  {
+    "id": "cr-08",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "ケアマネージャーや支援者と相談した",
+    "sources": [
+      "ICF-d660"
+    ],
+    "icon": "📞"
+  },
+  {
+    "id": "cr-09",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "誰かの相談に乗った",
+    "sources": [
+      "Role Checklist"
+    ],
+    "icon": "🤝"
+  },
+  {
+    "id": "cr-10",
+    "category": "子育て・介護・見守り",
+    "categoryCode": "cr",
+    "label": "近所の人の見守り・声かけをした",
+    "sources": [
+      "Role Checklist",
+      "文化的活動"
+    ],
+    "icon": "👋"
+  }
+]
