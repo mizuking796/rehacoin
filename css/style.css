@@ -2005,6 +2005,62 @@ body {
   white-space: pre-line;
 }
 
+/* === Cheer Button === */
+.feed-cheer-btn {
+  height: 28px;
+  padding: 0 12px;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: none;
+  border-radius: 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.feed-cheer-btn:active {
+  transform: scale(0.93);
+}
+
+.feed-cheer-btn.cheered {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+/* Feed actions row */
+.home-feed-actions,
+.feed-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+/* === Privacy Consent === */
+.privacy-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: left;
+  cursor: pointer;
+}
+
+.privacy-consent input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.privacy-consent a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 /* === Reduced Motion === */
 @media (prefers-reduced-motion: reduce) {
   .screen {

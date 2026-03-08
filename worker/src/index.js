@@ -142,6 +142,12 @@ export default {
         return json(await witnessRecord(env, user, id), headers);
       }
 
+      // Cheer
+      if (path.match(/^\/records\/[^/]+\/cheer$/) && method === 'POST') {
+        const id = path.split('/')[2];
+        return json(await cheerRecord(env, user, id), headers);
+      }
+
       return json({ error: 'Not Found' }, headers, 404);
     } catch (e) {
       console.error(e);
@@ -355,6 +361,7 @@ async function resetPassword(env, body) {
 // --- Account Deletion ---
 async function deleteAccount(env, user) {
   await env.DB.batch([
+    env.DB.prepare('DELETE FROM cheers WHERE from_user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(user.id),
@@ -637,6 +644,28 @@ async function getFeed(env, user) {
     ORDER BY r.timestamp DESC LIMIT 50
   `).bind(...friendIds, sevenDaysAgo).all();
 
+  // Get cheer data for all feed records
+  const recordIds = rows.results.map(r => r.id);
+  let cheerCounts = {};
+  let userCheers = new Set();
+
+  if (recordIds.length > 0) {
+    const cheerPlaceholders = recordIds.map(() => '?').join(',');
+    const cheerRows = await env.DB.prepare(
+      `SELECT record_id, COUNT(*) as cnt FROM cheers WHERE record_id IN (${cheerPlaceholders}) GROUP BY record_id`
+    ).bind(...recordIds).all();
+    for (const row of cheerRows.results) {
+      cheerCounts[row.record_id] = row.cnt;
+    }
+
+    const userCheerRows = await env.DB.prepare(
+      `SELECT record_id FROM cheers WHERE from_user_id = ? AND record_id IN (${cheerPlaceholders})`
+    ).bind(user.id, ...recordIds).all();
+    for (const row of userCheerRows.results) {
+      userCheers.add(row.record_id);
+    }
+  }
+
   const feed = rows.results.map(r => ({
     id: r.id,
     userId: r.user_id,
@@ -646,6 +675,8 @@ async function getFeed(env, user) {
     categoryCode: r.category_code,
     witnessed: !!r.witnessed,
     witnessedBy: r.witnessed_by,
+    cheerCount: cheerCounts[r.id] || 0,
+    cheeredByMe: userCheers.has(r.id),
     timestamp: r.timestamp,
   }));
 
@@ -667,6 +698,30 @@ async function witnessRecord(env, user, recordId) {
   ).bind(user.id, Date.now(), recordId).run();
 
   return { ok: true };
+}
+
+// --- Cheer ---
+async function cheerRecord(env, user, recordId) {
+  const rec = await env.DB.prepare('SELECT * FROM records WHERE id = ?').bind(recordId).first();
+  if (!rec) return { error: 'Record not found' };
+  if (rec.user_id === user.id) return { error: 'Cannot cheer your own record' };
+
+  const friendship = await env.DB.prepare('SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?').bind(user.id, rec.user_id).first();
+  if (!friendship) return { error: 'You must be friends to cheer' };
+
+  // Toggle: if already cheered, remove it
+  const existing = await env.DB.prepare('SELECT id FROM cheers WHERE from_user_id = ? AND record_id = ?').bind(user.id, recordId).first();
+  if (existing) {
+    await env.DB.prepare('DELETE FROM cheers WHERE id = ?').bind(existing.id).run();
+    return { ok: true, cheered: false };
+  }
+
+  const id = genId('ch_');
+  await env.DB.prepare(
+    'INSERT INTO cheers (id, from_user_id, record_id, created_at) VALUES (?, ?, ?, ?)'
+  ).bind(id, user.id, recordId, Date.now()).run();
+
+  return { ok: true, cheered: true };
 }
 
 // --- Admin Functions ---
@@ -788,6 +843,7 @@ async function adminDeleteUser(env, userId) {
   if (!user) return { error: 'User not found' };
 
   await env.DB.batch([
+    env.DB.prepare('DELETE FROM cheers WHERE from_user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(userId),

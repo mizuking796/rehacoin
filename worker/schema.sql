@@ -80,3 +80,15 @@ CREATE TABLE IF NOT EXISTS friend_requests (
   FOREIGN KEY (to_user_id) REFERENCES users(id)
 );
 CREATE INDEX IF NOT EXISTS idx_friend_requests_to ON friend_requests(to_user_id, status);
+
+-- 応援（Cheer）
+CREATE TABLE IF NOT EXISTS cheers (
+  id TEXT PRIMARY KEY,
+  from_user_id TEXT NOT NULL,
+  record_id TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (from_user_id) REFERENCES users(id),
+  FOREIGN KEY (record_id) REFERENCES records(id)
+);
+CREATE INDEX IF NOT EXISTS idx_cheers_record ON cheers(record_id);
+CREATE INDEX IF NOT EXISTS idx_cheers_user ON cheers(from_user_id);

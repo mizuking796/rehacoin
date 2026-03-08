@@ -5,6 +5,7 @@ const App = (() => {
   let currentCategoryCode = null;
   let searchDebounceTimer = null;
   let isMining = false;
+  let feedRefreshTimer = null;
 
   // --- Init ---
   async function init() {
@@ -39,6 +40,7 @@ const App = (() => {
     updateHeaderCoins();
     updateHeaderNickname();
     updateFriendBadge();
+    startFeedRefresh();
   }
 
   // --- Language toggle ---
@@ -117,7 +119,9 @@ const App = (() => {
       authError.hidden = true;
       const nickname = document.getElementById('register-nickname').value.trim();
       const password = document.getElementById('register-password').value;
+      const privacyCheck = document.getElementById('privacy-check');
       if (!nickname || !password) return;
+      if (privacyCheck && !privacyCheck.checked) { authError.textContent = I18n.t('privacyRequired'); authError.hidden = false; return; }
       if (password.length < 8) { authError.textContent = I18n.t('passwordMinLength'); authError.hidden = false; return; }
       document.getElementById('btn-register').disabled = true;
       const res = await API.register(nickname, password);
@@ -277,16 +281,24 @@ const App = (() => {
       const witnessBtn = item.witnessed
         ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
         : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
+      const cheerCount = item.cheerCount || 0;
+      const cheeredClass = item.cheeredByMe ? 'cheered' : '';
+      const cheerBtn = `<button class="feed-cheer-btn ${cheeredClass}" data-id="${item.id}">💪 ${cheerCount > 0 ? cheerCount : ''}</button>`;
       return `
       <div class="home-feed-card">
         <div class="home-feed-avatar">${initial}</div>
         <div class="home-feed-content">
           <div class="home-feed-header"><span class="home-feed-name">${escapeHtml(item.nickname)}</span><span class="home-feed-time">${time}</span></div>
-          <div class="home-feed-body"><span class="home-feed-activity">${actLabel}</span>${witnessBtn}</div>
+          <div class="home-feed-body"><span class="home-feed-activity">${actLabel}</span></div>
+          <div class="home-feed-actions">${cheerBtn}${witnessBtn}</div>
         </div>
       </div>`;
     }).join('');
-    list.querySelectorAll('.feed-witness-btn').forEach(btn => {
+    bindFeedActions(list);
+  }
+
+  function bindFeedActions(container) {
+    container.querySelectorAll('.feed-witness-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const ok = await Store.witnessRecord(btn.dataset.id);
         if (ok) {
@@ -294,6 +306,23 @@ const App = (() => {
           btn.replaceWith(Object.assign(document.createElement('span'), {
             className: 'feed-witnessed', textContent: `👁️ ${I18n.t('confirmed')}`
           }));
+        }
+      });
+    });
+    container.querySelectorAll('.feed-cheer-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const res = await Store.cheerRecord(btn.dataset.id);
+        btn.disabled = false;
+        if (res.ok) {
+          const item = Store.getFeed().find(f => f.id === btn.dataset.id);
+          const count = item ? item.cheerCount : 0;
+          btn.className = `feed-cheer-btn ${res.cheered ? 'cheered' : ''}`;
+          btn.textContent = `💪 ${count > 0 ? count : ''}`;
+          if (res.cheered) {
+            showToast(I18n.t('cheerSent'));
+            if (navigator.vibrate) navigator.vibrate(50);
+          }
         }
       });
     });
@@ -718,26 +747,20 @@ const App = (() => {
       const witnessBtn = item.witnessed
         ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
         : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
+      const cheerCount = item.cheerCount || 0;
+      const cheeredClass = item.cheeredByMe ? 'cheered' : '';
+      const cheerBtn = `<button class="feed-cheer-btn ${cheeredClass}" data-id="${item.id}">💪 ${cheerCount > 0 ? cheerCount : ''}</button>`;
       return `
       <div class="feed-item">
         <div class="feed-avatar">${initial}</div>
         <div class="feed-content">
           <div class="feed-header"><span class="feed-name">${escapeHtml(item.nickname)}</span><span class="feed-time">${time}</span></div>
-          <div class="feed-body"><span class="feed-activity">${actLabel}</span>${witnessBtn}</div>
+          <div class="feed-body"><span class="feed-activity">${actLabel}</span></div>
+          <div class="feed-actions">${cheerBtn}${witnessBtn}</div>
         </div>
       </div>`;
     }).join('');
-    container.querySelectorAll('.feed-witness-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const ok = await Store.witnessRecord(btn.dataset.id);
-        if (ok) {
-          showToast(`${I18n.t('witnessConfirm')} ${I18n.t('witnessBonus')}`);
-          btn.replaceWith(Object.assign(document.createElement('span'), {
-            className: 'feed-witnessed', textContent: `👁️ ${I18n.t('confirmed')}`
-          }));
-        }
-      });
-    });
+    bindFeedActions(container);
   }
 
   // --- Exchange ---
@@ -850,6 +873,35 @@ const App = (() => {
 
   function escapeAttr(str) {
     return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // --- Feed auto-refresh ---
+  function startFeedRefresh() {
+    stopFeedRefresh();
+    feedRefreshTimer = setInterval(async () => {
+      if (currentScreen !== 'screen-home' && currentScreen !== 'screen-friends') return;
+      try {
+        const feedRes = await API.getFeed();
+        const oldFeed = Store.getFeed();
+        const newFeed = feedRes.feed || [];
+        // Update store's internal feed
+        if (JSON.stringify(oldFeed.map(f=>f.id)) !== JSON.stringify(newFeed.map(f=>f.id)) ||
+            JSON.stringify(oldFeed.map(f=>f.cheerCount)) !== JSON.stringify(newFeed.map(f=>f.cheerCount))) {
+          Store._updateFeed(newFeed);
+          if (currentScreen === 'screen-home') renderHomeFeed();
+          else if (currentScreen === 'screen-friends') renderFeed();
+        }
+      } catch (e) {
+        console.error('Feed refresh failed:', e);
+      }
+    }, 30000);
+  }
+
+  function stopFeedRefresh() {
+    if (feedRefreshTimer) {
+      clearInterval(feedRefreshTimer);
+      feedRefreshTimer = null;
+    }
   }
 
   return { init };

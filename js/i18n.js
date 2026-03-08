@@ -146,6 +146,10 @@ const I18n = (() => {
       deleteAccountConfirm: 'アカウントを削除しますか？\n全てのデータが完全に削除されます。\nこの操作は元に戻せません。',
       deleteAccountDone: 'アカウントを削除しました',
       passwordMinLength: 'パスワードは8文字以上で入力してください',
+      privacyPolicy: 'プライバシーポリシー',
+      privacyAgree: 'に同意する',
+      privacyRequired: 'プライバシーポリシーへの同意が必要です',
+      cheerSent: '💪 頑張れ！を送りました',
     },
 
     en: {
@@ -278,6 +282,10 @@ const I18n = (() => {
       deleteAccountConfirm: 'Delete your account?\nAll data will be permanently deleted.\nThis cannot be undone.',
       deleteAccountDone: 'Account deleted',
       passwordMinLength: 'Password must be at least 8 characters',
+      privacyPolicy: 'Privacy Policy',
+      privacyAgree: ' - I agree',
+      privacyRequired: 'You must agree to the Privacy Policy',
+      cheerSent: '💪 Cheer sent!',
     }
   };
 

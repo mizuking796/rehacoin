@@ -214,6 +214,25 @@ const Store = (() => {
     return res.ok || false;
   }
 
+  // --- Cheer ---
+  async function cheerRecord(recordId) {
+    const res = await API.cheerRecord(recordId);
+    if (res.ok) {
+      // Update feed item locally
+      const item = _feed.find(f => f.id === recordId);
+      if (item) {
+        if (res.cheered) {
+          item.cheerCount = (item.cheerCount || 0) + 1;
+          item.cheeredByMe = true;
+        } else {
+          item.cheerCount = Math.max(0, (item.cheerCount || 0) - 1);
+          item.cheeredByMe = false;
+        }
+      }
+    }
+    return res;
+  }
+
   function getWitnessBonus() {
     return _profile ? _profile.witnessBonus : 0;
   }
@@ -256,6 +275,10 @@ const Store = (() => {
 
   function getFeed() {
     return _feed;
+  }
+
+  function _updateFeed(newFeed) {
+    _feed = newFeed;
   }
 
   function getFriendRequests() {
@@ -305,9 +328,9 @@ const Store = (() => {
     getRecordsByDate, exportData,
     getRewards, addReward, deleteReward,
     getBalance, spendCoins,
-    witnessRecord, getWitnessBonus,
+    witnessRecord, cheerRecord, getWitnessBonus,
     getUnlockedBadges, getAllBadges,
-    loadFriends, getFriends, getFeed,
+    loadFriends, getFriends, getFeed, _updateFeed,
     getFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, removeFriend,
     getProfile
   };

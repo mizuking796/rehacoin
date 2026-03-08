@@ -157,6 +157,11 @@ const API = (() => {
     return request(`/records/${recordId}/witness`, 'POST');
   }
 
+  // --- Cheer ---
+  async function cheerRecord(recordId) {
+    return request(`/records/${recordId}/cheer`, 'POST');
+  }
+
   return {
     isLoggedIn, getUser, logout,
     register, login, resetPassword, deleteAccount,
@@ -165,6 +170,7 @@ const API = (() => {
     getRewards, addReward, deleteReward, exchangeReward,
     getFriends, getFeed, searchUsers, sendFriendRequest, sendFriendRequestById,
     getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
-    witnessRecord
+    witnessRecord,
+    cheerRecord
   };
 })();
