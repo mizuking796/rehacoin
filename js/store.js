@@ -1,70 +1,99 @@
-// store.js — localStorage管理（記録CRUD、お気に入り、統計）
+// store.js — API-backed store with local cache
 
 const Store = (() => {
-  const RECORDS_KEY = 'rehacoin_records';
+  // Local cache
+  let _records = [];
+  let _rewards = [];
+  let _profile = null;
+  let _friends = [];
+  let _feed = [];
+  let _friendRequests = [];
+  let _loaded = false;
+
+  // --- Load all data from API ---
+  async function loadAll() {
+    if (!API.isLoggedIn()) return;
+    const [recordsRes, rewardsRes, profileRes] = await Promise.all([
+      API.getRecords(),
+      API.getRewards(),
+      API.getProfile()
+    ]);
+    _records = (recordsRes.records || []).map(normalizeRecord);
+    _rewards = rewardsRes.rewards || [];
+    _profile = profileRes;
+    _loaded = true;
+  }
+
+  function normalizeRecord(r) {
+    return {
+      id: r.id,
+      activityId: r.activity_id ?? r.activityId ?? null,
+      categoryCode: r.category_code ?? r.categoryCode ?? 'free',
+      label: r.label,
+      icon: r.icon || '',
+      memo: r.memo || '',
+      isFreeInput: !!(r.is_free_input ?? r.isFreeInput),
+      witnessed: !!(r.witnessed),
+      witnessedBy: r.witnessed_by ?? r.witnessedBy ?? null,
+      witnessedAt: r.witnessed_at ?? r.witnessedAt ?? null,
+      timestamp: r.timestamp
+    };
+  }
 
   function getRecords() {
-    try {
-      return JSON.parse(localStorage.getItem(RECORDS_KEY)) || [];
-    } catch {
-      return [];
-    }
+    return _records;
   }
 
-  function saveRecords(records) {
-    localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
-  }
-
-  function addRecord(activity, isFreeInput = false) {
-    const records = getRecords();
-    const record = {
-      id: 'rec_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+  async function addRecord(activity, isFreeInput = false) {
+    const res = await API.addRecord({
       activityId: activity.id || null,
       categoryCode: activity.categoryCode || 'free',
       label: activity.label,
-      icon: activity.icon || '✏️',
-      memo: '',
-      timestamp: Date.now(),
+      icon: activity.icon || '',
       isFreeInput
-    };
-    records.push(record);
-    saveRecords(records);
-    return record;
+    });
+    if (res.record) {
+      const rec = normalizeRecord(res.record);
+      _records.unshift(rec);
+      if (_profile) {
+        _profile.totalCoins++;
+        _profile.balance++;
+      }
+      return rec;
+    }
+    return null;
   }
 
-  function deleteRecord(id) {
-    const records = getRecords().filter(r => r.id !== id);
-    saveRecords(records);
+  async function deleteRecord(id) {
+    await API.deleteRecord(id);
+    _records = _records.filter(r => r.id !== id);
+    if (_profile) {
+      _profile.totalCoins--;
+      _profile.balance--;
+    }
   }
 
   function getTotalCoins() {
-    return getRecords().length;
+    return _profile ? _profile.totalCoins : _records.length;
   }
 
   function getTodayCount() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayMs = today.getTime();
-    return getRecords().filter(r => r.timestamp >= todayMs).length;
+    return _records.filter(r => r.timestamp >= todayMs).length;
   }
 
-  // 連続日数を計算
   function getStreak() {
-    const records = getRecords();
-    if (records.length === 0) return 0;
-
-    // 記録された日付のSetを作成
+    if (_records.length === 0) return 0;
     const days = new Set();
-    for (const r of records) {
+    for (const r of _records) {
       const d = new Date(r.timestamp);
       days.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
     }
-
-    // 今日から遡って連続日数をカウント
     let streak = 0;
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-
     while (true) {
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       if (days.has(key)) {
@@ -74,29 +103,23 @@ const Store = (() => {
         break;
       }
     }
-
     return streak;
   }
 
-  // 最近の記録（新しい順、limit件）
   function getRecentRecords(limit = 3) {
-    return getRecords()
+    return _records
+      .slice()
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
 
-  // よく使う活動（直近30日の使用頻度上位、最大limit件）
   function getFrequentActivities(limit = 10) {
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const records = getRecords().filter(r => r.timestamp >= thirtyDaysAgo && r.activityId);
-
-    // activityId別にカウント
+    const recent = _records.filter(r => r.timestamp >= thirtyDaysAgo && r.activityId);
     const counts = {};
-    for (const r of records) {
+    for (const r of recent) {
       counts[r.activityId] = (counts[r.activityId] || 0) + 1;
     }
-
-    // ソートしてtop N
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
@@ -107,61 +130,42 @@ const Store = (() => {
       .filter(Boolean);
   }
 
-  // カテゴリ別の月間記録数
   function getMonthlyCounts() {
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const records = getRecords().filter(r => r.timestamp >= thirtyDaysAgo);
-
     const counts = {};
-    for (const r of records) {
+    for (const r of _records.filter(r => r.timestamp >= thirtyDaysAgo)) {
       counts[r.categoryCode] = (counts[r.categoryCode] || 0) + 1;
     }
     return counts;
   }
 
-  // 活動別の月間記録数
   function getActivityMonthlyCounts(categoryCode) {
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-    const records = getRecords().filter(r =>
-      r.timestamp >= thirtyDaysAgo && r.categoryCode === categoryCode
-    );
-
     const counts = {};
-    for (const r of records) {
-      if (r.activityId) {
-        counts[r.activityId] = (counts[r.activityId] || 0) + 1;
-      }
+    for (const r of _records.filter(r => r.timestamp >= thirtyDaysAgo && r.categoryCode === categoryCode)) {
+      if (r.activityId) counts[r.activityId] = (counts[r.activityId] || 0) + 1;
     }
     return counts;
   }
 
-  // トップカテゴリ
   function getTopCategory() {
     const counts = getMonthlyCounts();
-    let topCode = null;
-    let topCount = 0;
+    let topCode = null, topCount = 0;
     for (const [code, count] of Object.entries(counts)) {
-      if (count > topCount) {
-        topCode = code;
-        topCount = count;
-      }
+      if (count > topCount) { topCode = code; topCount = count; }
     }
     if (!topCode) return null;
     const cat = Data.getCategory(topCode);
     return cat ? { ...cat, count: topCount } : null;
   }
 
-  // 日付別グループ（履歴画面用）
   function getRecordsByDate() {
-    const records = getRecords().sort((a, b) => b.timestamp - a.timestamp);
+    const records = _records.slice().sort((a, b) => b.timestamp - a.timestamp);
     const groups = [];
-    let currentDate = null;
-    let currentGroup = null;
-
+    let currentDate = null, currentGroup = null;
     for (const r of records) {
       const d = new Date(r.timestamp);
       const dateStr = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
-
       if (dateStr !== currentDate) {
         currentDate = dateStr;
         currentGroup = { date: dateStr, records: [] };
@@ -169,86 +173,48 @@ const Store = (() => {
       }
       currentGroup.records.push(r);
     }
-
     return groups;
   }
 
-  // エクスポート
-  function exportData() {
-    return JSON.stringify(getRecords(), null, 2);
-  }
-
-
-  // --- ご褒美管理 ---
-  const REWARDS_KEY = 'rehacoin_rewards';
-  const SPENT_KEY = 'rehacoin_spent';
-
+  // --- Rewards ---
   function getRewards() {
-    try { return JSON.parse(localStorage.getItem(REWARDS_KEY)) || []; }
-    catch { return []; }
+    return _rewards;
   }
 
-  function saveRewards(rewards) {
-    localStorage.setItem(REWARDS_KEY, JSON.stringify(rewards));
+  async function addReward(label, cost) {
+    const res = await API.addReward(label, cost);
+    if (res.reward) _rewards.push(res.reward);
   }
 
-  function addReward(label, cost) {
-    const rewards = getRewards();
-    rewards.push({
-      id: 'rwd_' + Date.now(),
-      label,
-      cost: parseInt(cost),
-      createdAt: Date.now()
-    });
-    saveRewards(rewards);
-  }
-
-  function deleteReward(id) {
-    saveRewards(getRewards().filter(r => r.id !== id));
-  }
-
-  function getSpentCoins() {
-    return parseInt(localStorage.getItem(SPENT_KEY)) || 0;
+  async function deleteReward(id) {
+    await API.deleteReward(id);
+    _rewards = _rewards.filter(r => r.id !== id);
   }
 
   function getBalance() {
-    return getTotalCoins() + getWitnessBonus() - getSpentCoins();
+    return _profile ? _profile.balance : 0;
   }
 
-  function spendCoins(amount) {
-    const balance = getBalance();
-    if (balance < amount) return false;
-    localStorage.setItem(SPENT_KEY, (getSpentCoins() + amount).toString());
-    return true;
-  }
-
-  // --- 目撃確認 ---
-  function setWitnessed(recordId) {
-    const records = getRecords();
-    const rec = records.find(r => r.id === recordId);
-    if (rec && !rec.witnessed) {
-      rec.witnessed = true;
-      rec.witnessedAt = Date.now();
-      saveRecords(records);
+  async function spendCoins(rewardId) {
+    const res = await API.exchangeReward(rewardId);
+    if (res.ok) {
+      _profile.balance = res.newBalance;
       return true;
     }
     return false;
   }
 
+  // --- Witness ---
+  async function witnessRecord(recordId) {
+    const res = await API.witnessRecord(recordId);
+    return res.ok || false;
+  }
+
   function getWitnessBonus() {
-    return getRecords().filter(r => r.witnessed).length;
+    return _profile ? _profile.witnessBonus : 0;
   }
 
-  function getWitnessCode(recordId) {
-    // 4桁コード: recordIdからハッシュ的に生成
-    let hash = 0;
-    for (let i = 0; i < recordId.length; i++) {
-      hash = ((hash << 5) - hash + recordId.charCodeAt(i)) | 0;
-    }
-    return String(Math.abs(hash) % 10000).padStart(4, '0');
-  }
-
-  // --- バッジ ---
+  // --- Badges ---
   const BADGES = [
     { id: 'b1', coins: 10, icon: '🥉', label: 'はじめの一歩' },
     { id: 'b2', coins: 50, icon: '🥈', label: '習慣マスター' },
@@ -268,23 +234,77 @@ const Store = (() => {
     return BADGES.map(b => ({ ...b, unlocked: total >= b.coins }));
   }
 
-  // 全削除
-  function clearAll() {
-    localStorage.removeItem(RECORDS_KEY);
-    localStorage.removeItem(REWARDS_KEY);
-    localStorage.removeItem(SPENT_KEY);
-    Blockchain.clearChain();
+  // --- Friends ---
+  async function loadFriends() {
+    const [friendsRes, feedRes, requestsRes] = await Promise.all([
+      API.getFriends(),
+      API.getFeed(),
+      API.getFriendRequests()
+    ]);
+    _friends = friendsRes.friends || [];
+    _feed = feedRes.feed || [];
+    _friendRequests = requestsRes.requests || [];
+  }
+
+  function getFriends() {
+    return _friends;
+  }
+
+  function getFeed() {
+    return _feed;
+  }
+
+  function getFriendRequests() {
+    return _friendRequests;
+  }
+
+  async function sendFriendRequest(code) {
+    return API.sendFriendRequest(code);
+  }
+
+  async function acceptFriendRequest(id) {
+    const res = await API.acceptFriendRequest(id);
+    if (res.ok) {
+      _friendRequests = _friendRequests.filter(r => r.id !== id);
+      await loadFriends();
+    }
+    return res;
+  }
+
+  async function rejectFriendRequest(id) {
+    const res = await API.rejectFriendRequest(id);
+    if (res.ok) _friendRequests = _friendRequests.filter(r => r.id !== id);
+    return res;
+  }
+
+  async function removeFriend(id) {
+    const res = await API.removeFriend(id);
+    if (res.ok) _friends = _friends.filter(f => f.id !== id);
+    return res;
+  }
+
+  // --- Profile ---
+  function getProfile() {
+    return _profile;
+  }
+
+  // --- Export ---
+  function exportData() {
+    return JSON.stringify(_records, null, 2);
   }
 
   return {
-    getRecords, addRecord, deleteRecord,
+    loadAll, getRecords, addRecord, deleteRecord,
     getTotalCoins, getTodayCount, getStreak,
     getRecentRecords, getFrequentActivities,
     getMonthlyCounts, getActivityMonthlyCounts, getTopCategory,
-    getRecordsByDate, exportData, clearAll,
+    getRecordsByDate, exportData,
     getRewards, addReward, deleteReward,
-    getSpentCoins, getBalance, spendCoins,
-    setWitnessed, getWitnessBonus, getWitnessCode,
-    getUnlockedBadges, getAllBadges
+    getBalance, spendCoins,
+    witnessRecord, getWitnessBonus,
+    getUnlockedBadges, getAllBadges,
+    loadFriends, getFriends, getFeed,
+    getFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, removeFriend,
+    getProfile
   };
 })();

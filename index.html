@@ -6,196 +6,271 @@
   <meta name="theme-color" content="#4A90D9">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>リハコイン</title>
+  <title>Reha Coin</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- ヘッダー -->
-  <header id="app-header">
-    <h1>🪙 リハコイン</h1>
-    <span id="header-coins" class="header-coins">0 コイン</span>
-  </header>
 
-  <!-- ホーム画面 -->
-  <main id="screen-home" class="screen active">
-    <!-- 検索バー -->
-    <div class="search-bar">
-      <input type="search" id="search-input" placeholder="活動を検索..." autocomplete="off">
-    </div>
-    <!-- 検索結果（インライン） -->
-    <div id="search-results" class="search-results" hidden></div>
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="auth-screen" hidden>
+    <div class="auth-container">
+      <div class="auth-logo">🪙</div>
+      <h1 class="auth-title">Reha Coin</h1>
+      <p class="auth-subtitle">Earn coins for your rehabilitation</p>
 
-    <!-- 最近の記録 -->
-    <section id="section-recent" class="section" hidden>
-      <h2 class="section-title">最近の記録</h2>
-      <div id="recent-list" class="recent-list"></div>
-    </section>
-
-    <!-- よく使う活動 -->
-    <section id="section-favorites" class="section" hidden>
-      <h2 class="section-title">よく使う活動</h2>
-      <div id="favorites-list" class="favorites-list"></div>
-    </section>
-
-    <!-- カテゴリグリッド -->
-    <section class="section">
-      <h2 class="section-title">カテゴリ</h2>
-      <div id="category-grid" class="category-grid"></div>
-    </section>
-
-    <!-- 自由入力 -->
-    <section class="section">
-      <h2 class="section-title">自由入力</h2>
-      <div class="free-input-row">
-        <input type="text" id="free-input" placeholder="自由に活動を入力..." autocomplete="off">
-        <button id="free-input-btn" class="btn-primary" disabled>記録</button>
+      <!-- Login Form -->
+      <div id="login-form" class="auth-form">
+        <input type="text" id="login-nickname" placeholder="Nickname" autocomplete="username">
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+        <button id="btn-login" class="btn-primary auth-btn">Login</button>
+        <p class="auth-switch">New here? <a href="#" id="btn-show-register">Create account</a></p>
       </div>
-    </section>
-  </main>
 
-  <!-- カテゴリ詳細画面 -->
-  <main id="screen-category" class="screen">
-    <div class="screen-header">
-      <button id="category-back" class="btn-back" aria-label="戻る">← 戻る</button>
-      <h2 id="category-title" class="screen-title"></h2>
-    </div>
-    <div id="activity-list" class="activity-list"></div>
-  </main>
-
-  <!-- 履歴画面 -->
-  <main id="screen-history" class="screen">
-    <h2 class="screen-title-fixed">きろく</h2>
-    <!-- タブ切り替え -->
-    <div class="history-tabs">
-      <button class="history-tab active" data-tab="records">📊 記録</button>
-      <button class="history-tab" data-tab="chain">⛓️ チェーン</button>
-    </div>
-    <!-- 記録タブ -->
-    <div id="tab-records" class="tab-content active">
-      <!-- 統計サマリ -->
-      <div id="stats-summary" class="stats-summary"></div>
-      <!-- 日付別記録 -->
-      <div id="history-list" class="history-list"></div>
-    </div>
-    <!-- チェーンタブ -->
-    <div id="tab-chain" class="tab-content">
-      <button id="btn-verify-chain" class="btn-verify">🔍 チェーン検証</button>
-      <div id="verify-result" class="verify-result" hidden></div>
-      <div id="chain-list" class="chain-list"></div>
-    </div>
-  </main>
-
-
-  <!-- 交換画面 -->
-  <main id="screen-exchange" class="screen">
-    <h2 class="screen-title-fixed">交換</h2>
-    <!-- 残高表示 -->
-    <div class="exchange-balance">
-      <div class="balance-amount" id="exchange-balance">0</div>
-      <div class="balance-label">使えるコイン</div>
-    </div>
-    <!-- バッジセクション -->
-    <section class="section">
-      <h2 class="section-title">バッジ</h2>
-      <div id="badge-list" class="badge-list"></div>
-    </section>
-    <!-- ご褒美セクション -->
-    <section class="section">
-      <h2 class="section-title">ご褒美リスト</h2>
-      <div id="reward-list" class="reward-list"></div>
-      <div class="reward-add-row">
-        <input type="text" id="reward-name-input" placeholder="ご褒美の名前" autocomplete="off">
-        <input type="number" id="reward-cost-input" placeholder="コイン" min="1" style="width:80px">
-        <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem">追加</button>
+      <!-- Register Form -->
+      <div id="register-form" class="auth-form" hidden>
+        <input type="text" id="register-nickname" placeholder="Nickname (2-20 chars)" autocomplete="username">
+        <input type="password" id="register-password" placeholder="Password (4+ chars)" autocomplete="new-password">
+        <button id="btn-register" class="btn-primary auth-btn">Create account</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="btn-show-login">Login</a></p>
       </div>
-    </section>
-  </main>
 
-  <!-- 設定画面 -->
-  <main id="screen-settings" class="screen">
-    <h2 class="screen-title-fixed">設定</h2>
-    <div class="settings-content">
-      <div class="settings-item">
-        <span>バージョン</span>
-        <span>MVP 2.0.0</span>
-      </div>
-      <div class="settings-item">
-        <button id="btn-export" class="btn-secondary">データをエクスポート</button>
-      </div>
-      <div class="settings-item">
-        <button id="btn-clear-data" class="btn-danger">データを全削除</button>
-      </div>
-    </div>
-  </main>
-
-  <!-- 目撃確認モーダル -->
-  <div id="witness-overlay" class="mining-overlay" hidden>
-    <div class="mining-content witness-modal">
-      <div class="mining-icon">👁️</div>
-      <div class="mining-title">目撃確認</div>
-      <div class="witness-label" id="witness-activity-label"></div>
-      <div class="witness-code" id="witness-code-display"></div>
-      <div class="witness-instruction">上の4桁コードを入力してください</div>
-      <input type="tel" id="witness-code-input" class="witness-input" maxlength="4" placeholder="0000" autocomplete="off">
-      <div class="witness-buttons">
-        <button id="btn-witness-cancel" class="btn-secondary" style="width:auto;padding:0 20px">やめる</button>
-        <button id="btn-witness-confirm" class="btn-primary" style="padding:0 20px">確認</button>
-      </div>
-      <div id="witness-error" class="witness-error" hidden>コードが違います</div>
+      <div id="auth-error" class="auth-error" hidden></div>
     </div>
   </div>
 
-  <!-- マイニングオーバーレイ -->
-  <div id="mining-overlay" class="mining-overlay" hidden>
-    <div class="mining-content">
-      <div class="mining-icon">⛏️</div>
-      <div class="mining-title">マイニング中...</div>
-      <div class="mining-nonce">Nonce: <span id="mining-nonce-val">0</span></div>
-      <div class="mining-hash" id="mining-hash-val">Hash: 計算中...</div>
-      <div class="mining-progress"></div>
+  <!-- App Container (hidden until logged in) -->
+  <div id="app-container" hidden>
+
+    <!-- Header -->
+    <header id="app-header">
+      <h1>🪙 Reha Coin</h1>
+      <span id="header-coins" class="header-coins">0 coin</span>
+    </header>
+
+    <!-- Home Screen -->
+    <main id="screen-home" class="screen active">
+      <div class="search-bar">
+        <input type="search" id="search-input" placeholder="Search activities..." autocomplete="off">
+      </div>
+      <div id="search-results" class="search-results" hidden></div>
+
+      <section id="section-recent" class="section" hidden>
+        <h2 class="section-title">Recent</h2>
+        <div id="recent-list" class="recent-list"></div>
+      </section>
+
+      <section id="section-favorites" class="section" hidden>
+        <h2 class="section-title">Favorites</h2>
+        <div id="favorites-list" class="favorites-list"></div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Categories</h2>
+        <div id="category-grid" class="category-grid"></div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">Free Input</h2>
+        <div class="free-input-row">
+          <input type="text" id="free-input" placeholder="Enter your activity..." autocomplete="off">
+          <button id="free-input-btn" class="btn-primary" disabled>Record</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Category Detail Screen -->
+    <main id="screen-category" class="screen">
+      <div class="screen-header">
+        <button id="category-back" class="btn-back">← Back</button>
+        <h2 id="category-title" class="screen-title"></h2>
+      </div>
+      <div id="activity-list" class="activity-list"></div>
+    </main>
+
+    <!-- History Screen -->
+    <main id="screen-history" class="screen">
+      <h2 class="screen-title-fixed">Records</h2>
+      <div class="history-tabs">
+        <button class="history-tab active" data-tab="records">📊 Records</button>
+      </div>
+      <div id="tab-records" class="tab-content active">
+        <div id="stats-summary" class="stats-summary"></div>
+        <div id="history-list" class="history-list"></div>
+      </div>
+    </main>
+
+    <!-- Friends Screen -->
+    <main id="screen-friends" class="screen">
+      <h2 class="screen-title-fixed">Friends</h2>
+
+      <!-- My Friend Code -->
+      <section class="section">
+        <h2 class="section-title">My Friend Code</h2>
+        <div class="friend-code-display">
+          <span id="my-friend-code" class="friend-code-value">------</span>
+        </div>
+      </section>
+
+      <!-- Add Friend -->
+      <section class="section">
+        <h2 class="section-title">Add Friend</h2>
+        <div class="free-input-row">
+          <input type="text" id="friend-code-input" placeholder="Enter friend code" autocomplete="off" maxlength="6" style="text-transform:uppercase">
+          <button id="btn-send-friend-request" class="btn-primary">Send</button>
+        </div>
+      </section>
+
+      <!-- Friend Requests -->
+      <section id="section-friend-requests" class="section" hidden>
+        <h2 class="section-title">Friend Requests</h2>
+        <div id="friend-requests-list"></div>
+      </section>
+
+      <!-- Friend List -->
+      <section class="section">
+        <h2 class="section-title">Friends</h2>
+        <div id="friend-list"></div>
+      </section>
+
+      <!-- Feed -->
+      <section class="section">
+        <h2 class="section-title">Friend Activity</h2>
+        <div id="feed-list"></div>
+      </section>
+    </main>
+
+    <!-- Exchange Screen -->
+    <main id="screen-exchange" class="screen">
+      <h2 class="screen-title-fixed">Exchange</h2>
+      <div class="exchange-balance">
+        <div class="balance-amount" id="exchange-balance">0</div>
+        <div class="balance-label">Available Coins</div>
+      </div>
+      <section class="section">
+        <h2 class="section-title">Badges</h2>
+        <div id="badge-list" class="badge-list"></div>
+      </section>
+      <section class="section">
+        <h2 class="section-title">Rewards</h2>
+        <div id="reward-list" class="reward-list"></div>
+        <div class="reward-add-row">
+          <input type="text" id="reward-name-input" placeholder="Reward name" autocomplete="off">
+          <input type="number" id="reward-cost-input" placeholder="Coins" min="1" style="width:80px">
+          <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem">Add</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Profile Screen -->
+    <main id="screen-profile" class="screen">
+      <h2 class="screen-title-fixed">Profile</h2>
+      <div class="profile-content">
+        <div class="profile-header">
+          <div class="profile-avatar">👤</div>
+          <div class="profile-name" id="profile-nickname">---</div>
+        </div>
+
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="ps-value" id="profile-total-coins">0</div>
+            <div class="ps-label">Total Coins</div>
+          </div>
+          <div class="profile-stat">
+            <div class="ps-value" id="profile-witness-bonus">0</div>
+            <div class="ps-label">Witness Bonus</div>
+          </div>
+          <div class="profile-stat">
+            <div class="ps-value" id="profile-friends-count">0</div>
+            <div class="ps-label">Friends</div>
+          </div>
+        </div>
+
+        <div class="settings-content">
+          <div class="settings-item">
+            <span>Friend Code</span>
+            <span id="profile-friend-code">------</span>
+          </div>
+          <div class="settings-item">
+            <span>Feed Privacy</span>
+            <select id="profile-visibility" class="profile-select">
+              <option value="activity_name">Show activity name</option>
+              <option value="coin_only">Coins only</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <span>Joined</span>
+            <span id="profile-created">---</span>
+          </div>
+          <div class="settings-item">
+            <span>Version</span>
+            <span>3.0.0</span>
+          </div>
+          <div class="settings-item">
+            <button id="btn-export" class="btn-secondary">Export Data</button>
+          </div>
+          <div class="settings-item">
+            <button id="btn-logout" class="btn-danger">Logout</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mining Overlay -->
+    <div id="mining-overlay" class="mining-overlay" hidden>
+      <div class="mining-content">
+        <div class="mining-icon">⛏️</div>
+        <div class="mining-title">Mining...</div>
+        <div class="mining-nonce">Nonce: <span id="mining-nonce-val">0</span></div>
+        <div class="mining-hash" id="mining-hash-val">Hash: computing...</div>
+        <div class="mining-progress"></div>
+      </div>
     </div>
-  </div>
 
-  <!-- マイグレーションオーバーレイ -->
-  <div id="migration-overlay" class="mining-overlay" hidden>
-    <div class="mining-content">
-      <div class="mining-icon">⛓️</div>
-      <div class="mining-title">ブロックチェーン初期化中...</div>
-      <div class="mining-nonce" id="migration-progress">準備中...</div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="mining-overlay" hidden>
+      <div class="mining-content">
+        <div class="mining-icon">⏳</div>
+        <div class="mining-title" id="loading-text">Loading...</div>
+      </div>
     </div>
-  </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast" hidden>
-    <span id="toast-text">🪙 リハコイン +1</span>
-  </div>
+    <!-- Toast -->
+    <div id="toast" class="toast" hidden>
+      <span id="toast-text">🪙 +1 coin</span>
+    </div>
 
-  <!-- 下部ナビ -->
-  <nav id="bottom-nav" class="bottom-nav">
-    <button class="nav-btn active" data-screen="screen-home">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">ホーム</span>
-    </button>
-    <button class="nav-btn" data-screen="screen-history">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">きろく</span>
-    </button>
-    <button class="nav-btn" data-screen="screen-exchange">
-      <span class="nav-icon">🎁</span>
-      <span class="nav-label">交換</span>
-    </button>
-    <button class="nav-btn" data-screen="screen-settings">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">設定</span>
-    </button>
-  </nav>
+    <!-- Bottom Nav -->
+    <nav id="bottom-nav" class="bottom-nav">
+      <button class="nav-btn active" data-screen="screen-home">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-history">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Records</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-friends">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Friends</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-exchange">
+        <span class="nav-icon">🎁</span>
+        <span class="nav-label">Exchange</span>
+      </button>
+      <button class="nav-btn" data-screen="screen-profile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+      </button>
+    </nav>
 
+  </div><!-- /app-container -->
+
+  <script src="js/api.js"></script>
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
-  <script src="js/blockchain.js"></script>
   <script src="js/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

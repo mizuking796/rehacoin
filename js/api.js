@@ -1,0 +1,152 @@
+// api.js — API client for rehacoin-api Worker
+
+const API = (() => {
+  const BASE = 'https://rehacoin-api.mizuki-tools.workers.dev';
+  const TOKEN_KEY = 'rehacoin_token';
+  const USER_KEY = 'rehacoin_user';
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem(USER_KEY)); }
+    catch { return null; }
+  }
+
+  function setAuth(token, user) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+
+  function clearAuth() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
+
+  function isLoggedIn() {
+    return !!getToken();
+  }
+
+  async function request(path, method = 'GET', body = null) {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const opts = { method, headers };
+    if (body) opts.body = JSON.stringify(body);
+
+    const res = await fetch(BASE + path, opts);
+    const data = await res.json();
+
+    if (res.status === 401) {
+      clearAuth();
+      location.reload();
+      return data;
+    }
+
+    return data;
+  }
+
+  // --- Auth ---
+  async function register(nickname, password) {
+    const data = await request('/auth/register', 'POST', { nickname, password });
+    if (data.token) setAuth(data.token, data.user);
+    return data;
+  }
+
+  async function login(nickname, password) {
+    const data = await request('/auth/login', 'POST', { nickname, password });
+    if (data.token) setAuth(data.token, data.user);
+    return data;
+  }
+
+  function logout() {
+    clearAuth();
+    location.reload();
+  }
+
+  // --- Profile ---
+  async function getProfile() {
+    return request('/me');
+  }
+
+  async function updateProfile(data) {
+    return request('/me', 'PUT', data);
+  }
+
+  // --- Records ---
+  async function getRecords() {
+    return request('/records');
+  }
+
+  async function addRecord(record) {
+    return request('/records', 'POST', record);
+  }
+
+  async function deleteRecord(id) {
+    return request(`/records/${id}`, 'DELETE');
+  }
+
+  // --- Rewards ---
+  async function getRewards() {
+    return request('/rewards');
+  }
+
+  async function addReward(label, cost) {
+    return request('/rewards', 'POST', { label, cost });
+  }
+
+  async function deleteReward(id) {
+    return request(`/rewards/${id}`, 'DELETE');
+  }
+
+  async function exchangeReward(id) {
+    return request(`/rewards/${id}/exchange`, 'POST');
+  }
+
+  // --- Friends ---
+  async function getFriends() {
+    return request('/friends');
+  }
+
+  async function getFeed() {
+    return request('/friends/feed');
+  }
+
+  async function sendFriendRequest(friendCode) {
+    return request('/friends/request', 'POST', { friendCode });
+  }
+
+  async function getFriendRequests() {
+    return request('/friends/requests');
+  }
+
+  async function acceptFriendRequest(id) {
+    return request(`/friends/requests/${id}/accept`, 'POST');
+  }
+
+  async function rejectFriendRequest(id) {
+    return request(`/friends/requests/${id}/reject`, 'POST');
+  }
+
+  async function removeFriend(id) {
+    return request(`/friends/${id}`, 'DELETE');
+  }
+
+  // --- Witness ---
+  async function witnessRecord(recordId) {
+    return request(`/records/${recordId}/witness`, 'POST');
+  }
+
+  return {
+    isLoggedIn, getUser, logout,
+    register, login,
+    getProfile, updateProfile,
+    getRecords, addRecord, deleteRecord,
+    getRewards, addReward, deleteReward, exchangeReward,
+    getFriends, getFeed, sendFriendRequest,
+    getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
+    witnessRecord
+  };
+})();

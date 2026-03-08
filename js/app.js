@@ -1,4 +1,4 @@
-// app.js — UI描画、画面遷移、イベントハンドラ
+// app.js — UI, routing, event handlers (API-backed)
 
 const App = (() => {
   let currentScreen = 'screen-home';
@@ -6,23 +6,24 @@ const App = (() => {
   let searchDebounceTimer = null;
   let isMining = false;
 
-  // --- 初期化 ---
+  // --- Init ---
   async function init() {
-    await Data.init();
-
-    // ブロックチェーン初期化（既存データのマイグレーション）
-    const migrationOverlay = document.getElementById('migration-overlay');
-    const migrationProgress = document.getElementById('migration-progress');
-    try {
-      await Blockchain.init((current, total) => {
-        migrationOverlay.hidden = false;
-        migrationProgress.textContent = `${current} / ${total} ブロック生成中...`;
-      });
-    } catch (e) {
-      console.error('Blockchain init failed:', e);
-    } finally {
-      migrationOverlay.hidden = true;
+    if (!API.isLoggedIn()) {
+      showAuthScreen();
+      return;
     }
+
+    showLoadingOverlay('Loading...');
+    try {
+      await Data.init();
+      await Store.loadAll();
+    } catch (e) {
+      console.error('Init failed:', e);
+    }
+    hideLoadingOverlay();
+
+    document.getElementById('app-container').hidden = false;
+    document.getElementById('auth-screen').hidden = true;
 
     bindNav();
     bindSearch();
@@ -30,49 +31,122 @@ const App = (() => {
     bindSettings();
     bindHistoryTabs();
     bindExchange();
-    bindWitness();
+    bindFriends();
     renderHome();
     updateHeaderCoins();
   }
 
-  // --- 画面遷移 ---
+  // --- Auth Screen ---
+  function showAuthScreen() {
+    document.getElementById('auth-screen').hidden = false;
+    document.getElementById('app-container').hidden = true;
+
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const authError = document.getElementById('auth-error');
+
+    document.getElementById('btn-show-register').onclick = () => {
+      loginForm.hidden = true;
+      registerForm.hidden = false;
+      authError.hidden = true;
+    };
+    document.getElementById('btn-show-login').onclick = () => {
+      loginForm.hidden = false;
+      registerForm.hidden = true;
+      authError.hidden = true;
+    };
+
+    document.getElementById('btn-login').onclick = async () => {
+      authError.hidden = true;
+      const nickname = document.getElementById('login-nickname').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!nickname || !password) return;
+
+      document.getElementById('btn-login').disabled = true;
+      const res = await API.login(nickname, password);
+      document.getElementById('btn-login').disabled = false;
+
+      if (res.error) {
+        authError.textContent = res.error;
+        authError.hidden = false;
+      } else {
+        init();
+      }
+    };
+
+    document.getElementById('btn-register').onclick = async () => {
+      authError.hidden = true;
+      const nickname = document.getElementById('register-nickname').value.trim();
+      const password = document.getElementById('register-password').value;
+      if (!nickname || !password) return;
+
+      document.getElementById('btn-register').disabled = true;
+      const res = await API.register(nickname, password);
+      document.getElementById('btn-register').disabled = false;
+
+      if (res.error) {
+        authError.textContent = res.error;
+        authError.hidden = false;
+      } else {
+        init();
+      }
+    };
+
+    // Enter key support
+    ['login-nickname', 'login-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btn-login').click();
+      });
+    });
+    ['register-nickname', 'register-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btn-register').click();
+      });
+    });
+  }
+
+  // --- Loading overlay ---
+  function showLoadingOverlay(text) {
+    const el = document.getElementById('loading-overlay');
+    document.getElementById('loading-text').textContent = text || 'Loading...';
+    el.hidden = false;
+  }
+
+  function hideLoadingOverlay() {
+    document.getElementById('loading-overlay').hidden = true;
+  }
+
+  // --- Navigation ---
   function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     currentScreen = screenId;
 
-    // ナビのアクティブ更新
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.screen === screenId);
     });
 
-    // 画面表示時の処理
-    if (screenId === 'screen-home') {
-      renderHome();
-    } else if (screenId === 'screen-history') {
-      renderHistory();
-    } else if (screenId === 'screen-exchange') {
-      renderExchange();
-    }
+    if (screenId === 'screen-home') renderHome();
+    else if (screenId === 'screen-history') renderHistory();
+    else if (screenId === 'screen-exchange') renderExchange();
+    else if (screenId === 'screen-friends') loadAndRenderFriends();
+    else if (screenId === 'screen-profile') renderProfile();
 
-    // スクロールを先頭に
     window.scrollTo(0, 0);
   }
 
   function bindNav() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        showScreen(btn.dataset.screen);
-      });
+      btn.addEventListener('click', () => showScreen(btn.dataset.screen));
     });
   }
 
-  // --- ヘッダーのコイン数 ---
+  // --- Header coins ---
   function updateHeaderCoins() {
-    document.getElementById('header-coins').textContent = Store.getBalance() + ' コイン';
+    document.getElementById('header-coins').textContent = Store.getBalance() + ' coin';
   }
 
-  // --- ホーム画面 ---
+  // --- Home ---
   function renderHome() {
     renderRecentRecords();
     renderFavorites();
@@ -98,9 +172,7 @@ const App = (() => {
     }).join('');
 
     grid.querySelectorAll('.category-card').forEach(card => {
-      card.addEventListener('click', () => {
-        openCategory(card.dataset.code);
-      });
+      card.addEventListener('click', () => openCategory(card.dataset.code));
     });
   }
 
@@ -109,10 +181,7 @@ const App = (() => {
     const list = document.getElementById('recent-list');
     const recent = Store.getRecentRecords(3);
 
-    if (recent.length === 0) {
-      section.hidden = true;
-      return;
-    }
+    if (recent.length === 0) { section.hidden = true; return; }
 
     section.hidden = false;
     list.innerHTML = recent.map(r => {
@@ -128,13 +197,12 @@ const App = (() => {
 
     list.querySelectorAll('.recent-item').forEach(item => {
       item.addEventListener('click', () => {
-        const act = {
+        recordActivity({
           id: item.dataset.activityId || null,
           label: item.dataset.label,
           icon: item.dataset.icon,
           categoryCode: item.dataset.category
-        };
-        recordActivity(act);
+        });
       });
     });
   }
@@ -144,10 +212,7 @@ const App = (() => {
     const list = document.getElementById('favorites-list');
     const favorites = Store.getFrequentActivities(10);
 
-    if (favorites.length === 0) {
-      section.hidden = true;
-      return;
-    }
+    if (favorites.length === 0) { section.hidden = true; return; }
 
     section.hidden = false;
     list.innerHTML = favorites.map(act => `
@@ -165,17 +230,14 @@ const App = (() => {
     });
   }
 
-  // --- カテゴリ詳細 ---
+  // --- Category detail ---
   function openCategory(code) {
     currentCategoryCode = code;
     const cat = Data.getCategory(code);
     document.getElementById('category-title').textContent = cat.icon + ' ' + cat.label;
     renderActivityList(code);
     showScreen('screen-category');
-
-    document.getElementById('category-back').onclick = () => {
-      showScreen('screen-home');
-    };
+    document.getElementById('category-back').onclick = () => showScreen('screen-home');
   }
 
   function renderActivityList(code) {
@@ -203,67 +265,60 @@ const App = (() => {
     });
   }
 
-  // --- 記録フロー（非同期：マイニング演出付き） ---
+  // --- Record flow (async + mining animation) ---
   async function recordActivity(activity, stayInCategory = false) {
-    if (isMining) return; // 二重防止
+    if (isMining) return;
 
-    // 即座にレコード保存
-    const record = Store.addRecord(activity, !activity.id);
-
-    // ハプティックフィードバック
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-
-    updateHeaderCoins();
-
-    // カテゴリ画面に居る場合はリストを再描画（回数バッジ更新）
-    if (stayInCategory && currentCategoryCode) {
-      renderActivityList(currentCategoryCode);
-    }
-
-    // ホーム画面の場合はセクションを再描画
-    if (currentScreen === 'screen-home') {
-      renderHome();
-    }
-
-    // マイニング演出
     isMining = true;
     showMiningOverlay();
 
     try {
-      const blockData = {
-        recordId: record.id,
-        activityId: record.activityId,
-        label: record.label,
-        icon: record.icon,
-        categoryCode: record.categoryCode
-      };
+      const record = await Store.addRecord(activity, !activity.id);
+      if (!record) {
+        showToastCustom('Error: record failed');
+        return;
+      }
 
-      const block = await Blockchain.mineBlock(blockData, (nonce, hash) => {
-        updateMiningOverlay(nonce, hash);
+      if (navigator.vibrate) navigator.vibrate(50);
+      updateHeaderCoins();
+
+      if (stayInCategory && currentCategoryCode) renderActivityList(currentCategoryCode);
+      if (currentScreen === 'screen-home') renderHome();
+
+      // Mining animation (purely visual)
+      const startTime = Date.now();
+      let nonce = 0;
+      const animDuration = 800 + Math.random() * 1200;
+
+      await new Promise(resolve => {
+        function step() {
+          nonce += Math.floor(Math.random() * 50) + 10;
+          const fakeHash = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+          updateMiningOverlay(nonce, fakeHash);
+
+          if (Date.now() - startTime < animDuration) {
+            requestAnimationFrame(step);
+          } else {
+            resolve();
+          }
+        }
+        requestAnimationFrame(step);
       });
 
-      // ブロック確認Toast
-      const shortHash = block.hash.slice(0, 10) + '...';
-      showToastCustom(`⛓️ Block #${block.index} 確認！ ${shortHash}`);
-
-      if (navigator.vibrate) {
-        navigator.vibrate([50, 50, 100]);
-      }
+      showToastCustom(`⛓️ Block confirmed! +1 coin`);
+      if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
     } catch (e) {
-      console.error('Mining failed:', e);
-      showToastCustom('🪙 リハコイン +1');
+      console.error('Record failed:', e);
+      showToastCustom('🪙 +1 coin');
     } finally {
       hideMiningOverlay();
       isMining = false;
     }
 
-    // バッジ解放チェック
     checkBadgeUnlock();
   }
 
-  // --- バッジ解放チェック ---
   function checkBadgeUnlock() {
     const unlocked = Store.getUnlockedBadges();
     const shown = JSON.parse(localStorage.getItem('rehacoin_badges_shown') || '[]');
@@ -271,19 +326,17 @@ const App = (() => {
       if (!shown.includes(badge.id)) {
         shown.push(badge.id);
         localStorage.setItem('rehacoin_badges_shown', JSON.stringify(shown));
-        setTimeout(() => {
-          showToastCustom(`${badge.icon} バッジ解放！ ${badge.label}`);
-        }, 2500);
-        break; // 1つずつ表示
+        setTimeout(() => showToastCustom(`${badge.icon} Badge unlocked! ${badge.label}`), 1500);
+        break;
       }
     }
   }
 
-  // --- マイニングオーバーレイ ---
+  // --- Mining overlay ---
   function showMiningOverlay() {
     const overlay = document.getElementById('mining-overlay');
     document.getElementById('mining-nonce-val').textContent = '0';
-    document.getElementById('mining-hash-val').textContent = 'Hash: 計算中...';
+    document.getElementById('mining-hash-val').textContent = 'Hash: computing...';
     overlay.hidden = false;
   }
 
@@ -297,10 +350,6 @@ const App = (() => {
   }
 
   // --- Toast ---
-  function showToast() {
-    showToastCustom('🪙 リハコイン +1');
-  }
-
   function showToastCustom(text) {
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toast-text');
@@ -308,17 +357,13 @@ const App = (() => {
     toast.hidden = false;
     toast.offsetHeight;
     toast.classList.add('show');
-
     setTimeout(() => {
       toast.classList.remove('show');
-      setTimeout(() => {
-        toast.hidden = true;
-        toastText.textContent = '🪙 リハコイン +1';
-      }, 200);
+      setTimeout(() => { toast.hidden = true; }, 200);
     }, 2000);
   }
 
-  // --- 検索 ---
+  // --- Search ---
   function bindSearch() {
     const input = document.getElementById('search-input');
     const results = document.getElementById('search-results');
@@ -327,22 +372,13 @@ const App = (() => {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => {
         const query = input.value.trim();
-        if (query.length === 0) {
-          results.hidden = true;
-          results.innerHTML = '';
-          return;
-        }
+        if (!query) { results.hidden = true; results.innerHTML = ''; return; }
         renderSearchResults(query);
       }, 200);
     });
 
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        input.value = '';
-        results.hidden = true;
-        results.innerHTML = '';
-        input.blur();
-      }
+      if (e.key === 'Escape') { input.value = ''; results.hidden = true; results.innerHTML = ''; input.blur(); }
     });
   }
 
@@ -352,7 +388,7 @@ const App = (() => {
 
     if (groups.length === 0) {
       results.hidden = false;
-      results.innerHTML = '<div class="history-empty">見つかりませんでした</div>';
+      results.innerHTML = '<div class="history-empty">Not found</div>';
       return;
     }
 
@@ -364,57 +400,39 @@ const App = (() => {
           <span class="act-label">${escapeHtml(act.label)}</span>
         </div>
       `).join('');
-
-      return `
-        <div class="search-group-title">${group.category.icon} ${group.category.label}</div>
-        ${items}
-      `;
+      return `<div class="search-group-title">${group.category.icon} ${group.category.label}</div>${items}`;
     }).join('');
 
     results.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', () => {
         const act = Data.getActivity(item.dataset.id);
-        if (act) {
-          recordActivity(act);
-          document.getElementById('search-input').value = '';
-          results.hidden = true;
-          results.innerHTML = '';
-        }
+        if (act) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
       });
     });
   }
 
-  // --- 自由入力 ---
+  // --- Free input ---
   function bindFreeInput() {
     const input = document.getElementById('free-input');
     const btn = document.getElementById('free-input-btn');
-
-    input.addEventListener('input', () => {
-      btn.disabled = input.value.trim().length === 0;
-    });
-
+    input.addEventListener('input', () => { btn.disabled = !input.value.trim(); });
     btn.addEventListener('click', () => {
       const label = input.value.trim();
       if (!label) return;
       recordActivity({ id: null, label, icon: '✏️', categoryCode: 'free' });
-      input.value = '';
-      btn.disabled = true;
+      input.value = ''; btn.disabled = true;
     });
-
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && input.value.trim()) {
-        btn.click();
-      }
+      if (e.key === 'Enter' && input.value.trim()) btn.click();
     });
   }
 
-  // --- 履歴画面 ---
+  // --- History ---
   function renderHistory() {
     renderStats();
     renderHistoryList();
   }
 
-  // --- 履歴タブ切り替え ---
   function bindHistoryTabs() {
     document.querySelectorAll('.history-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -422,75 +440,8 @@ const App = (() => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-
-        if (tab.dataset.tab === 'chain') {
-          renderChainView();
-        }
       });
     });
-
-    document.getElementById('btn-verify-chain').addEventListener('click', async () => {
-      const btn = document.getElementById('btn-verify-chain');
-      btn.disabled = true;
-      btn.textContent = '🔍 検証中...';
-
-      const result = await Blockchain.verifyChain();
-      const el = document.getElementById('verify-result');
-      el.hidden = false;
-
-      if (result.valid) {
-        el.className = 'verify-result valid';
-        el.textContent = `✅ チェーン正常（${result.length} ブロック）`;
-      } else {
-        el.className = 'verify-result invalid';
-        el.innerHTML = `❌ 改ざん検知！（${result.errors.length} 件のエラー）<br>` +
-          result.errors.map(e => `Block #${e.index}: ${escapeHtml(e.message)}`).join('<br>');
-      }
-
-      btn.disabled = false;
-      btn.textContent = '🔍 チェーン検証';
-    });
-  }
-
-  // --- ブロックチェーンビューア ---
-  function renderChainView() {
-    const container = document.getElementById('chain-list');
-    const chain = Blockchain.getChain();
-
-    if (chain.length === 0) {
-      container.innerHTML = '<div class="chain-empty">ブロックチェーンが空です</div>';
-      return;
-    }
-
-    const blocks = chain.slice().reverse().slice(0, 50);
-
-    container.innerHTML = blocks.map((block, i) => {
-      const time = new Date(block.timestamp);
-      const timeStr = `${time.getFullYear()}/${(time.getMonth() + 1).toString().padStart(2, '0')}/${time.getDate().toString().padStart(2, '0')} ${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-
-      const isGenesis = block.index === 0;
-      const activityHtml = isGenesis
-        ? `<div class="chain-block-activity"><span class="cb-icon">🌱</span><span class="cb-label">Genesis Block</span></div>`
-        : `<div class="chain-block-activity"><span class="cb-icon">${block.data.icon || '📝'}</span><span class="cb-label">${escapeHtml(block.data.label || '')}</span></div>`;
-
-      const linkHtml = i < blocks.length - 1 ? '<div class="chain-link">⛓️</div>' : '';
-
-      return `
-        <div class="chain-block">
-          <div class="chain-block-header">
-            <span class="chain-block-num">#${block.index}</span>
-            <span class="chain-block-time">${timeStr}</span>
-          </div>
-          ${activityHtml}
-          <div class="chain-block-meta">
-            <span>Hash:</span> ${block.hash.slice(0, 16)}...<br>
-            <span>Prev:</span> ${block.prevHash.slice(0, 16)}...<br>
-            <span>Nonce:</span> ${block.nonce}
-          </div>
-        </div>
-        ${linkHtml}
-      `;
-    }).join('');
   }
 
   function renderStats() {
@@ -501,22 +452,10 @@ const App = (() => {
     const topCat = Store.getTopCategory();
 
     container.innerHTML = `
-      <div class="stat-card">
-        <div class="stat-value">${total}</div>
-        <div class="stat-label">総コイン</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">${today}</div>
-        <div class="stat-label">今日の記録</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">${streak}日</div>
-        <div class="stat-label">連続記録</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">${topCat ? topCat.icon : '—'}</div>
-        <div class="stat-label">${topCat ? topCat.label : 'トップカテゴリ'}</div>
-      </div>
+      <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Coins</div></div>
+      <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">Today</div></div>
+      <div class="stat-card"><div class="stat-value">${streak}d</div><div class="stat-label">Streak</div></div>
+      <div class="stat-card"><div class="stat-value">${topCat ? topCat.icon : '—'}</div><div class="stat-label">${topCat ? topCat.label : 'Top'}</div></div>
     `;
   }
 
@@ -525,7 +464,7 @@ const App = (() => {
     const groups = Store.getRecordsByDate();
 
     if (groups.length === 0) {
-      container.innerHTML = '<div class="history-empty">まだ記録がありません。<br>活動をタップして記録しましょう！</div>';
+      container.innerHTML = '<div class="history-empty">No records yet.</div>';
       return;
     }
 
@@ -534,153 +473,226 @@ const App = (() => {
         const time = new Date(r.timestamp);
         const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
         const witnessHtml = r.witnessed
-          ? '<span class="hi-witnessed">👁️ 確認済</span>'
-          : `<button class="hi-witness" data-id="${r.id}" title="目撃確認">👁️</button>`;
+          ? '<span class="hi-witnessed">👁️ confirmed</span>'
+          : '';
         return `
           <div class="history-item">
             <span class="hi-icon">${r.icon}</span>
             <span class="hi-label">${escapeHtml(r.label)}</span>
             ${witnessHtml}
             <span class="hi-time">${timeStr}</span>
-            <button class="hi-delete" data-id="${r.id}" aria-label="削除">×</button>
+            <button class="hi-delete" data-id="${r.id}">×</button>
           </div>
         `;
       }).join('');
-
-      return `
-        <div class="history-date-group">
-          <div class="history-date">${group.date}</div>
-          ${items}
-        </div>
-      `;
+      return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
     }).join('');
 
-    // 削除ボタン（確認付き）
     container.querySelectorAll('.hi-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm('この記録を削除しますか？')) return;
-        Store.deleteRecord(btn.dataset.id);
+        if (!confirm('Delete this record?')) return;
+        await Store.deleteRecord(btn.dataset.id);
         renderHistory();
         updateHeaderCoins();
       });
     });
+  }
 
-    // 目撃ボタン
-    container.querySelectorAll('.hi-witness').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openWitnessModal(btn.dataset.id);
+  // --- Friends ---
+  function bindFriends() {
+    document.getElementById('btn-send-friend-request').addEventListener('click', async () => {
+      const input = document.getElementById('friend-code-input');
+      const code = input.value.trim().toUpperCase();
+      if (!code) return;
+
+      const res = await Store.sendFriendRequest(code);
+      if (res.error) {
+        showToastCustom(res.error);
+      } else {
+        showToastCustom(`Friend request sent to ${res.targetNickname}!`);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('friend-code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btn-send-friend-request').click();
+    });
+  }
+
+  async function loadAndRenderFriends() {
+    showLoadingOverlay('Loading friends...');
+    await Store.loadFriends();
+    hideLoadingOverlay();
+    renderFriends();
+  }
+
+  function renderFriends() {
+    renderFriendRequests();
+    renderFriendList();
+    renderFeed();
+
+    const profile = Store.getProfile();
+    if (profile) {
+      document.getElementById('my-friend-code').textContent = profile.friendCode;
+    }
+  }
+
+  function renderFriendRequests() {
+    const container = document.getElementById('friend-requests-list');
+    const requests = Store.getFriendRequests();
+
+    if (requests.length === 0) {
+      container.innerHTML = '';
+      document.getElementById('section-friend-requests').hidden = true;
+      return;
+    }
+
+    document.getElementById('section-friend-requests').hidden = false;
+    container.innerHTML = requests.map(r => `
+      <div class="friend-request-item">
+        <span class="fr-name">${escapeHtml(r.from_nickname)}</span>
+        <div class="fr-actions">
+          <button class="btn-accept" data-id="${r.id}">Accept</button>
+          <button class="btn-reject" data-id="${r.id}">Reject</button>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.btn-accept').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await Store.acceptFriendRequest(btn.dataset.id);
+        showToastCustom('Friend added!');
+        renderFriends();
+      });
+    });
+
+    container.querySelectorAll('.btn-reject').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        await Store.rejectFriendRequest(btn.dataset.id);
+        renderFriends();
       });
     });
   }
 
-  // --- 目撃確認 ---
-  function bindWitness() {
-    document.getElementById('btn-witness-cancel').addEventListener('click', () => {
-      document.getElementById('witness-overlay').hidden = true;
-    });
+  function renderFriendList() {
+    const container = document.getElementById('friend-list');
+    const friends = Store.getFriends();
 
-    document.getElementById('btn-witness-confirm').addEventListener('click', () => {
-      const recordId = document.getElementById('witness-overlay').dataset.recordId;
-      const input = document.getElementById('witness-code-input');
-      const expected = Store.getWitnessCode(recordId);
-      const errorEl = document.getElementById('witness-error');
+    if (friends.length === 0) {
+      container.innerHTML = '<div class="history-empty">No friends yet. Share your code!</div>';
+      return;
+    }
 
-      if (input.value === expected) {
-        Store.setWitnessed(recordId);
-        document.getElementById('witness-overlay').hidden = true;
-        showToastCustom('👁️ 目撃確認！ +1 ボーナスコイン');
-        if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
-        updateHeaderCoins();
-        if (currentScreen === 'screen-history') renderHistoryList();
-      } else {
-        errorEl.hidden = false;
-        input.value = '';
-        input.focus();
-      }
-    });
+    container.innerHTML = friends.map(f => `
+      <div class="friend-item">
+        <span class="fi-name">${escapeHtml(f.nickname)}</span>
+        <button class="fi-remove" data-id="${f.id}" title="Remove">×</button>
+      </div>
+    `).join('');
 
-    // Enterキーでも確認
-    document.getElementById('witness-code-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('btn-witness-confirm').click();
-      }
+    container.querySelectorAll('.fi-remove').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Remove this friend?')) return;
+        await Store.removeFriend(btn.dataset.id);
+        renderFriends();
+      });
     });
   }
 
-  function openWitnessModal(recordId) {
-    const overlay = document.getElementById('witness-overlay');
-    const records = Store.getRecords();
-    const record = records.find(r => r.id === recordId);
-    if (!record) return;
+  function renderFeed() {
+    const container = document.getElementById('feed-list');
+    const feed = Store.getFeed();
 
-    overlay.dataset.recordId = recordId;
-    document.getElementById('witness-activity-label').textContent = record.icon + ' ' + record.label;
-    document.getElementById('witness-code-display').textContent = Store.getWitnessCode(recordId);
-    document.getElementById('witness-code-input').value = '';
-    document.getElementById('witness-error').hidden = true;
-    overlay.hidden = false;
+    if (feed.length === 0) {
+      container.innerHTML = '<div class="history-empty">No activity from friends yet.</div>';
+      return;
+    }
 
-    setTimeout(() => document.getElementById('witness-code-input').focus(), 100);
+    container.innerHTML = feed.map(item => {
+      const time = formatTime(item.timestamp);
+      const actLabel = item.label
+        ? `${item.icon || '🪙'} ${escapeHtml(item.label)}`
+        : '🪙 Activity recorded';
+      const witnessBtn = item.witnessed
+        ? '<span class="feed-witnessed">👁️ confirmed</span>'
+        : `<button class="feed-witness-btn" data-id="${item.id}">👁️ Confirm</button>`;
+
+      return `
+        <div class="feed-item">
+          <div class="feed-header">
+            <span class="feed-name">${escapeHtml(item.nickname)}</span>
+            <span class="feed-time">${time}</span>
+          </div>
+          <div class="feed-body">
+            <span class="feed-activity">${actLabel}</span>
+            ${witnessBtn}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.feed-witness-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ok = await Store.witnessRecord(btn.dataset.id);
+        if (ok) {
+          showToastCustom('👁️ Witnessed! +1 bonus coin for them');
+          btn.replaceWith(Object.assign(document.createElement('span'), {
+            className: 'feed-witnessed', textContent: '👁️ confirmed'
+          }));
+        }
+      });
+    });
   }
 
-  // --- 交換画面 ---
+  // --- Exchange ---
   function bindExchange() {
-    document.getElementById('btn-add-reward').addEventListener('click', () => {
+    document.getElementById('btn-add-reward').addEventListener('click', async () => {
       const nameInput = document.getElementById('reward-name-input');
       const costInput = document.getElementById('reward-cost-input');
       const name = nameInput.value.trim();
       const cost = parseInt(costInput.value);
-
       if (!name || !cost || cost < 1) return;
 
-      Store.addReward(name, cost);
-      nameInput.value = '';
-      costInput.value = '';
+      await Store.addReward(name, cost);
+      nameInput.value = ''; costInput.value = '';
       renderExchange();
     });
   }
 
   function renderExchange() {
-    // 残高
     document.getElementById('exchange-balance').textContent = Store.getBalance();
 
-    // バッジ
     const badgeList = document.getElementById('badge-list');
-    const badges = Store.getAllBadges();
-    badgeList.innerHTML = badges.map(b => `
+    badgeList.innerHTML = Store.getAllBadges().map(b => `
       <div class="badge-card ${b.unlocked ? '' : 'locked'}">
         <span class="badge-icon">${b.icon}</span>
         <span class="badge-label">${b.label}</span>
-        <span class="badge-coins">${b.coins} コイン</span>
+        <span class="badge-coins">${b.coins} coin</span>
       </div>
     `).join('');
 
-    // ご褒美
     const rewardList = document.getElementById('reward-list');
     const rewards = Store.getRewards();
     const balance = Store.getBalance();
 
     if (rewards.length === 0) {
-      rewardList.innerHTML = '<div class="reward-empty">ご褒美を追加しましょう！<br>「50コインでカフェ」「100コインで映画」など</div>';
+      rewardList.innerHTML = '<div class="reward-empty">Add rewards!</div>';
     } else {
       rewardList.innerHTML = rewards.map(r => `
         <div class="reward-item">
           <span class="rw-label">${escapeHtml(r.label)}</span>
           <span class="rw-cost">🪙 ${r.cost}</span>
-          <button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>交換</button>
-          <button class="rw-del" data-id="${r.id}" aria-label="削除">×</button>
+          <button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>Exchange</button>
+          <button class="rw-del" data-id="${r.id}">×</button>
         </div>
       `).join('');
 
-      // 交換ボタン
       rewardList.querySelectorAll('.rw-use').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const cost = parseInt(btn.dataset.cost);
-          if (confirm(`${cost} コインを使って交換しますか？`)) {
-            if (Store.spendCoins(cost)) {
-              showToastCustom('🎉 ご褒美と交換しました！');
+        btn.addEventListener('click', async () => {
+          if (confirm(`Spend ${btn.dataset.cost} coins?`)) {
+            if (await Store.spendCoins(btn.dataset.id)) {
+              showToastCustom('🎉 Exchanged!');
               if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
               renderExchange();
               updateHeaderCoins();
@@ -689,11 +701,10 @@ const App = (() => {
         });
       });
 
-      // 削除ボタン
       rewardList.querySelectorAll('.rw-del').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (confirm('このご褒美を削除しますか？')) {
-            Store.deleteReward(btn.dataset.id);
+        btn.addEventListener('click', async () => {
+          if (confirm('Delete this reward?')) {
+            await Store.deleteReward(btn.dataset.id);
             renderExchange();
           }
         });
@@ -701,7 +712,26 @@ const App = (() => {
     }
   }
 
-  // --- 設定 ---
+  // --- Profile ---
+  function renderProfile() {
+    const profile = Store.getProfile();
+    if (!profile) return;
+
+    document.getElementById('profile-nickname').textContent = profile.nickname;
+    document.getElementById('profile-friend-code').textContent = profile.friendCode;
+    document.getElementById('profile-total-coins').textContent = profile.totalCoins;
+    document.getElementById('profile-witness-bonus').textContent = profile.witnessBonus;
+    document.getElementById('profile-friends-count').textContent = profile.friendCount;
+    document.getElementById('profile-created').textContent = new Date(profile.createdAt).toLocaleDateString('ja-JP');
+
+    const visSelect = document.getElementById('profile-visibility');
+    visSelect.value = profile.feedVisibility;
+    visSelect.onchange = async () => {
+      await API.updateProfile({ feedVisibility: visSelect.value });
+    };
+  }
+
+  // --- Settings ---
   function bindSettings() {
     document.getElementById('btn-export').addEventListener('click', () => {
       const data = Store.exportData();
@@ -714,28 +744,20 @@ const App = (() => {
       URL.revokeObjectURL(url);
     });
 
-    document.getElementById('btn-clear-data').addEventListener('click', () => {
-      if (confirm('全ての記録データを削除しますか？この操作は元に戻せません。')) {
-        Store.clearAll();
-        updateHeaderCoins();
-        if (currentScreen === 'screen-history') renderHistory();
-        if (currentScreen === 'screen-home') renderHome();
-        showToastCustom('データを削除しました');
-      }
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      if (confirm('Logout?')) API.logout();
     });
   }
 
-  // --- ユーティリティ ---
+  // --- Utilities ---
   function formatTime(timestamp) {
     const d = new Date(timestamp);
     const now = new Date();
-    const diffMs = now - d;
-    const diffMin = Math.floor(diffMs / 60000);
-
-    if (diffMin < 1) return 'たった今';
-    if (diffMin < 60) return `${diffMin}分前`;
+    const diffMin = Math.floor((now - d) / 60000);
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
     const diffHour = Math.floor(diffMin / 60);
-    if (diffHour < 24) return `${diffHour}時間前`;
+    if (diffHour < 24) return `${diffHour}h ago`;
     return `${d.getMonth() + 1}/${d.getDate()}`;
   }
 
@@ -752,5 +774,4 @@ const App = (() => {
   return { init };
 })();
 
-// 起動
 document.addEventListener('DOMContentLoaded', () => App.init());

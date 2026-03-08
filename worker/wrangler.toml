@@ -1,0 +1,8 @@
+name = "rehacoin-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rehacoin-db"
+database_id = "8ee95dfc-614a-4d77-b326-333bbd7afcf1"
