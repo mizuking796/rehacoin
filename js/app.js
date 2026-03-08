@@ -267,6 +267,13 @@ const App = (() => {
     updateHeaderCoins();
   }
 
+  const REACTIONS = [
+    { type: 'like', emoji: '👍', label: 'いいね！', labelEn: 'Like' },
+    { type: 'cheer', emoji: '💪', label: '頑張ったね！', labelEn: 'Great job!' },
+    { type: 'empathy', emoji: '🤝', label: 'わかるよ！', labelEn: 'I get you!' },
+    { type: 'amazing', emoji: '👏', label: 'すごい！', labelEn: 'Amazing!' },
+  ];
+
   function renderHomeFeed() {
     const section = document.getElementById('section-home-feed');
     const list = document.getElementById('home-feed-list');
@@ -274,58 +281,167 @@ const App = (() => {
     if (feed.length === 0) { section.hidden = true; return; }
     section.hidden = false;
     const items = feed.slice(0, 10);
-    list.innerHTML = items.map(item => {
-      const time = formatTime(item.timestamp);
-      const initial = item.nickname.charAt(0).toUpperCase();
-      const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
-      const witnessBtn = item.witnessed
-        ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
-        : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
-      const cheerCount = item.cheerCount || 0;
-      const cheeredClass = item.cheeredByMe ? 'cheered' : '';
-      const cheerBtn = `<button class="feed-cheer-btn ${cheeredClass}" data-id="${item.id}">💪 ${cheerCount > 0 ? cheerCount : ''}</button>`;
-      return `
-      <div class="home-feed-card">
-        <div class="home-feed-avatar">${initial}</div>
-        <div class="home-feed-content">
-          <div class="home-feed-header"><span class="home-feed-name">${escapeHtml(item.nickname)}</span><span class="home-feed-time">${time}</span></div>
-          <div class="home-feed-body"><span class="home-feed-activity">${actLabel}</span></div>
-          <div class="home-feed-actions">${cheerBtn}${witnessBtn}</div>
-        </div>
-      </div>`;
-    }).join('');
+    list.innerHTML = items.map(item => renderFeedCard(item, 'home')).join('');
     bindFeedActions(list);
   }
 
+  function renderFeedCard(item, context) {
+    const time = formatTime(item.timestamp);
+    const initial = item.nickname.charAt(0).toUpperCase();
+    const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
+
+    // Reaction summary (show icons of reactions received)
+    const reactions = item.reactions || {};
+    const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
+    let reactionSummaryHtml = '';
+    if (totalReactions > 0) {
+      const icons = REACTIONS.filter(r => reactions[r.type] > 0).map(r => r.emoji).join('');
+      reactionSummaryHtml = `<div class="reaction-summary">${icons} <span class="reaction-count">${totalReactions}</span></div>`;
+    }
+
+    // My reaction indicator
+    const myReaction = item.myReaction;
+    const myReactionData = myReaction ? REACTIONS.find(r => r.type === myReaction) : null;
+    const myReactionLabel = myReactionData
+      ? `<span class="my-reaction-label" style="color:var(--accent)">${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}</span>`
+      : '';
+
+    // Reaction picker trigger
+    const pickerBtnClass = context === 'home' ? 'home-feed' : 'feed';
+    const reactionBar = `
+      <div class="reaction-bar" data-id="${item.id}">
+        ${reactionSummaryHtml}
+        <div class="reaction-buttons">
+          <button class="reaction-trigger ${myReaction ? 'reacted' : ''}" data-id="${item.id}">${myReaction ? myReactionLabel : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`}</button>
+        </div>
+        <div class="reaction-picker" hidden>
+          ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
+        </div>
+      </div>`;
+
+    const cardClass = context === 'home' ? 'home-feed-card' : 'feed-item';
+    const avatarClass = context === 'home' ? 'home-feed-avatar' : 'feed-avatar';
+    const contentClass = context === 'home' ? 'home-feed-content' : 'feed-content';
+
+    return `
+    <div class="${cardClass}">
+      <div class="${avatarClass}">${initial}</div>
+      <div class="${contentClass}">
+        <div class="${context === 'home' ? 'home-feed-header' : 'feed-header'}"><span class="${context === 'home' ? 'home-feed-name' : 'feed-name'}">${escapeHtml(item.nickname)}</span><span class="${context === 'home' ? 'home-feed-time' : 'feed-time'}">${time}</span></div>
+        <div class="${context === 'home' ? 'home-feed-body' : 'feed-body'}"><span class="${context === 'home' ? 'home-feed-activity' : 'feed-activity'}">${actLabel}</span></div>
+        ${reactionBar}
+      </div>
+    </div>`;
+  }
+
   function bindFeedActions(container) {
-    container.querySelectorAll('.feed-witness-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const ok = await Store.witnessRecord(btn.dataset.id);
-        if (ok) {
-          showToast(`${I18n.t('witnessConfirm')} ${I18n.t('witnessBonus')}`);
-          btn.replaceWith(Object.assign(document.createElement('span'), {
-            className: 'feed-witnessed', textContent: `👁️ ${I18n.t('confirmed')}`
-          }));
+    // Reaction trigger (quick tap = like, long press = show picker)
+    container.querySelectorAll('.reaction-trigger').forEach(btn => {
+      let longPressTimer;
+      const showPicker = () => {
+        const picker = btn.closest('.reaction-bar').querySelector('.reaction-picker');
+        picker.hidden = !picker.hidden;
+        if (!picker.hidden) {
+          picker.classList.add('picker-animate');
+          setTimeout(() => picker.classList.remove('picker-animate'), 300);
         }
+      };
+
+      btn.addEventListener('mousedown', () => { longPressTimer = setTimeout(showPicker, 400); });
+      btn.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+      btn.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
+      btn.addEventListener('touchstart', (e) => { longPressTimer = setTimeout(() => { showPicker(); e.preventDefault(); }, 400); }, { passive: false });
+      btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
+
+      btn.addEventListener('click', async (e) => {
+        // Quick tap = toggle like (or toggle current reaction off)
+        const recordId = btn.dataset.id;
+        const item = Store.getFeed().find(f => f.id === recordId);
+        const currentType = item?.myReaction || 'like';
+        await sendReaction(recordId, currentType, btn, container);
       });
     });
-    container.querySelectorAll('.feed-cheer-btn').forEach(btn => {
+
+    // Reaction picker options
+    container.querySelectorAll('.reaction-option').forEach(btn => {
       btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        const res = await Store.cheerRecord(btn.dataset.id);
-        btn.disabled = false;
-        if (res.ok) {
-          const item = Store.getFeed().find(f => f.id === btn.dataset.id);
-          const count = item ? item.cheerCount : 0;
-          btn.className = `feed-cheer-btn ${res.cheered ? 'cheered' : ''}`;
-          btn.textContent = `💪 ${count > 0 ? count : ''}`;
-          if (res.cheered) {
-            showToast(I18n.t('cheerSent'));
-            if (navigator.vibrate) navigator.vibrate(50);
-          }
-        }
+        const recordId = btn.dataset.id;
+        const type = btn.dataset.type;
+        const picker = btn.closest('.reaction-picker');
+        picker.hidden = true;
+
+        // Animate the selected emoji
+        btn.classList.add('reaction-pop');
+        setTimeout(() => btn.classList.remove('reaction-pop'), 500);
+
+        const trigger = btn.closest('.reaction-bar').querySelector('.reaction-trigger');
+        await sendReaction(recordId, type, trigger, container);
       });
     });
+  }
+
+  async function sendReaction(recordId, type, triggerBtn, container) {
+    triggerBtn.disabled = true;
+    const res = await Store.cheerRecord(recordId, type);
+    triggerBtn.disabled = false;
+    if (res.ok) {
+      // Re-render just this card's reaction bar
+      const item = Store.getFeed().find(f => f.id === recordId);
+      if (item) {
+        const bar = container.querySelector(`.reaction-bar[data-id="${recordId}"]`);
+        if (bar) {
+          const newBar = document.createElement('div');
+          newBar.innerHTML = renderReactionBar(item);
+          bar.replaceWith(newBar.firstElementChild);
+          bindFeedActions(newBar.parentElement || container);
+        }
+      }
+      if (res.reacted) {
+        const rd = REACTIONS.find(r => r.type === type);
+        showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        // Float animation
+        showFloatingEmoji(rd.emoji, triggerBtn);
+      }
+    }
+  }
+
+  function renderReactionBar(item) {
+    const reactions = item.reactions || {};
+    const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
+    let reactionSummaryHtml = '';
+    if (totalReactions > 0) {
+      const icons = REACTIONS.filter(r => reactions[r.type] > 0).map(r => r.emoji).join('');
+      reactionSummaryHtml = `<div class="reaction-summary">${icons} <span class="reaction-count">${totalReactions}</span></div>`;
+    }
+    const myReaction = item.myReaction;
+    const myReactionData = myReaction ? REACTIONS.find(r => r.type === myReaction) : null;
+    const myReactionLabel = myReactionData
+      ? `<span class="my-reaction-label" style="color:var(--accent)">${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}</span>`
+      : '';
+
+    return `
+    <div class="reaction-bar" data-id="${item.id}">
+      ${reactionSummaryHtml}
+      <div class="reaction-buttons">
+        <button class="reaction-trigger ${myReaction ? 'reacted' : ''}" data-id="${item.id}">${myReaction ? myReactionLabel : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`}</button>
+      </div>
+      <div class="reaction-picker" hidden>
+        ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  function showFloatingEmoji(emoji, anchorEl) {
+    const el = document.createElement('div');
+    el.className = 'floating-emoji';
+    el.textContent = emoji;
+    const rect = anchorEl.getBoundingClientRect();
+    el.style.left = rect.left + rect.width / 2 + 'px';
+    el.style.top = rect.top + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
   }
 
   function renderCategoryGrid() {
@@ -740,26 +856,7 @@ const App = (() => {
     const container = document.getElementById('feed-list');
     const feed = Store.getFeed();
     if (feed.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFeed')}</div>`; return; }
-    container.innerHTML = feed.map(item => {
-      const time = formatTime(item.timestamp);
-      const initial = item.nickname.charAt(0).toUpperCase();
-      const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
-      const witnessBtn = item.witnessed
-        ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
-        : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
-      const cheerCount = item.cheerCount || 0;
-      const cheeredClass = item.cheeredByMe ? 'cheered' : '';
-      const cheerBtn = `<button class="feed-cheer-btn ${cheeredClass}" data-id="${item.id}">💪 ${cheerCount > 0 ? cheerCount : ''}</button>`;
-      return `
-      <div class="feed-item">
-        <div class="feed-avatar">${initial}</div>
-        <div class="feed-content">
-          <div class="feed-header"><span class="feed-name">${escapeHtml(item.nickname)}</span><span class="feed-time">${time}</span></div>
-          <div class="feed-body"><span class="feed-activity">${actLabel}</span></div>
-          <div class="feed-actions">${cheerBtn}${witnessBtn}</div>
-        </div>
-      </div>`;
-    }).join('');
+    container.innerHTML = feed.map(item => renderFeedCard(item, 'friends')).join('');
     bindFeedActions(container);
   }
 
@@ -885,8 +982,9 @@ const App = (() => {
         const oldFeed = Store.getFeed();
         const newFeed = feedRes.feed || [];
         // Update store's internal feed
-        if (JSON.stringify(oldFeed.map(f=>f.id)) !== JSON.stringify(newFeed.map(f=>f.id)) ||
-            JSON.stringify(oldFeed.map(f=>f.cheerCount)) !== JSON.stringify(newFeed.map(f=>f.cheerCount))) {
+        const oldSig = JSON.stringify(oldFeed.map(f => f.id + JSON.stringify(f.reactions || {}) + (f.myReaction || '')));
+        const newSig = JSON.stringify(newFeed.map(f => f.id + JSON.stringify(f.reactions || {}) + (f.myReaction || '')));
+        if (oldSig !== newSig) {
           Store._updateFeed(newFeed);
           if (currentScreen === 'screen-home') renderHomeFeed();
           else if (currentScreen === 'screen-friends') renderFeed();

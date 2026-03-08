@@ -142,10 +142,10 @@ export default {
         return json(await witnessRecord(env, user, id), headers);
       }
 
-      // Cheer
+      // Cheer (Reactions)
       if (path.match(/^\/records\/[^/]+\/cheer$/) && method === 'POST') {
         const id = path.split('/')[2];
-        return json(await cheerRecord(env, user, id), headers);
+        return json(await cheerRecord(env, user, id, await request.json()), headers);
       }
 
       return json({ error: 'Not Found' }, headers, 404);
@@ -644,25 +644,26 @@ async function getFeed(env, user) {
     ORDER BY r.timestamp DESC LIMIT 50
   `).bind(...friendIds, sevenDaysAgo).all();
 
-  // Get cheer data for all feed records
+  // Get reaction data for all feed records
   const recordIds = rows.results.map(r => r.id);
-  let cheerCounts = {};
-  let userCheers = new Set();
+  let reactionsMap = {};  // recordId -> { like: N, cheer: N, ... }
+  let userReactions = {}; // recordId -> type
 
   if (recordIds.length > 0) {
-    const cheerPlaceholders = recordIds.map(() => '?').join(',');
+    const ph = recordIds.map(() => '?').join(',');
     const cheerRows = await env.DB.prepare(
-      `SELECT record_id, COUNT(*) as cnt FROM cheers WHERE record_id IN (${cheerPlaceholders}) GROUP BY record_id`
+      `SELECT record_id, type, COUNT(*) as cnt FROM cheers WHERE record_id IN (${ph}) GROUP BY record_id, type`
     ).bind(...recordIds).all();
     for (const row of cheerRows.results) {
-      cheerCounts[row.record_id] = row.cnt;
+      if (!reactionsMap[row.record_id]) reactionsMap[row.record_id] = {};
+      reactionsMap[row.record_id][row.type || 'like'] = row.cnt;
     }
 
     const userCheerRows = await env.DB.prepare(
-      `SELECT record_id FROM cheers WHERE from_user_id = ? AND record_id IN (${cheerPlaceholders})`
+      `SELECT record_id, type FROM cheers WHERE from_user_id = ? AND record_id IN (${ph})`
     ).bind(user.id, ...recordIds).all();
     for (const row of userCheerRows.results) {
-      userCheers.add(row.record_id);
+      userReactions[row.record_id] = row.type || 'like';
     }
   }
 
@@ -674,9 +675,8 @@ async function getFeed(env, user) {
     icon: r.feed_visibility === 'activity_name' ? r.icon : null,
     categoryCode: r.category_code,
     witnessed: !!r.witnessed,
-    witnessedBy: r.witnessed_by,
-    cheerCount: cheerCounts[r.id] || 0,
-    cheeredByMe: userCheers.has(r.id),
+    reactions: reactionsMap[r.id] || {},
+    myReaction: userReactions[r.id] || null,
     timestamp: r.timestamp,
   }));
 
@@ -700,28 +700,48 @@ async function witnessRecord(env, user, recordId) {
   return { ok: true };
 }
 
-// --- Cheer ---
+// --- Cheer (Reactions) ---
+const REACTION_TYPES = ['like', 'cheer', 'empathy', 'amazing'];
+
 async function cheerRecord(env, user, recordId) {
+  const body = arguments[3] || {};
+  const type = REACTION_TYPES.includes(body.type) ? body.type : 'like';
+
   const rec = await env.DB.prepare('SELECT * FROM records WHERE id = ?').bind(recordId).first();
   if (!rec) return { error: 'Record not found' };
-  if (rec.user_id === user.id) return { error: 'Cannot cheer your own record' };
+  if (rec.user_id === user.id) return { error: 'Cannot react to your own record' };
 
   const friendship = await env.DB.prepare('SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?').bind(user.id, rec.user_id).first();
-  if (!friendship) return { error: 'You must be friends to cheer' };
+  if (!friendship) return { error: 'You must be friends to react' };
 
-  // Toggle: if already cheered, remove it
-  const existing = await env.DB.prepare('SELECT id FROM cheers WHERE from_user_id = ? AND record_id = ?').bind(user.id, recordId).first();
+  // Check existing reaction from this user
+  const existing = await env.DB.prepare('SELECT id, type FROM cheers WHERE from_user_id = ? AND record_id = ?').bind(user.id, recordId).first();
+
   if (existing) {
-    await env.DB.prepare('DELETE FROM cheers WHERE id = ?').bind(existing.id).run();
-    return { ok: true, cheered: false };
+    if (existing.type === type) {
+      // Same type: toggle off
+      await env.DB.prepare('DELETE FROM cheers WHERE id = ?').bind(existing.id).run();
+      return { ok: true, reacted: false, type };
+    } else {
+      // Different type: update
+      await env.DB.prepare('UPDATE cheers SET type = ?, created_at = ? WHERE id = ?').bind(type, Date.now(), existing.id).run();
+    }
+  } else {
+    // New reaction
+    const id = genId('ch_');
+    await env.DB.prepare(
+      'INSERT INTO cheers (id, from_user_id, record_id, type, created_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(id, user.id, recordId, type, Date.now()).run();
   }
 
-  const id = genId('ch_');
-  await env.DB.prepare(
-    'INSERT INTO cheers (id, from_user_id, record_id, created_at) VALUES (?, ?, ?, ?)'
-  ).bind(id, user.id, recordId, Date.now()).run();
+  // Any reaction = witness (mark as witnessed, both get coins)
+  if (!rec.witnessed) {
+    await env.DB.prepare(
+      'UPDATE records SET witnessed = 1, witnessed_by = ?, witnessed_at = ? WHERE id = ?'
+    ).bind(user.id, Date.now(), recordId).run();
+  }
 
-  return { ok: true, cheered: true };
+  return { ok: true, reacted: true, type };
 }
 
 // --- Admin Functions ---

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rehacoin-v17';
+const CACHE_NAME = 'rehacoin-v18';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,8 @@ const ASSETS = [
   './js/app.js',
   './categories.json',
   './activities.json',
-  './manifest.json'
+  './manifest.json',
+  './privacy.html'
 ];
 
 // インストール: アセットをキャッシュ

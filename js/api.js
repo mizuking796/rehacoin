@@ -157,9 +157,9 @@ const API = (() => {
     return request(`/records/${recordId}/witness`, 'POST');
   }
 
-  // --- Cheer ---
-  async function cheerRecord(recordId) {
-    return request(`/records/${recordId}/cheer`, 'POST');
+  // --- Reactions ---
+  async function cheerRecord(recordId, type = 'like') {
+    return request(`/records/${recordId}/cheer`, 'POST', { type });
   }
 
   return {

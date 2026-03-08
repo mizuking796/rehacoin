@@ -214,19 +214,25 @@ const Store = (() => {
     return res.ok || false;
   }
 
-  // --- Cheer ---
-  async function cheerRecord(recordId) {
-    const res = await API.cheerRecord(recordId);
+  // --- Reactions ---
+  async function cheerRecord(recordId, type = 'like') {
+    const res = await API.cheerRecord(recordId, type);
     if (res.ok) {
-      // Update feed item locally
       const item = _feed.find(f => f.id === recordId);
       if (item) {
-        if (res.cheered) {
-          item.cheerCount = (item.cheerCount || 0) + 1;
-          item.cheeredByMe = true;
+        if (!item.reactions) item.reactions = {};
+        if (res.reacted) {
+          // Remove old reaction if switching types
+          if (item.myReaction && item.myReaction !== type) {
+            item.reactions[item.myReaction] = Math.max(0, (item.reactions[item.myReaction] || 0) - 1);
+          }
+          item.reactions[type] = (item.reactions[type] || 0) + (item.myReaction === type ? 0 : 1);
+          item.myReaction = type;
+          item.witnessed = true;
         } else {
-          item.cheerCount = Math.max(0, (item.cheerCount || 0) - 1);
-          item.cheeredByMe = false;
+          // Toggled off
+          item.reactions[type] = Math.max(0, (item.reactions[type] || 0) - 1);
+          item.myReaction = null;
         }
       }
     }
