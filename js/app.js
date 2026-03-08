@@ -256,10 +256,47 @@ const App = (() => {
 
   // --- Home ---
   function renderHome() {
+    renderHomeFeed();
     renderRecentRecords();
     renderFavorites();
     renderCategoryGrid();
     updateHeaderCoins();
+  }
+
+  function renderHomeFeed() {
+    const section = document.getElementById('section-home-feed');
+    const list = document.getElementById('home-feed-list');
+    const feed = Store.getFeed();
+    if (feed.length === 0) { section.hidden = true; return; }
+    section.hidden = false;
+    const items = feed.slice(0, 10);
+    list.innerHTML = items.map(item => {
+      const time = formatTime(item.timestamp);
+      const initial = item.nickname.charAt(0).toUpperCase();
+      const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
+      const witnessBtn = item.witnessed
+        ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
+        : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
+      return `
+      <div class="home-feed-card">
+        <div class="home-feed-avatar">${initial}</div>
+        <div class="home-feed-content">
+          <div class="home-feed-header"><span class="home-feed-name">${escapeHtml(item.nickname)}</span><span class="home-feed-time">${time}</span></div>
+          <div class="home-feed-body"><span class="home-feed-activity">${actLabel}</span>${witnessBtn}</div>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.feed-witness-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ok = await Store.witnessRecord(btn.dataset.id);
+        if (ok) {
+          showToast(`${I18n.t('witnessConfirm')} ${I18n.t('witnessBonus')}`);
+          btn.replaceWith(Object.assign(document.createElement('span'), {
+            className: 'feed-witnessed', textContent: `👁️ ${I18n.t('confirmed')}`
+          }));
+        }
+      });
+    });
   }
 
   function renderCategoryGrid() {
