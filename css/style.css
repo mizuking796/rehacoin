@@ -863,12 +863,34 @@ body {
 
 .mining-icon {
   font-size: 3rem;
-  animation: miningBounce 0.6s ease infinite alternate;
+  animation: coinPop 0.6s ease infinite alternate;
 }
 
-@keyframes miningBounce {
-  from { transform: translateY(0) rotate(-10deg); }
-  to { transform: translateY(-8px) rotate(10deg); }
+@keyframes coinPop {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-8px) scale(1.15); }
+}
+
+/* Coin rain container */
+.coin-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.coin-drop {
+  position: absolute;
+  top: -40px;
+  font-size: 1.6rem;
+  animation: coinFall linear forwards;
+  opacity: 0.9;
+}
+
+@keyframes coinFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
 .mining-title {

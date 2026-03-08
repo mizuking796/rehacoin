@@ -648,10 +648,12 @@ const App = (() => {
   }
 
   // --- Mining overlay ---
+  let _coinRainInterval;
   function showMiningOverlay() {
     document.getElementById('mining-nonce-val').textContent = '0';
     document.getElementById('mining-hash-val').textContent = I18n.t('hashComputing');
     document.getElementById('mining-overlay').hidden = false;
+    startCoinRain();
   }
   function updateMiningOverlay(nonce, hash) {
     document.getElementById('mining-nonce-val').textContent = nonce.toLocaleString();
@@ -659,6 +661,25 @@ const App = (() => {
   }
   function hideMiningOverlay() {
     document.getElementById('mining-overlay').hidden = true;
+    stopCoinRain();
+  }
+  function startCoinRain() {
+    const container = document.getElementById('coin-rain');
+    container.innerHTML = '';
+    const coins = ['🪙', '💰', '✨', '🪙', '🪙'];
+    _coinRainInterval = setInterval(() => {
+      const coin = document.createElement('div');
+      coin.className = 'coin-drop';
+      coin.textContent = coins[Math.floor(Math.random() * coins.length)];
+      coin.style.left = Math.random() * 100 + '%';
+      coin.style.animationDuration = (1.2 + Math.random() * 1.0) + 's';
+      coin.style.fontSize = (1.2 + Math.random() * 0.8) + 'rem';
+      container.appendChild(coin);
+      coin.addEventListener('animationend', () => coin.remove());
+    }, 80);
+  }
+  function stopCoinRain() {
+    clearInterval(_coinRainInterval);
   }
 
   // --- Toast ---
