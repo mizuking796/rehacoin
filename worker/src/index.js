@@ -105,6 +105,11 @@ export default {
         return json(await exchangeReward(env, user, id), headers);
       }
 
+      // User search
+      if (path === '/users/search' && method === 'GET') {
+        return json(await searchUsers(env, user, url), headers);
+      }
+
       // Friends
       if (path === '/friends' && method === 'GET') {
         return json(await getFriends(env, user), headers);
@@ -503,12 +508,49 @@ async function getFriends(env, user) {
   return { friends: rows.results };
 }
 
-async function sendFriendRequest(env, user, body) {
-  const { friendCode } = body;
-  if (!friendCode) return { error: 'friendCode is required' };
+async function searchUsers(env, user, url) {
+  const q = (url.searchParams.get('q') || '').trim();
+  if (!q || q.length < 1) return { users: [] };
 
-  const target = await env.DB.prepare('SELECT id, nickname FROM users WHERE friend_code = ?').bind(friendCode.toUpperCase()).first();
-  if (!target) return { error: 'User not found with this code' };
+  const results = await env.DB.prepare(
+    `SELECT id, nickname, friend_code FROM users WHERE nickname LIKE ? AND id != ? LIMIT 20`
+  ).bind(`%${q}%`, user.id).all();
+
+  // Mark existing friends and pending requests
+  const friendIds = new Set();
+  const pendingSentIds = new Set();
+  const pendingRecvIds = new Set();
+
+  const friends = await env.DB.prepare('SELECT friend_id FROM friends WHERE user_id = ?').bind(user.id).all();
+  friends.results.forEach(f => friendIds.add(f.friend_id));
+
+  const sentReqs = await env.DB.prepare("SELECT to_user_id FROM friend_requests WHERE from_user_id = ? AND status = 'pending'").bind(user.id).all();
+  sentReqs.results.forEach(r => pendingSentIds.add(r.to_user_id));
+
+  const recvReqs = await env.DB.prepare("SELECT from_user_id FROM friend_requests WHERE to_user_id = ? AND status = 'pending'").bind(user.id).all();
+  recvReqs.results.forEach(r => pendingRecvIds.add(r.from_user_id));
+
+  return {
+    users: results.results.map(u => ({
+      id: u.id,
+      nickname: u.nickname,
+      friendCode: u.friend_code,
+      status: friendIds.has(u.id) ? 'friend' : pendingSentIds.has(u.id) ? 'pending_sent' : pendingRecvIds.has(u.id) ? 'pending_received' : 'none',
+    }))
+  };
+}
+
+async function sendFriendRequest(env, user, body) {
+  const { friendCode, userId } = body;
+  if (!friendCode && !userId) return { error: 'friendCode or userId is required' };
+
+  let target;
+  if (userId) {
+    target = await env.DB.prepare('SELECT id, nickname FROM users WHERE id = ?').bind(userId).first();
+  } else {
+    target = await env.DB.prepare('SELECT id, nickname FROM users WHERE friend_code = ?').bind(friendCode.toUpperCase()).first();
+  }
+  if (!target) return { error: 'User not found' };
   if (target.id === user.id) return { error: 'Cannot add yourself' };
 
   const existing = await env.DB.prepare('SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?').bind(user.id, target.id).first();

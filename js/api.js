@@ -124,8 +124,16 @@ const API = (() => {
     return request('/friends/feed');
   }
 
+  async function searchUsers(query) {
+    return request('/users/search?q=' + encodeURIComponent(query));
+  }
+
   async function sendFriendRequest(friendCode) {
     return request('/friends/request', 'POST', { friendCode });
+  }
+
+  async function sendFriendRequestById(userId) {
+    return request('/friends/request', 'POST', { userId });
   }
 
   async function getFriendRequests() {
@@ -155,7 +163,7 @@ const API = (() => {
     getProfile, updateProfile,
     getRecords, addRecord, deleteRecord,
     getRewards, addReward, deleteReward, exchangeReward,
-    getFriends, getFeed, sendFriendRequest,
+    getFriends, getFeed, searchUsers, sendFriendRequest, sendFriendRequestById,
     getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
     witnessRecord
   };

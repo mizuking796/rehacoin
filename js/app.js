@@ -496,6 +496,7 @@ const App = (() => {
 
   // --- Friends ---
   function bindFriends() {
+    // Friend code request
     document.getElementById('btn-send-friend-request').addEventListener('click', async () => {
       const input = document.getElementById('friend-code-input');
       const code = input.value.trim().toUpperCase();
@@ -506,6 +507,50 @@ const App = (() => {
     });
     document.getElementById('friend-code-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('btn-send-friend-request').click();
+    });
+
+    // User nickname search
+    let userSearchTimer;
+    document.getElementById('user-search-input').addEventListener('input', (e) => {
+      clearTimeout(userSearchTimer);
+      const q = e.target.value.trim();
+      if (!q) { document.getElementById('user-search-results').innerHTML = ''; return; }
+      userSearchTimer = setTimeout(() => searchAndRenderUsers(q), 300);
+    });
+  }
+
+  async function searchAndRenderUsers(query) {
+    const container = document.getElementById('user-search-results');
+    const res = await API.searchUsers(query);
+    if (res.error) { container.innerHTML = `<div class="history-empty">${res.error}</div>`; return; }
+    if (!res.users || res.users.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('notFound')}</div>`; return; }
+
+    container.innerHTML = res.users.map(u => {
+      let actionHtml = '';
+      if (u.status === 'friend') {
+        actionHtml = `<span class="user-status friend">${I18n.t('statusFriend')}</span>`;
+      } else if (u.status === 'pending_sent') {
+        actionHtml = `<span class="user-status pending">${I18n.t('statusPendingSent')}</span>`;
+      } else if (u.status === 'pending_received') {
+        actionHtml = `<span class="user-status received">${I18n.t('statusPendingReceived')}</span>`;
+      } else {
+        actionHtml = `<button class="btn-add-user" data-uid="${u.id}">${I18n.t('btnAddFriend')}</button>`;
+      }
+      return `<div class="user-search-item"><span class="us-name">${escapeHtml(u.nickname)}</span>${actionHtml}</div>`;
+    }).join('');
+
+    container.querySelectorAll('.btn-add-user').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const res = await API.sendFriendRequestById(btn.dataset.uid);
+        if (res.error) { showToast(res.error); btn.disabled = false; }
+        else {
+          showToast(I18n.t('friendRequestSent'));
+          btn.replaceWith(Object.assign(document.createElement('span'), {
+            className: 'user-status pending', textContent: I18n.t('statusPendingSent')
+          }));
+        }
+      });
     });
   }
 

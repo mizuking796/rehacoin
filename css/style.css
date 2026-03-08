@@ -1279,6 +1279,64 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* === User Search Results === */
+.user-search-results {
+  margin-top: 8px;
+}
+
+.user-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 4px;
+}
+
+.user-search-item .us-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.user-search-item .btn-add-user {
+  height: 30px;
+  padding: 0 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-search-item .btn-add-user:disabled {
+  opacity: 0.5;
+}
+
+.user-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.user-status.friend {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.user-status.pending {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.user-status.received {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
 /* === Friend Request === */
 .friend-request-item {
   display: flex;
