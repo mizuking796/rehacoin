@@ -272,6 +272,15 @@ const App = (() => {
     { type: 'amazing', emoji: '👏', label: 'すごい！', labelEn: 'Amazing!' },
   ];
 
+  // SVG icons for reaction button (outline = unreacted, filled = reacted)
+  const REACTION_SVG = {
+    like_outline: '<svg viewBox="0 0 24 24"><path d="M2 21h2V9H2v12zm20-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L13.17 1 7.59 6.59A2 2 0 0 0 7 8v10a2 2 0 0 0 2 2h9a2.006 2.006 0 0 0 1.84-1.21l3.02-7.05A2 2 0 0 0 22 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+    like: '<svg viewBox="0 0 24 24"><path d="M2 21h2V9H2v12zm20-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L13.17 1 7.59 6.59A2 2 0 0 0 7 8v10a2 2 0 0 0 2 2h9a2.006 2.006 0 0 0 1.84-1.21l3.02-7.05A2 2 0 0 0 22 10z"/></svg>',
+    cheer: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+    empathy: '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>',
+    amazing: '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+  };
+
   function renderHomeFeed() {
     const section = document.getElementById('section-home-feed');
     const list = document.getElementById('home-feed-list');
@@ -298,19 +307,20 @@ const App = (() => {
       reactionSummaryHtml = `<div class="reaction-summary"><span class="reaction-icons">${badges}</span><span class="reaction-count">${totalReactions}</span></div>`;
     }
 
-    // My reaction - Facebook style: gray when not reacted, colored when reacted
+    // My reaction - Facebook style: outline icon when unreacted, filled+colored when reacted
     const myReaction = item.myReaction;
     const myReactionData = myReaction ? REACTIONS.find(r => r.type === myReaction) : null;
-    const triggerClass = myReaction ? `reaction-trigger reacted reacted-${myReaction}` : 'reaction-trigger';
-    const triggerContent = myReaction
-      ? `${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}`
-      : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
+    const triggerClass = myReaction ? `reaction-trigger reacted-${myReaction}` : 'reaction-trigger';
+    const triggerIcon = myReaction ? REACTION_SVG[myReaction] : REACTION_SVG.like_outline;
+    const triggerLabel = myReaction
+      ? (I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn)
+      : (I18n.getLang() === 'ja' ? 'いいね！' : 'Like');
 
     const reactionBar = `
       <div class="reaction-bar" data-id="${item.id}">
         ${reactionSummaryHtml}
         <div class="reaction-buttons">
-          <button class="${triggerClass}" data-id="${item.id}">${triggerContent}</button>
+          <button class="${triggerClass}" data-id="${item.id}"><span class="rt-icon">${triggerIcon}</span>${triggerLabel}</button>
         </div>
         <div class="reaction-picker" hidden>
           ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
@@ -404,15 +414,14 @@ const App = (() => {
     const item = Store.getFeed().find(f => f.id === recordId);
     if (!item) return;
 
-    // Update trigger button (Facebook-style: gray when not reacted, colored when reacted)
+    // Update trigger button (outline SVG when unreacted, filled SVG + color when reacted)
     if (item.myReaction) {
       const rd = REACTIONS.find(r => r.type === item.myReaction);
-      trigger.className = `reaction-trigger reacted reacted-${item.myReaction}`;
-      trigger.textContent = '';
-      trigger.textContent = `${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`;
+      trigger.className = `reaction-trigger reacted-${item.myReaction}`;
+      trigger.innerHTML = `<span class="rt-icon">${REACTION_SVG[item.myReaction]}</span>${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`;
     } else {
       trigger.className = 'reaction-trigger';
-      trigger.textContent = `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
+      trigger.innerHTML = `<span class="rt-icon">${REACTION_SVG.like_outline}</span>${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
     }
 
     // Update summary (Facebook-style icon badges)

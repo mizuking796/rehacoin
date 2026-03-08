@@ -2007,33 +2007,34 @@ body {
 
 /* === Reaction Bar === */
 .reaction-bar {
-  margin-top: 4px;
+  margin-top: 2px;
   position: relative;
 }
 
+/* --- Reaction Summary (Facebook-style badges) --- */
 .reaction-summary {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 0 6px;
+  padding: 6px 0;
 }
 
 .reaction-icons {
   display: flex;
-  margin-right: -2px;
 }
 
 .reaction-icon-badge {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   border: 2px solid var(--bg-card);
-  margin-right: -4px;
+  margin-right: -5px;
   position: relative;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
 }
 
 .reaction-icon-badge.ri-like { background: #1877f2; }
@@ -2044,33 +2045,46 @@ body {
 .reaction-summary .reaction-count {
   font-size: 0.82rem;
   color: var(--text-light);
+  margin-left: 4px;
 }
 
+/* --- Reaction Button Area --- */
 .reaction-buttons {
   display: flex;
   border-top: 1px solid var(--border-light);
-  padding-top: 4px;
+  padding-top: 2px;
+  margin-top: 2px;
 }
 
 .reaction-trigger {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
-  height: 36px;
+  height: 38px;
   padding: 0 12px;
   background: none;
   color: var(--text-light);
   border: none;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
   -webkit-user-select: none;
   user-select: none;
+}
+
+.reaction-trigger .rt-icon {
+  display: flex;
+  align-items: center;
+}
+
+.reaction-trigger .rt-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .reaction-trigger:hover {
@@ -2078,17 +2092,24 @@ body {
 }
 
 .reaction-trigger:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
-.reaction-trigger.reacted {
-  color: var(--accent);
-}
-
+/* Reacted states - bold color + filled icon */
 .reaction-trigger.reacted-like { color: #1877f2; }
-.reaction-trigger.reacted-cheer { color: #f7b928; }
+.reaction-trigger.reacted-cheer { color: #e8a200; }
 .reaction-trigger.reacted-empathy { color: #e8467c; }
 .reaction-trigger.reacted-amazing { color: #f5533d; }
+
+.reaction-trigger.reacted-like .rt-icon svg { fill: #1877f2; }
+.reaction-trigger.reacted-cheer .rt-icon svg { fill: #e8a200; }
+.reaction-trigger.reacted-empathy .rt-icon svg { fill: #e8467c; }
+.reaction-trigger.reacted-amazing .rt-icon svg { fill: #f5533d; }
+
+/* Unreacted state - outline icon */
+.reaction-trigger:not([class*="reacted-"]) .rt-icon svg {
+  fill: var(--text-light);
+}
 
 /* === Reaction Picker === */
 .reaction-picker {
