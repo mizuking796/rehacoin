@@ -362,7 +362,7 @@ body {
 .screen-title-fixed {
   font-size: 1.15rem;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin: 0 0 12px;
   color: var(--text);
 }
 
@@ -1509,7 +1509,7 @@ body {
   background: var(--bg);
   border-radius: var(--radius);
   padding: 3px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .friends-tab {
