@@ -38,6 +38,7 @@ const App = (() => {
     renderHome();
     updateHeaderCoins();
     updateHeaderNickname();
+    updateFriendBadge();
   }
 
   // --- Language toggle ---
@@ -220,6 +221,37 @@ const App = (() => {
     if (profile && profile.nickname) {
       el.textContent = profile.nickname;
     }
+  }
+
+  function updateFriendBadge() {
+    const requests = Store.getFriendRequests();
+    const count = requests.length;
+    const badge = document.getElementById('friend-badge');
+    if (count > 0) {
+      badge.textContent = count;
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+    renderFriendRequestBanner();
+  }
+
+  function renderFriendRequestBanner() {
+    const banner = document.getElementById('friend-request-banner');
+    const requests = Store.getFriendRequests();
+    if (requests.length === 0) {
+      banner.hidden = true;
+      return;
+    }
+    const names = requests.map(r => r.from_nickname).join(', ');
+    const msg = I18n.getLang() === 'ja'
+      ? `👥 ${names} からフレンド申請が${requests.length}件届いています`
+      : `👥 ${requests.length} friend request${requests.length > 1 ? 's' : ''} from ${names}`;
+    banner.innerHTML = `<span class="banner-text">${msg}</span><span class="banner-arrow">→</span>`;
+    banner.hidden = false;
+    banner.onclick = () => {
+      document.querySelector('.nav-btn[data-screen="screen-friends"]').click();
+    };
   }
 
   // --- Home ---
@@ -584,10 +616,10 @@ const App = (() => {
       </div>
     `).join('');
     container.querySelectorAll('.btn-accept').forEach(btn => {
-      btn.addEventListener('click', async () => { await Store.acceptFriendRequest(btn.dataset.id); showToast(I18n.t('friendAdded')); renderFriends(); });
+      btn.addEventListener('click', async () => { await Store.acceptFriendRequest(btn.dataset.id); showToast(I18n.t('friendAdded')); renderFriends(); updateFriendBadge(); });
     });
     container.querySelectorAll('.btn-reject').forEach(btn => {
-      btn.addEventListener('click', async () => { await Store.rejectFriendRequest(btn.dataset.id); renderFriends(); });
+      btn.addEventListener('click', async () => { await Store.rejectFriendRequest(btn.dataset.id); renderFriends(); updateFriendBadge(); });
     });
   }
 

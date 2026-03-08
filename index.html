@@ -77,6 +77,7 @@
 
     <!-- Home -->
     <main id="screen-home" class="screen active">
+      <div id="friend-request-banner" class="friend-request-banner" hidden></div>
       <div class="search-bar">
         <input type="search" id="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="活動を検索..." autocomplete="off">
       </div>
@@ -291,7 +292,7 @@
         <span class="nav-label" data-i18n="navRecords">きろく</span>
       </button>
       <button class="nav-btn" data-screen="screen-friends">
-        <span class="nav-icon">👥</span>
+        <span class="nav-icon">👥<span id="friend-badge" class="nav-badge" hidden></span></span>
         <span class="nav-label" data-i18n="navFriends">フレンド</span>
       </button>
       <button class="nav-btn" data-screen="screen-exchange">

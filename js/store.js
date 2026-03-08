@@ -13,14 +13,16 @@ const Store = (() => {
   // --- Load all data from API ---
   async function loadAll() {
     if (!API.isLoggedIn()) return;
-    const [recordsRes, rewardsRes, profileRes] = await Promise.all([
+    const [recordsRes, rewardsRes, profileRes, requestsRes] = await Promise.all([
       API.getRecords(),
       API.getRewards(),
-      API.getProfile()
+      API.getProfile(),
+      API.getFriendRequests()
     ]);
     _records = (recordsRes.records || []).map(normalizeRecord);
     _rewards = rewardsRes.rewards || [];
     _profile = profileRes;
+    _friendRequests = requestsRes.requests || [];
     _loaded = true;
   }
 
