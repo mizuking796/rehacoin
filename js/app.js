@@ -335,23 +335,25 @@ const App = (() => {
   }
 
   function bindFeedActions(container) {
-    // Reaction trigger: PC=hover to show picker, Mobile=long press
     container.querySelectorAll('.reaction-trigger').forEach(btn => {
+      if (btn._bound) return; // prevent double-binding
+      btn._bound = true;
       const bar = btn.closest('.reaction-bar');
       const picker = bar.querySelector('.reaction-picker');
       let longPressTimer;
       let hoverTimeout;
+      let pickerOpenedByHover = false;
 
       const showPicker = () => {
         picker.hidden = false;
         picker.classList.add('picker-animate');
         setTimeout(() => picker.classList.remove('picker-animate'), 300);
       };
-      const hidePicker = () => { picker.hidden = true; };
+      const hidePicker = () => { picker.hidden = true; pickerOpenedByHover = false; };
 
-      // PC: hover on button shows picker, leaving bar hides it
+      // PC: hover on bar shows picker
       bar.addEventListener('mouseenter', () => {
-        hoverTimeout = setTimeout(showPicker, 300);
+        hoverTimeout = setTimeout(() => { showPicker(); pickerOpenedByHover = true; }, 300);
       });
       bar.addEventListener('mouseleave', () => {
         clearTimeout(hoverTimeout);
@@ -359,92 +361,82 @@ const App = (() => {
       });
 
       // Mobile: long press
-      btn.addEventListener('touchstart', (e) => {
-        longPressTimer = setTimeout(() => { showPicker(); }, 400);
+      btn.addEventListener('touchstart', () => {
+        longPressTimer = setTimeout(showPicker, 400);
       }, { passive: true });
       btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
       btn.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 
-      // Quick tap = toggle like
+      // Quick tap = toggle current reaction
       btn.addEventListener('click', async () => {
-        if (!picker.hidden) return; // picker is open, don't toggle
+        if (pickerOpenedByHover) return; // on PC, let picker handle it
         const recordId = btn.dataset.id;
         const item = Store.getFeed().find(f => f.id === recordId);
         const currentType = item?.myReaction || 'like';
-        await sendReaction(recordId, currentType, btn, container);
+        await sendReaction(recordId, currentType, bar);
       });
     });
 
-    // Reaction picker options
     container.querySelectorAll('.reaction-option').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const recordId = btn.dataset.id;
         const type = btn.dataset.type;
-        const picker = btn.closest('.reaction-picker');
-        picker.hidden = true;
-
-        // Animate the selected emoji
-        btn.classList.add('reaction-pop');
-        setTimeout(() => btn.classList.remove('reaction-pop'), 500);
-
-        const trigger = btn.closest('.reaction-bar').querySelector('.reaction-trigger');
-        await sendReaction(recordId, type, trigger, container);
+        const bar = btn.closest('.reaction-bar');
+        bar.querySelector('.reaction-picker').hidden = true;
+        await sendReaction(recordId, type, bar);
       });
     });
   }
 
-  async function sendReaction(recordId, type, triggerBtn, container) {
-    triggerBtn.disabled = true;
+  async function sendReaction(recordId, type, bar) {
+    const trigger = bar.querySelector('.reaction-trigger');
+    trigger.disabled = true;
     const res = await Store.cheerRecord(recordId, type);
-    triggerBtn.disabled = false;
-    if (res.ok) {
-      // Re-render just this card's reaction bar
-      const item = Store.getFeed().find(f => f.id === recordId);
-      if (item) {
-        const bar = container.querySelector(`.reaction-bar[data-id="${recordId}"]`);
-        if (bar) {
-          const newBar = document.createElement('div');
-          newBar.innerHTML = renderReactionBar(item);
-          bar.replaceWith(newBar.firstElementChild);
-          bindFeedActions(newBar.parentElement || container);
-        }
-      }
-      if (res.reacted) {
-        const rd = REACTIONS.find(r => r.type === type);
-        showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
-        if (navigator.vibrate) navigator.vibrate(50);
+    trigger.disabled = false;
+    if (!res.ok) return;
 
-        // Float animation
-        showFloatingEmoji(rd.emoji, triggerBtn);
-      }
+    // Update UI in-place (no DOM rebuild)
+    const item = Store.getFeed().find(f => f.id === recordId);
+    if (!item) return;
+
+    // Update trigger button
+    if (item.myReaction) {
+      const rd = REACTIONS.find(r => r.type === item.myReaction);
+      trigger.className = 'reaction-trigger reacted';
+      trigger.innerHTML = `<span class="my-reaction-label" style="color:var(--accent)">${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}</span>`;
+    } else {
+      trigger.className = 'reaction-trigger';
+      trigger.innerHTML = `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
     }
-  }
 
-  function renderReactionBar(item) {
+    // Update summary
     const reactions = item.reactions || {};
-    const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
-    let reactionSummaryHtml = '';
-    if (totalReactions > 0) {
+    const total = Object.values(reactions).reduce((a, b) => a + b, 0);
+    let summaryEl = bar.querySelector('.reaction-summary');
+    if (total > 0) {
       const icons = REACTIONS.filter(r => reactions[r.type] > 0).map(r => r.emoji).join('');
-      reactionSummaryHtml = `<div class="reaction-summary">${icons} <span class="reaction-count">${totalReactions}</span></div>`;
+      const html = `${icons} <span class="reaction-count">${total}</span>`;
+      if (summaryEl) {
+        summaryEl.innerHTML = html;
+      } else {
+        summaryEl = document.createElement('div');
+        summaryEl.className = 'reaction-summary';
+        summaryEl.innerHTML = html;
+        bar.insertBefore(summaryEl, bar.firstChild);
+      }
+    } else if (summaryEl) {
+      summaryEl.remove();
     }
-    const myReaction = item.myReaction;
-    const myReactionData = myReaction ? REACTIONS.find(r => r.type === myReaction) : null;
-    const myReactionLabel = myReactionData
-      ? `<span class="my-reaction-label" style="color:var(--accent)">${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}</span>`
-      : '';
 
-    return `
-    <div class="reaction-bar" data-id="${item.id}">
-      ${reactionSummaryHtml}
-      <div class="reaction-buttons">
-        <button class="reaction-trigger ${myReaction ? 'reacted' : ''}" data-id="${item.id}">${myReaction ? myReactionLabel : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`}</button>
-      </div>
-      <div class="reaction-picker" hidden>
-        ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
-      </div>
-    </div>`;
+    if (res.reacted) {
+      const rd = REACTIONS.find(r => r.type === type);
+      showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
+      if (navigator.vibrate) navigator.vibrate(50);
+      showFloatingEmoji(rd.emoji, trigger);
+    }
   }
 
   function showFloatingEmoji(emoji, anchorEl) {
