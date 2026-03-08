@@ -335,26 +335,39 @@ const App = (() => {
   }
 
   function bindFeedActions(container) {
-    // Reaction trigger (quick tap = like, long press = show picker)
+    // Reaction trigger: PC=hover to show picker, Mobile=long press
     container.querySelectorAll('.reaction-trigger').forEach(btn => {
+      const bar = btn.closest('.reaction-bar');
+      const picker = bar.querySelector('.reaction-picker');
       let longPressTimer;
+      let hoverTimeout;
+
       const showPicker = () => {
-        const picker = btn.closest('.reaction-bar').querySelector('.reaction-picker');
-        picker.hidden = !picker.hidden;
-        if (!picker.hidden) {
-          picker.classList.add('picker-animate');
-          setTimeout(() => picker.classList.remove('picker-animate'), 300);
-        }
+        picker.hidden = false;
+        picker.classList.add('picker-animate');
+        setTimeout(() => picker.classList.remove('picker-animate'), 300);
       };
+      const hidePicker = () => { picker.hidden = true; };
 
-      btn.addEventListener('mousedown', () => { longPressTimer = setTimeout(showPicker, 400); });
-      btn.addEventListener('mouseup', () => clearTimeout(longPressTimer));
-      btn.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
-      btn.addEventListener('touchstart', (e) => { longPressTimer = setTimeout(() => { showPicker(); e.preventDefault(); }, 400); }, { passive: false });
+      // PC: hover on button shows picker, leaving bar hides it
+      bar.addEventListener('mouseenter', () => {
+        hoverTimeout = setTimeout(showPicker, 300);
+      });
+      bar.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimeout);
+        hidePicker();
+      });
+
+      // Mobile: long press
+      btn.addEventListener('touchstart', (e) => {
+        longPressTimer = setTimeout(() => { showPicker(); }, 400);
+      }, { passive: true });
       btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
+      btn.addEventListener('touchmove', () => clearTimeout(longPressTimer));
 
-      btn.addEventListener('click', async (e) => {
-        // Quick tap = toggle like (or toggle current reaction off)
+      // Quick tap = toggle like
+      btn.addEventListener('click', async () => {
+        if (!picker.hidden) return; // picker is open, don't toggle
         const recordId = btn.dataset.id;
         const item = Store.getFeed().find(f => f.id === recordId);
         const currentType = item?.myReaction || 'like';
@@ -364,7 +377,8 @@ const App = (() => {
 
     // Reaction picker options
     container.querySelectorAll('.reaction-option').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         const recordId = btn.dataset.id;
         const type = btn.dataset.type;
         const picker = btn.closest('.reaction-picker');
