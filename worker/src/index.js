@@ -631,27 +631,30 @@ async function witnessRecord(env, user, recordId) {
 async function adminStats(env) {
   const totalUsers = await env.DB.prepare('SELECT COUNT(*) as c FROM users').first();
   const totalRecords = await env.DB.prepare('SELECT COUNT(*) as c FROM records').first();
-  const totalCoins = await env.DB.prepare('SELECT COALESCE(SUM(coins),0) as c FROM records').first();
-  const totalFriendships = await env.DB.prepare('SELECT COUNT(*) as c FROM friends').first();
   const totalWitnessed = await env.DB.prepare('SELECT COUNT(*) as c FROM records WHERE witnessed = 1').first();
+  const totalFriendships = await env.DB.prepare('SELECT COUNT(*) as c FROM friends').first();
+  // coins = record count + witness bonus count (1 record = 1 coin, witnessed = +1 bonus)
+  const totalCoins = totalRecords.c + totalWitnessed.c;
 
   // Daily records for last 30 days
   const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
   const daily = await env.DB.prepare(
-    `SELECT DATE(timestamp/1000, 'unixepoch') as day, COUNT(*) as count, SUM(coins) as coins
+    `SELECT DATE(timestamp/1000, 'unixepoch') as day, COUNT(*) as count,
+     COUNT(*) + SUM(CASE WHEN witnessed = 1 THEN 1 ELSE 0 END) as coins
      FROM records WHERE timestamp > ? GROUP BY day ORDER BY day`
   ).bind(thirtyDaysAgo).all();
 
   // Top categories
   const topCategories = await env.DB.prepare(
-    `SELECT category_code, COUNT(*) as count, SUM(coins) as coins
+    `SELECT category_code, COUNT(*) as count,
+     COUNT(*) + SUM(CASE WHEN witnessed = 1 THEN 1 ELSE 0 END) as coins
      FROM records GROUP BY category_code ORDER BY count DESC LIMIT 10`
   ).all();
 
   return {
     totalUsers: totalUsers.c,
     totalRecords: totalRecords.c,
-    totalCoins: totalCoins.c,
+    totalCoins,
     totalFriendships: Math.floor(totalFriendships.c / 2),
     totalWitnessed: totalWitnessed.c,
     dailyRecords: daily.results,
@@ -668,7 +671,7 @@ async function adminUsers(env, url) {
 
   let query = `SELECT u.id, u.nickname, u.friend_code, u.feed_visibility, u.created_at,
     (SELECT COUNT(*) FROM records WHERE user_id = u.id) as record_count,
-    (SELECT COALESCE(SUM(coins),0) FROM records WHERE user_id = u.id) as total_coins,
+    (SELECT COUNT(*) + (SELECT COUNT(*) FROM records WHERE user_id = u.id AND witnessed = 1) FROM records WHERE user_id = u.id) as total_coins,
     (SELECT COUNT(*) FROM records WHERE witnessed_by = u.id) as witness_count,
     (SELECT COUNT(*) FROM friends WHERE user_id = u.id) as friend_count,
     (SELECT MAX(timestamp) FROM records WHERE user_id = u.id) as last_activity
@@ -713,22 +716,28 @@ async function adminUserDetail(env, userId) {
      JOIN users u ON u.id = f.friend_id WHERE f.user_id = ?`
   ).bind(userId).all();
 
-  const totalCoins = await env.DB.prepare(
-    'SELECT COALESCE(SUM(coins),0) as c FROM records WHERE user_id = ?'
+  const recordCount = await env.DB.prepare(
+    'SELECT COUNT(*) as c FROM records WHERE user_id = ?'
+  ).bind(userId).first();
+
+  const witnessBonus = await env.DB.prepare(
+    'SELECT COUNT(*) as c FROM records WHERE user_id = ? AND witnessed = 1'
   ).bind(userId).first();
 
   const spentCoins = await env.DB.prepare(
-    'SELECT COALESCE(SUM(coins_spent),0) as c FROM coin_spending WHERE user_id = ?'
+    'SELECT COALESCE(SUM(amount),0) as c FROM coin_spending WHERE user_id = ?'
   ).bind(userId).first();
+
+  const totalCoins = recordCount.c + witnessBonus.c;
 
   return {
     user,
     records: records.results,
     rewards: rewards.results,
     friends: friends.results,
-    totalCoins: totalCoins.c,
+    totalCoins,
     spentCoins: spentCoins.c,
-    availableCoins: totalCoins.c - spentCoins.c,
+    availableCoins: totalCoins - spentCoins.c,
   };
 }
 
@@ -741,7 +750,7 @@ async function adminDeleteUser(env, userId) {
     env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM friends WHERE user_id = ? OR friend_id = ?').bind(userId, userId),
-    env.DB.prepare('DELETE FROM friend_requests WHERE from_id = ? OR to_id = ?').bind(userId, userId),
+    env.DB.prepare('DELETE FROM friend_requests WHERE from_user_id = ? OR to_user_id = ?').bind(userId, userId),
     env.DB.prepare('DELETE FROM login_attempts WHERE nickname = ?').bind(user.nickname),
     env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId),
   ]);
