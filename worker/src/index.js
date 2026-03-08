@@ -1,15 +1,28 @@
 // rehacoin-api Worker
 
+const ALLOWED_ORIGINS = [
+  'https://rehacoin.pages.dev',
+  'https://mizuking796.github.io',
+  'http://localhost:8080',
+  'http://localhost:3000',
+];
+
+const JWT_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MIN_PASSWORD_LENGTH = 8;
+const LOGIN_ATTEMPT_WINDOW = 15 * 60 * 1000; // 15 min
+const MAX_LOGIN_ATTEMPTS = 10;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
+    const origin = request.headers.get('Origin') || '';
 
     // CORS
-    if (method === 'OPTIONS') return corsResponse();
+    if (method === 'OPTIONS') return corsResponse(origin);
 
-    const headers = { 'Content-Type': 'application/json', ...corsHeaders() };
+    const headers = { 'Content-Type': 'application/json', ...corsHeaders(origin) };
 
     try {
       // --- Public routes ---
@@ -17,7 +30,10 @@ export default {
         return json(await register(env, await request.json()), headers);
       }
       if (path === '/auth/login' && method === 'POST') {
-        return json(await login(env, await request.json()), headers);
+        return json(await login(env, request, await request.json()), headers);
+      }
+      if (path === '/auth/reset-password' && method === 'POST') {
+        return json(await resetPassword(env, await request.json()), headers);
       }
 
       // --- Authenticated routes ---
@@ -30,6 +46,9 @@ export default {
       }
       if (path === '/me' && method === 'PUT') {
         return json(await updateProfile(env, user, await request.json()), headers);
+      }
+      if (path === '/me' && method === 'DELETE') {
+        return json(await deleteAccount(env, user), headers);
       }
 
       // Records
@@ -100,19 +119,25 @@ export default {
   }
 };
 
-// --- Helpers ---
-function corsHeaders() {
+// --- CORS ---
+function getAllowedOrigin(origin) {
+  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+}
+
+function corsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': getAllowedOrigin(origin),
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
   };
 }
 
-function corsResponse() {
-  return new Response(null, { status: 204, headers: corsHeaders() });
+function corsResponse(origin) {
+  return new Response(null, { status: 204, headers: corsHeaders(origin) });
 }
 
+// --- Helpers ---
 function json(data, headers, status = 200) {
   if (data.error && status === 200) status = 400;
   return new Response(JSON.stringify(data), { status, headers });
@@ -129,6 +154,13 @@ function genFriendCode() {
   return code;
 }
 
+function genRecoveryCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
 // --- Crypto ---
 async function hashPassword(password, salt) {
   const enc = new TextEncoder();
@@ -142,7 +174,7 @@ async function hashPassword(password, salt) {
 
 async function createToken(env, userId) {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({ sub: userId, exp: Date.now() + 30 * 24 * 60 * 60 * 1000 }));
+  const payload = btoa(JSON.stringify({ sub: userId, exp: Date.now() + JWT_EXPIRY }));
   const enc = new TextEncoder();
   const secret = env.JWT_SECRET || 'rehacoin-default-secret';
   const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -177,12 +209,36 @@ async function authenticate(env, request) {
   return user || null;
 }
 
+// --- Rate limiting (login brute force protection) ---
+async function checkLoginRateLimit(env, identifier) {
+  const key = `login_attempts:${identifier}`;
+  const now = Date.now();
+  const windowStart = now - LOGIN_ATTEMPT_WINDOW;
+
+  // Get recent attempts
+  const rows = await env.DB.prepare(
+    'SELECT COUNT(*) as cnt FROM login_attempts WHERE identifier = ? AND attempted_at > ?'
+  ).bind(identifier, windowStart).first();
+
+  return (rows?.cnt || 0) < MAX_LOGIN_ATTEMPTS;
+}
+
+async function recordLoginAttempt(env, identifier) {
+  await env.DB.prepare(
+    'INSERT INTO login_attempts (id, identifier, attempted_at) VALUES (?, ?, ?)'
+  ).bind(genId('la_'), identifier, Date.now()).run();
+}
+
+async function clearLoginAttempts(env, identifier) {
+  await env.DB.prepare('DELETE FROM login_attempts WHERE identifier = ?').bind(identifier).run();
+}
+
 // --- Auth ---
 async function register(env, body) {
   const { nickname, password } = body;
   if (!nickname || !password) return { error: 'nickname and password are required' };
   if (nickname.length < 2 || nickname.length > 20) return { error: 'nickname must be 2-20 characters' };
-  if (password.length < 4) return { error: 'password must be at least 4 characters' };
+  if (password.length < MIN_PASSWORD_LENGTH) return { error: `password must be at least ${MIN_PASSWORD_LENGTH} characters` };
 
   const existing = await env.DB.prepare('SELECT id FROM users WHERE nickname = ?').bind(nickname).first();
   if (existing) return { error: 'This nickname is already taken' };
@@ -190,6 +246,8 @@ async function register(env, body) {
   const id = genId('u_');
   const salt = crypto.randomUUID();
   const passwordHash = await hashPassword(password, salt);
+  const recoveryCode = genRecoveryCode();
+  const recoveryHash = await hashPassword(recoveryCode, salt);
 
   let friendCode;
   for (let i = 0; i < 10; i++) {
@@ -199,25 +257,82 @@ async function register(env, body) {
   }
 
   await env.DB.prepare(
-    'INSERT INTO users (id, nickname, password_hash, salt, friend_code, feed_visibility, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).bind(id, nickname, passwordHash, salt, friendCode, 'activity_name', Date.now()).run();
+    'INSERT INTO users (id, nickname, password_hash, salt, friend_code, feed_visibility, recovery_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(id, nickname, passwordHash, salt, friendCode, 'activity_name', recoveryHash, Date.now()).run();
 
   const token = await createToken(env, id);
-  return { token, user: { id, nickname, friendCode, feedVisibility: 'activity_name' } };
+  return {
+    token,
+    user: { id, nickname, friendCode, feedVisibility: 'activity_name' },
+    recoveryCode
+  };
 }
 
-async function login(env, body) {
+async function login(env, request, body) {
   const { nickname, password } = body;
   if (!nickname || !password) return { error: 'nickname and password are required' };
 
+  // Rate limit check
+  const allowed = await checkLoginRateLimit(env, nickname);
+  if (!allowed) return { error: 'Too many login attempts. Please wait 15 minutes.' };
+
   const user = await env.DB.prepare('SELECT * FROM users WHERE nickname = ?').bind(nickname).first();
-  if (!user) return { error: 'Invalid nickname or password' };
+  if (!user) {
+    await recordLoginAttempt(env, nickname);
+    return { error: 'Invalid nickname or password' };
+  }
 
   const hash = await hashPassword(password, user.salt);
-  if (hash !== user.password_hash) return { error: 'Invalid nickname or password' };
+  if (hash !== user.password_hash) {
+    await recordLoginAttempt(env, nickname);
+    return { error: 'Invalid nickname or password' };
+  }
+
+  // Clear attempts on success
+  await clearLoginAttempts(env, nickname);
 
   const token = await createToken(env, user.id);
   return { token, user: { id: user.id, nickname: user.nickname, friendCode: user.friend_code, feedVisibility: user.feed_visibility } };
+}
+
+// --- Password Reset ---
+async function resetPassword(env, body) {
+  const { nickname, recoveryCode, newPassword } = body;
+  if (!nickname || !recoveryCode || !newPassword) return { error: 'nickname, recoveryCode, and newPassword are required' };
+  if (newPassword.length < MIN_PASSWORD_LENGTH) return { error: `password must be at least ${MIN_PASSWORD_LENGTH} characters` };
+
+  const user = await env.DB.prepare('SELECT * FROM users WHERE nickname = ?').bind(nickname).first();
+  if (!user || !user.recovery_hash) return { error: 'Invalid nickname or recovery code' };
+
+  const hash = await hashPassword(recoveryCode, user.salt);
+  if (hash !== user.recovery_hash) return { error: 'Invalid nickname or recovery code' };
+
+  // Set new password and generate new recovery code
+  const newSalt = crypto.randomUUID();
+  const newPasswordHash = await hashPassword(newPassword, newSalt);
+  const newRecoveryCode = genRecoveryCode();
+  const newRecoveryHash = await hashPassword(newRecoveryCode, newSalt);
+
+  await env.DB.prepare(
+    'UPDATE users SET password_hash = ?, salt = ?, recovery_hash = ? WHERE id = ?'
+  ).bind(newPasswordHash, newSalt, newRecoveryHash, user.id).run();
+
+  const token = await createToken(env, user.id);
+  return { ok: true, token, recoveryCode: newRecoveryCode };
+}
+
+// --- Account Deletion ---
+async function deleteAccount(env, user) {
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(user.id),
+    env.DB.prepare('DELETE FROM friends WHERE user_id = ? OR friend_id = ?').bind(user.id, user.id),
+    env.DB.prepare("DELETE FROM friend_requests WHERE from_user_id = ? OR to_user_id = ?").bind(user.id, user.id),
+    env.DB.prepare('DELETE FROM login_attempts WHERE identifier = ?').bind(user.nickname),
+    env.DB.prepare('DELETE FROM users WHERE id = ?').bind(user.id),
+  ]);
+  return { ok: true };
 }
 
 // --- Profile ---
@@ -259,11 +374,17 @@ async function updateProfile(env, user, body) {
   }
 
   if (body.password) {
-    if (body.password.length < 4) return { error: 'password must be at least 4 characters' };
+    if (body.password.length < MIN_PASSWORD_LENGTH) return { error: `password must be at least ${MIN_PASSWORD_LENGTH} characters` };
     const salt = crypto.randomUUID();
     const hash = await hashPassword(body.password, salt);
-    updates.push('password_hash = ?', 'salt = ?');
-    values.push(hash, salt);
+    const recoveryCode = genRecoveryCode();
+    const recoveryHash = await hashPassword(recoveryCode, salt);
+    updates.push('password_hash = ?', 'salt = ?', 'recovery_hash = ?');
+    values.push(hash, salt, recoveryHash);
+    // Return new recovery code when password changes
+    values.push(user.id);
+    await env.DB.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+    return { ok: true, recoveryCode };
   }
 
   if (updates.length === 0) return { error: 'No changes' };
@@ -331,7 +452,6 @@ async function exchangeReward(env, user, rewardId) {
   const reward = await env.DB.prepare('SELECT * FROM rewards WHERE id = ? AND user_id = ?').bind(rewardId, user.id).first();
   if (!reward) return { error: 'Reward not found' };
 
-  // Calculate balance
   const recordCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ?').bind(user.id).first();
   const witnessCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ? AND witnessed = 1').bind(user.id).first();
   const spentResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM coin_spending WHERE user_id = ?').bind(user.id).first();
@@ -365,17 +485,14 @@ async function sendFriendRequest(env, user, body) {
   if (!target) return { error: 'User not found with this code' };
   if (target.id === user.id) return { error: 'Cannot add yourself' };
 
-  // Already friends?
   const existing = await env.DB.prepare('SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?').bind(user.id, target.id).first();
   if (existing) return { error: 'Already friends' };
 
-  // Pending request?
   const pending = await env.DB.prepare(
     "SELECT 1 FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = 'pending'"
   ).bind(user.id, target.id).first();
   if (pending) return { error: 'Request already sent' };
 
-  // Reverse pending? Auto-accept
   const reverse = await env.DB.prepare(
     "SELECT id FROM friend_requests WHERE from_user_id = ? AND to_user_id = ? AND status = 'pending'"
   ).bind(target.id, user.id).first();
@@ -437,14 +554,12 @@ async function removeFriend(env, user, friendId) {
 
 // --- Feed ---
 async function getFeed(env, user) {
-  // Get friend IDs
   const friendRows = await env.DB.prepare('SELECT friend_id FROM friends WHERE user_id = ?').bind(user.id).all();
   if (friendRows.results.length === 0) return { feed: [] };
 
   const friendIds = friendRows.results.map(f => f.friend_id);
   const placeholders = friendIds.map(() => '?').join(',');
 
-  // Get recent records from friends (last 7 days, max 50)
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const rows = await env.DB.prepare(`
     SELECT r.id, r.user_id, r.activity_id, r.category_code, r.label, r.icon, r.witnessed, r.witnessed_by, r.timestamp,
@@ -476,7 +591,6 @@ async function witnessRecord(env, user, recordId) {
   if (rec.user_id === user.id) return { error: 'Cannot witness your own record' };
   if (rec.witnessed) return { error: 'Already witnessed' };
 
-  // Must be friends
   const friendship = await env.DB.prepare('SELECT 1 FROM friends WHERE user_id = ? AND friend_id = ?').bind(user.id, rec.user_id).first();
   if (!friendship) return { error: 'You must be friends to witness' };
 

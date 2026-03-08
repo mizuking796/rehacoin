@@ -116,6 +116,22 @@ const I18n = (() => {
 
       // Search
       notFound: '見つかりませんでした',
+
+      // Recovery / Reset
+      recoveryCodeTitle: 'リカバリーコード',
+      recoveryCodeMessage: 'このコードはパスワードを忘れた時に必要です。\n必ず安全な場所に控えてください。\n（このコードは二度と表示されません）',
+      recoveryCodeCopied: 'コピーしました',
+      recoveryCodeUnderstood: '控えました',
+      forgotPassword: 'パスワードを忘れた？',
+      resetPassword: 'パスワードリセット',
+      recoveryCodePlaceholder: 'リカバリーコード（8文字）',
+      newPasswordPlaceholder: '新しいパスワード（8文字以上）',
+      resetSuccess: 'パスワードをリセットしました',
+      backToLogin: 'ログインに戻る',
+      deleteAccount: 'アカウント削除',
+      deleteAccountConfirm: 'アカウントを削除しますか？\n全てのデータが完全に削除されます。\nこの操作は元に戻せません。',
+      deleteAccountDone: 'アカウントを削除しました',
+      passwordMinLength: 'パスワードは8文字以上で入力してください',
     },
 
     en: {
@@ -219,6 +235,21 @@ const I18n = (() => {
       hAgo: 'h ago',
 
       notFound: 'Not found',
+
+      recoveryCodeTitle: 'Recovery Code',
+      recoveryCodeMessage: 'You need this code if you forget your password.\nSave it in a safe place.\n(This code will not be shown again)',
+      recoveryCodeCopied: 'Copied',
+      recoveryCodeUnderstood: 'I saved it',
+      forgotPassword: 'Forgot password?',
+      resetPassword: 'Reset Password',
+      recoveryCodePlaceholder: 'Recovery code (8 chars)',
+      newPasswordPlaceholder: 'New password (8+ chars)',
+      resetSuccess: 'Password has been reset',
+      backToLogin: 'Back to login',
+      deleteAccount: 'Delete Account',
+      deleteAccountConfirm: 'Delete your account?\nAll data will be permanently deleted.\nThis cannot be undone.',
+      deleteAccountDone: 'Account deleted',
+      passwordMinLength: 'Password must be at least 8 characters',
     }
   };
 

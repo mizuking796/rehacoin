@@ -90,6 +90,15 @@ const App = (() => {
       loginForm.hidden = false; registerForm.hidden = true; authError.hidden = true;
     };
 
+    const resetForm = document.getElementById('reset-form');
+
+    document.getElementById('btn-show-reset').onclick = () => {
+      loginForm.hidden = true; registerForm.hidden = true; resetForm.hidden = false; authError.hidden = true;
+    };
+    document.getElementById('btn-back-to-login').onclick = () => {
+      loginForm.hidden = false; registerForm.hidden = true; resetForm.hidden = true; authError.hidden = true;
+    };
+
     document.getElementById('btn-login').onclick = async () => {
       authError.hidden = true;
       const nickname = document.getElementById('login-nickname').value.trim();
@@ -107,11 +116,33 @@ const App = (() => {
       const nickname = document.getElementById('register-nickname').value.trim();
       const password = document.getElementById('register-password').value;
       if (!nickname || !password) return;
+      if (password.length < 8) { authError.textContent = I18n.t('passwordMinLength'); authError.hidden = false; return; }
       document.getElementById('btn-register').disabled = true;
       const res = await API.register(nickname, password);
       document.getElementById('btn-register').disabled = false;
       if (res.error) { authError.textContent = res.error; authError.hidden = false; }
-      else init();
+      else {
+        if (res.recoveryCode) showRecoveryCode(res.recoveryCode);
+        init();
+      }
+    };
+
+    document.getElementById('btn-reset-password').onclick = async () => {
+      authError.hidden = true;
+      const nickname = document.getElementById('reset-nickname').value.trim();
+      const recoveryCode = document.getElementById('reset-recovery-code').value.trim().toUpperCase();
+      const newPassword = document.getElementById('reset-new-password').value;
+      if (!nickname || !recoveryCode || !newPassword) return;
+      if (newPassword.length < 8) { authError.textContent = I18n.t('passwordMinLength'); authError.hidden = false; return; }
+      document.getElementById('btn-reset-password').disabled = true;
+      const res = await API.resetPassword(nickname, recoveryCode, newPassword);
+      document.getElementById('btn-reset-password').disabled = false;
+      if (res.error) { authError.textContent = res.error; authError.hidden = false; }
+      else {
+        if (res.recoveryCode) showRecoveryCode(res.recoveryCode);
+        showToast(I18n.t('resetSuccess'));
+        init();
+      }
     };
 
     ['login-nickname', 'login-password'].forEach(id => {
@@ -124,6 +155,26 @@ const App = (() => {
         if (e.key === 'Enter') document.getElementById('btn-register').click();
       });
     });
+    ['reset-nickname', 'reset-recovery-code', 'reset-new-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('btn-reset-password').click();
+      });
+    });
+  }
+
+  // --- Recovery Code Modal ---
+  function showRecoveryCode(code) {
+    document.getElementById('recovery-code-value').textContent = code;
+    document.getElementById('recovery-overlay').hidden = false;
+
+    document.getElementById('btn-copy-recovery').onclick = () => {
+      navigator.clipboard.writeText(code).then(() => {
+        document.getElementById('btn-copy-recovery').textContent = I18n.t('recoveryCodeCopied');
+      });
+    };
+    document.getElementById('btn-close-recovery').onclick = () => {
+      document.getElementById('recovery-overlay').hidden = true;
+    };
   }
 
   // --- Loading ---
@@ -606,6 +657,14 @@ const App = (() => {
     });
     document.getElementById('btn-logout').addEventListener('click', () => {
       if (confirm(I18n.t('logoutConfirm'))) API.logout();
+    });
+    document.getElementById('btn-delete-account').addEventListener('click', async () => {
+      if (!confirm(I18n.t('deleteAccountConfirm'))) return;
+      const res = await API.deleteAccount();
+      if (res.ok) {
+        showToast(I18n.t('deleteAccountDone'));
+        setTimeout(() => API.logout(), 1000);
+      }
     });
   }
 

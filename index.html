@@ -26,6 +26,7 @@
         <input type="password" id="login-password" data-i18n-placeholder="password" placeholder="パスワード" autocomplete="current-password">
         <button id="btn-login" class="btn-primary auth-btn" data-i18n="login">ログイン</button>
         <p class="auth-switch"><span data-i18n="newHere">初めて？</span> <a href="#" id="btn-show-register" data-i18n="createAccount">アカウント作成</a></p>
+        <p class="auth-switch"><a href="#" id="btn-show-reset" data-i18n="forgotPassword">パスワードを忘れた？</a></p>
       </div>
 
       <div id="register-form" class="auth-form" hidden>
@@ -35,7 +36,30 @@
         <p class="auth-switch"><span data-i18n="haveAccount">アカウントがある？</span> <a href="#" id="btn-show-login" data-i18n="login">ログイン</a></p>
       </div>
 
+      <!-- Reset Password Form -->
+      <div id="reset-form" class="auth-form" hidden>
+        <input type="text" id="reset-nickname" data-i18n-placeholder="nickname" placeholder="ニックネーム" autocomplete="username">
+        <input type="text" id="reset-recovery-code" data-i18n-placeholder="recoveryCodePlaceholder" placeholder="リカバリーコード（8文字）" autocomplete="off" maxlength="8" style="text-transform:uppercase">
+        <input type="password" id="reset-new-password" data-i18n-placeholder="newPasswordPlaceholder" placeholder="新しいパスワード（8文字以上）" autocomplete="new-password">
+        <button id="btn-reset-password" class="btn-primary auth-btn" data-i18n="resetPassword">パスワードリセット</button>
+        <p class="auth-switch"><a href="#" id="btn-back-to-login" data-i18n="backToLogin">ログインに戻る</a></p>
+      </div>
+
       <div id="auth-error" class="auth-error" hidden></div>
+    </div>
+  </div>
+
+  <!-- Recovery Code Modal -->
+  <div id="recovery-overlay" class="mining-overlay" hidden>
+    <div class="mining-content" style="max-width:340px">
+      <div class="mining-icon">🔑</div>
+      <div class="mining-title" data-i18n="recoveryCodeTitle">リカバリーコード</div>
+      <div class="recovery-code-display" id="recovery-code-value">--------</div>
+      <div class="recovery-message" data-i18n="recoveryCodeMessage">このコードはパスワードを忘れた時に必要です。必ず安全な場所に控えてください。（このコードは二度と表示されません）</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:16px">
+        <button id="btn-copy-recovery" class="btn-secondary" style="width:auto;padding:0 16px">Copy</button>
+        <button id="btn-close-recovery" class="btn-primary" style="padding:0 16px" data-i18n="recoveryCodeUnderstood">控えました</button>
+      </div>
     </div>
   </div>
 
@@ -215,6 +239,9 @@
           </div>
           <div class="settings-item">
             <button id="btn-logout" class="btn-danger" data-i18n="logout">ログアウト</button>
+          </div>
+          <div class="settings-item">
+            <button id="btn-delete-account" class="btn-danger" style="background:#8B0000" data-i18n="deleteAccount">アカウント削除</button>
           </div>
         </div>
       </div>

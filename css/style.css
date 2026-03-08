@@ -1407,6 +1407,28 @@ body {
   font-weight: 600;
 }
 
+/* === Recovery Code === */
+.recovery-code-display {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin: 12px 0 8px;
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+.recovery-message {
+  font-size: 0.8rem;
+  color: var(--danger);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
 /* === Reduced Motion === */
 @media (prefers-reduced-motion: reduce) {
   .screen {

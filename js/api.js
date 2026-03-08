@@ -61,6 +61,16 @@ const API = (() => {
     return data;
   }
 
+  async function resetPassword(nickname, recoveryCode, newPassword) {
+    const data = await request('/auth/reset-password', 'POST', { nickname, recoveryCode, newPassword });
+    if (data.token) setAuth(data.token, { nickname });
+    return data;
+  }
+
+  async function deleteAccount() {
+    return request('/me', 'DELETE');
+  }
+
   function logout() {
     clearAuth();
     location.reload();
@@ -141,7 +151,7 @@ const API = (() => {
 
   return {
     isLoggedIn, getUser, logout,
-    register, login,
+    register, login, resetPassword, deleteAccount,
     getProfile, updateProfile,
     getRecords, addRecord, deleteRecord,
     getRewards, addReward, deleteReward, exchangeReward,

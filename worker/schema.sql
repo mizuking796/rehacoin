@@ -8,8 +8,17 @@ CREATE TABLE IF NOT EXISTS users (
   salt TEXT NOT NULL,
   friend_code TEXT UNIQUE NOT NULL,
   feed_visibility TEXT NOT NULL DEFAULT 'activity_name',
+  recovery_hash TEXT,
   created_at INTEGER NOT NULL
 );
+
+-- Login attempt tracking (brute force protection)
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id TEXT PRIMARY KEY,
+  identifier TEXT NOT NULL,
+  attempted_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_login_attempts ON login_attempts(identifier, attempted_at);
 
 -- 記録
 CREATE TABLE IF NOT EXISTS records (
