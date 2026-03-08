@@ -16,7 +16,7 @@ const I18n = (() => {
       createAccount: 'アカウント作成',
       haveAccount: 'アカウントがある？',
       nicknamePlaceholder: 'ニックネーム（2〜20文字）',
-      passwordPlaceholder: 'パスワード（4文字以上）',
+      passwordPlaceholder: 'パスワード（8文字以上）',
 
       // Nav
       navHome: 'ホーム',
@@ -153,7 +153,7 @@ const I18n = (() => {
       createAccount: 'Create account',
       haveAccount: 'Already have an account?',
       nicknamePlaceholder: 'Nickname (2-20 chars)',
-      passwordPlaceholder: 'Password (4+ chars)',
+      passwordPlaceholder: 'Password (8+ chars)',
 
       navHome: 'Home',
       navRecords: 'Records',
