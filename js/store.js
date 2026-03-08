@@ -221,6 +221,8 @@ const Store = (() => {
       const item = _feed.find(f => f.id === recordId);
       if (item) {
         if (!item.reactions) item.reactions = {};
+        if (!item.reactors) item.reactors = [];
+        const myNickname = _profile ? _profile.nickname : 'You';
         if (res.reacted) {
           // Remove old reaction if switching types
           if (item.myReaction && item.myReaction !== type) {
@@ -229,10 +231,14 @@ const Store = (() => {
           item.reactions[type] = (item.reactions[type] || 0) + (item.myReaction === type ? 0 : 1);
           item.myReaction = type;
           item.witnessed = true;
+          // Update reactors list
+          item.reactors = item.reactors.filter(r => r.nickname !== myNickname);
+          item.reactors.unshift({ nickname: myNickname, type });
         } else {
           // Toggled off
           item.reactions[type] = Math.max(0, (item.reactions[type] || 0) - 1);
           item.myReaction = null;
+          item.reactors = item.reactors.filter(r => r.nickname !== myNickname);
         }
       }
     }

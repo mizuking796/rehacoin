@@ -434,14 +434,19 @@ const App = (() => {
       trigger.innerHTML = `<span class="rt-icon">${REACTION_SVG.like_outline}</span>${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
     }
 
-    // Update summary (Facebook-style icon badges)
+    // Update summary (Facebook-style icon badges + tooltip)
     const reactions = item.reactions || {};
     const total = Object.values(reactions).reduce((a, b) => a + b, 0);
     let summaryEl = bar.querySelector('.reaction-summary');
     if (total > 0) {
       const badges = REACTIONS.filter(r => reactions[r.type] > 0)
         .map(r => `<span class="reaction-icon-badge ri-${r.type}">${r.emoji}</span>`).join('');
-      const html = `<span class="reaction-icons">${badges}</span><span class="reaction-count">${total}</span>`;
+      const reactors = item.reactors || [];
+      const tooltipItems = reactors.map(r => {
+        const rd = REACTIONS.find(x => x.type === r.type);
+        return `<div class="rt-line">${rd ? rd.emoji : '👍'} ${escapeHtml(r.nickname)}</div>`;
+      }).join('');
+      const html = `<span class="reaction-icons">${badges}</span><span class="reaction-count">${total}</span><div class="reactor-tooltip">${tooltipItems}</div>`;
       if (summaryEl) {
         summaryEl.innerHTML = html;
       } else {
