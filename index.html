@@ -130,45 +130,57 @@
 
     <!-- Friends -->
     <main id="screen-friends" class="screen">
-      <h2 class="screen-title-fixed" data-i18n="screenFriends">フレンド</h2>
+      <div class="friends-tabs">
+        <button class="friends-tab active" data-ftab="friends-tab-list" data-i18n="tabFriendList">フレンド</button>
+        <button class="friends-tab" data-ftab="friends-tab-add" data-i18n="tabFriendAdd">追加</button>
+        <button class="friends-tab" data-ftab="friends-tab-feed" data-i18n="tabFriendFeed">フィード</button>
+      </div>
 
-      <section class="section">
-        <h2 class="section-title" data-i18n="myFriendCode">マイフレンドコード</h2>
-        <div class="friend-code-display">
-          <span id="my-friend-code" class="friend-code-value">------</span>
+      <!-- Tab: Friend List -->
+      <div id="friends-tab-list" class="friends-tab-content active">
+        <div id="section-friend-requests" hidden>
+          <div class="fr-section-header" data-i18n="friendRequests">フレンド申請</div>
+          <div id="friend-requests-list"></div>
         </div>
-      </section>
-
-      <section class="section">
-        <h2 class="section-title" data-i18n="searchUser">ユーザー検索</h2>
-        <div class="free-input-row">
-          <input type="text" id="user-search-input" data-i18n-placeholder="userSearchPlaceholder" placeholder="ニックネームで検索..." autocomplete="off">
+        <div id="friend-list-container">
+          <div class="fr-section-header"><span data-i18n="sectionFriends">フレンド一覧</span> <span id="friend-count-label" class="fr-count"></span></div>
+          <div id="friend-list"></div>
         </div>
-        <div id="user-search-results" class="user-search-results"></div>
-      </section>
+      </div>
 
-      <section class="section">
-        <h2 class="section-title" data-i18n="addFriendByCode">コードでフレンド追加</h2>
-        <div class="free-input-row">
-          <input type="text" id="friend-code-input" data-i18n-placeholder="friendCodePlaceholder" placeholder="フレンドコードを入力" autocomplete="off" maxlength="6" style="text-transform:uppercase">
-          <button id="btn-send-friend-request" class="btn-primary" data-i18n="btnSend">送信</button>
+      <!-- Tab: Add Friend -->
+      <div id="friends-tab-add" class="friends-tab-content">
+        <div class="fr-search-section">
+          <div class="fr-search-bar">
+            <input type="text" id="user-search-input" data-i18n-placeholder="userSearchPlaceholder" placeholder="ニックネームで検索..." autocomplete="off">
+          </div>
+          <div id="user-search-results"></div>
         </div>
-      </section>
 
-      <section id="section-friend-requests" class="section" hidden>
-        <h2 class="section-title" data-i18n="friendRequests">フレンド申請</h2>
-        <div id="friend-requests-list"></div>
-      </section>
+        <div class="fr-divider"><span data-i18n="orLabel">または</span></div>
 
-      <section class="section">
-        <h2 class="section-title" data-i18n="sectionFriends">フレンド一覧</h2>
-        <div id="friend-list"></div>
-      </section>
+        <div class="fr-code-section">
+          <div class="fr-code-label" data-i18n="addFriendByCode">コードで追加</div>
+          <div class="fr-code-input-row">
+            <input type="text" id="friend-code-input" data-i18n-placeholder="friendCodePlaceholder" placeholder="フレンドコードを入力" autocomplete="off" maxlength="6" style="text-transform:uppercase">
+            <button id="btn-send-friend-request" class="btn-primary" data-i18n="btnSend">送信</button>
+          </div>
+        </div>
 
-      <section class="section">
-        <h2 class="section-title" data-i18n="sectionFeed">フレンドの活動</h2>
+        <div class="fr-mycode-section">
+          <div class="fr-mycode-label" data-i18n="myFriendCode">マイフレンドコード</div>
+          <div class="fr-mycode-display">
+            <span id="my-friend-code" class="fr-mycode-value">------</span>
+            <button id="btn-copy-friend-code" class="fr-copy-btn">Copy</button>
+          </div>
+          <div class="fr-mycode-hint" data-i18n="shareCodeHint">このコードを共有してフレンドに追加してもらおう</div>
+        </div>
+      </div>
+
+      <!-- Tab: Feed -->
+      <div id="friends-tab-feed" class="friends-tab-content">
         <div id="feed-list"></div>
-      </section>
+      </div>
     </main>
 
     <!-- Exchange -->

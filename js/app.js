@@ -528,6 +528,16 @@ const App = (() => {
 
   // --- Friends ---
   function bindFriends() {
+    // Friends tabs
+    document.querySelectorAll('.friends-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.friends-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.friends-tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.ftab).classList.add('active');
+      });
+    });
+
     // Friend code request
     document.getElementById('btn-send-friend-request').addEventListener('click', async () => {
       const input = document.getElementById('friend-code-input');
@@ -535,10 +545,16 @@ const App = (() => {
       if (!code) return;
       const res = await Store.sendFriendRequest(code);
       if (res.error) showToast(res.error);
-      else { showToast(`${I18n.t('friendRequestSent')}`); input.value = ''; }
+      else { showToast(I18n.t('friendRequestSent')); input.value = ''; }
     });
     document.getElementById('friend-code-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('btn-send-friend-request').click();
+    });
+
+    // Copy friend code
+    document.getElementById('btn-copy-friend-code').addEventListener('click', () => {
+      const code = document.getElementById('my-friend-code').textContent;
+      navigator.clipboard.writeText(code).then(() => showToast('Copied!'));
     });
 
     // User nickname search
@@ -558,6 +574,7 @@ const App = (() => {
     if (!res.users || res.users.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('notFound')}</div>`; return; }
 
     container.innerHTML = res.users.map(u => {
+      const initial = u.nickname.charAt(0).toUpperCase();
       let actionHtml = '';
       if (u.status === 'friend') {
         actionHtml = `<span class="user-status friend">${I18n.t('statusFriend')}</span>`;
@@ -568,7 +585,7 @@ const App = (() => {
       } else {
         actionHtml = `<button class="btn-add-user" data-uid="${u.id}">${I18n.t('btnAddFriend')}</button>`;
       }
-      return `<div class="user-search-item"><span class="us-name">${escapeHtml(u.nickname)}</span>${actionHtml}</div>`;
+      return `<div class="user-search-item"><div class="us-avatar">${initial}</div><span class="us-name">${escapeHtml(u.nickname)}</span>${actionHtml}</div>`;
     }).join('');
 
     container.querySelectorAll('.btn-add-user').forEach(btn => {
@@ -606,15 +623,20 @@ const App = (() => {
     const requests = Store.getFriendRequests();
     if (requests.length === 0) { container.innerHTML = ''; document.getElementById('section-friend-requests').hidden = true; return; }
     document.getElementById('section-friend-requests').hidden = false;
-    container.innerHTML = requests.map(r => `
-      <div class="friend-request-item">
-        <span class="fr-name">${escapeHtml(r.from_nickname)}</span>
-        <div class="fr-actions">
-          <button class="btn-accept" data-id="${r.id}">${I18n.t('btnAccept')}</button>
-          <button class="btn-reject" data-id="${r.id}">${I18n.t('btnReject')}</button>
+    container.innerHTML = requests.map(r => {
+      const initial = r.from_nickname.charAt(0).toUpperCase();
+      return `
+      <div class="fr-request-card">
+        <div class="fr-request-avatar">${initial}</div>
+        <div class="fr-request-info">
+          <div class="fr-request-name">${escapeHtml(r.from_nickname)}</div>
+          <div class="fr-request-actions">
+            <button class="btn-accept" data-id="${r.id}">${I18n.t('btnAccept')}</button>
+            <button class="btn-reject" data-id="${r.id}">${I18n.t('btnReject')}</button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
     container.querySelectorAll('.btn-accept').forEach(btn => {
       btn.addEventListener('click', async () => { await Store.acceptFriendRequest(btn.dataset.id); showToast(I18n.t('friendAdded')); renderFriends(); updateFriendBadge(); });
     });
@@ -626,10 +648,19 @@ const App = (() => {
   function renderFriendList() {
     const container = document.getElementById('friend-list');
     const friends = Store.getFriends();
+    document.getElementById('friend-count-label').textContent = friends.length ? `(${friends.length})` : '';
     if (friends.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFriends')}</div>`; return; }
-    container.innerHTML = friends.map(f => `
-      <div class="friend-item"><span class="fi-name">${escapeHtml(f.nickname)}</span><button class="fi-remove" data-id="${f.id}">×</button></div>
-    `).join('');
+    container.innerHTML = friends.map(f => {
+      const initial = f.nickname.charAt(0).toUpperCase();
+      return `
+      <div class="friend-item">
+        <div class="fi-avatar">${initial}</div>
+        <div class="fi-info">
+          <div class="fi-name">${escapeHtml(f.nickname)}</div>
+        </div>
+        <button class="fi-remove" data-id="${f.id}">${I18n.t('removeFriendBtn') || '削除'}</button>
+      </div>`;
+    }).join('');
     container.querySelectorAll('.fi-remove').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!confirm(I18n.t('removeFriendConfirm'))) return;
@@ -644,11 +675,19 @@ const App = (() => {
     if (feed.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFeed')}</div>`; return; }
     container.innerHTML = feed.map(item => {
       const time = formatTime(item.timestamp);
+      const initial = item.nickname.charAt(0).toUpperCase();
       const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
       const witnessBtn = item.witnessed
         ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
         : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
-      return `<div class="feed-item"><div class="feed-header"><span class="feed-name">${escapeHtml(item.nickname)}</span><span class="feed-time">${time}</span></div><div class="feed-body"><span class="feed-activity">${actLabel}</span>${witnessBtn}</div></div>`;
+      return `
+      <div class="feed-item">
+        <div class="feed-avatar">${initial}</div>
+        <div class="feed-content">
+          <div class="feed-header"><span class="feed-name">${escapeHtml(item.nickname)}</span><span class="feed-time">${time}</span></div>
+          <div class="feed-body"><span class="feed-activity">${actLabel}</span>${witnessBtn}</div>
+        </div>
+      </div>`;
     }).join('');
     container.querySelectorAll('.feed-witness-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
