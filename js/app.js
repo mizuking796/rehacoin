@@ -288,29 +288,29 @@ const App = (() => {
     const initial = item.nickname.charAt(0).toUpperCase();
     const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
 
-    // Reaction summary (show icons of reactions received)
+    // Reaction summary (Facebook-style icon badges + count)
     const reactions = item.reactions || {};
     const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0);
     let reactionSummaryHtml = '';
     if (totalReactions > 0) {
-      const icons = REACTIONS.filter(r => reactions[r.type] > 0).map(r => r.emoji).join('');
-      reactionSummaryHtml = `<div class="reaction-summary">${icons} <span class="reaction-count">${totalReactions}</span></div>`;
+      const badges = REACTIONS.filter(r => reactions[r.type] > 0)
+        .map(r => `<span class="reaction-icon-badge ri-${r.type}">${r.emoji}</span>`).join('');
+      reactionSummaryHtml = `<div class="reaction-summary"><span class="reaction-icons">${badges}</span><span class="reaction-count">${totalReactions}</span></div>`;
     }
 
-    // My reaction indicator
+    // My reaction - Facebook style: gray when not reacted, colored when reacted
     const myReaction = item.myReaction;
     const myReactionData = myReaction ? REACTIONS.find(r => r.type === myReaction) : null;
-    const myReactionLabel = myReactionData
-      ? `<span class="my-reaction-label" style="color:var(--accent)">${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}</span>`
-      : '';
+    const triggerClass = myReaction ? `reaction-trigger reacted reacted-${myReaction}` : 'reaction-trigger';
+    const triggerContent = myReaction
+      ? `${myReactionData.emoji} ${I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn}`
+      : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
 
-    // Reaction picker trigger
-    const pickerBtnClass = context === 'home' ? 'home-feed' : 'feed';
     const reactionBar = `
       <div class="reaction-bar" data-id="${item.id}">
         ${reactionSummaryHtml}
         <div class="reaction-buttons">
-          <button class="reaction-trigger ${myReaction ? 'reacted' : ''}" data-id="${item.id}">${myReaction ? myReactionLabel : `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`}</button>
+          <button class="${triggerClass}" data-id="${item.id}">${triggerContent}</button>
         </div>
         <div class="reaction-picker" hidden>
           ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
@@ -404,23 +404,25 @@ const App = (() => {
     const item = Store.getFeed().find(f => f.id === recordId);
     if (!item) return;
 
-    // Update trigger button
+    // Update trigger button (Facebook-style: gray when not reacted, colored when reacted)
     if (item.myReaction) {
       const rd = REACTIONS.find(r => r.type === item.myReaction);
-      trigger.className = 'reaction-trigger reacted';
-      trigger.innerHTML = `<span class="my-reaction-label" style="color:var(--accent)">${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}</span>`;
+      trigger.className = `reaction-trigger reacted reacted-${item.myReaction}`;
+      trigger.textContent = '';
+      trigger.textContent = `${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`;
     } else {
       trigger.className = 'reaction-trigger';
-      trigger.innerHTML = `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
+      trigger.textContent = `👍 ${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
     }
 
-    // Update summary
+    // Update summary (Facebook-style icon badges)
     const reactions = item.reactions || {};
     const total = Object.values(reactions).reduce((a, b) => a + b, 0);
     let summaryEl = bar.querySelector('.reaction-summary');
     if (total > 0) {
-      const icons = REACTIONS.filter(r => reactions[r.type] > 0).map(r => r.emoji).join('');
-      const html = `${icons} <span class="reaction-count">${total}</span>`;
+      const badges = REACTIONS.filter(r => reactions[r.type] > 0)
+        .map(r => `<span class="reaction-icon-badge ri-${r.type}">${r.emoji}</span>`).join('');
+      const html = `<span class="reaction-icons">${badges}</span><span class="reaction-count">${total}</span>`;
       if (summaryEl) {
         summaryEl.innerHTML = html;
       } else {

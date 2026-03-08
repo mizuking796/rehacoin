@@ -2007,41 +2007,64 @@ body {
 
 /* === Reaction Bar === */
 .reaction-bar {
-  margin-top: 8px;
+  margin-top: 4px;
   position: relative;
 }
 
 .reaction-summary {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.82rem;
-  margin-bottom: 6px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-light);
+  gap: 6px;
+  padding: 8px 0 6px;
 }
 
+.reaction-icons {
+  display: flex;
+  margin-right: -2px;
+}
+
+.reaction-icon-badge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 2px solid var(--bg-card);
+  margin-right: -4px;
+  position: relative;
+}
+
+.reaction-icon-badge.ri-like { background: #1877f2; }
+.reaction-icon-badge.ri-cheer { background: #f7b928; }
+.reaction-icon-badge.ri-empathy { background: #e8467c; }
+.reaction-icon-badge.ri-amazing { background: #f5533d; }
+
 .reaction-summary .reaction-count {
-  font-size: 0.75rem;
+  font-size: 0.82rem;
   color: var(--text-light);
 }
 
 .reaction-buttons {
   display: flex;
-  gap: 8px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 4px;
 }
 
 .reaction-trigger {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 34px;
-  padding: 0 16px;
-  background: var(--bg);
-  color: var(--text-muted);
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  height: 36px;
+  padding: 0 12px;
+  background: none;
+  color: var(--text-light);
   border: none;
-  border-radius: 17px;
-  font-size: 0.82rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -2050,14 +2073,22 @@ body {
   user-select: none;
 }
 
+.reaction-trigger:hover {
+  background: var(--bg);
+}
+
 .reaction-trigger:active {
-  transform: scale(0.93);
+  transform: scale(0.96);
 }
 
 .reaction-trigger.reacted {
-  background: var(--accent-light);
   color: var(--accent);
 }
+
+.reaction-trigger.reacted-like { color: #1877f2; }
+.reaction-trigger.reacted-cheer { color: #f7b928; }
+.reaction-trigger.reacted-empathy { color: #e8467c; }
+.reaction-trigger.reacted-amazing { color: #f5533d; }
 
 /* === Reaction Picker === */
 .reaction-picker {
