@@ -461,9 +461,38 @@ const App = (() => {
 
     if (res.reacted) {
       const rd = REACTIONS.find(r => r.type === type);
-      showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
       if (navigator.vibrate) navigator.vibrate(50);
       showFloatingEmoji(rd.emoji, trigger);
+
+      if (res.witnessBonus) {
+        // First witness! Show exciting coin reward
+        const ja = I18n.getLang() === 'ja';
+        showToast(ja
+          ? `${rd.emoji} ${rd.label}\n🪙 あなたと相手に +1コイン！`
+          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin for you & them!`);
+        showCoinBurst(trigger);
+        updateHeaderCoins();
+      } else {
+        showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
+      }
+    }
+  }
+
+  function showCoinBurst(anchorEl) {
+    const rect = anchorEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top;
+    for (let i = 0; i < 6; i++) {
+      const coin = document.createElement('div');
+      coin.className = 'coin-burst';
+      coin.textContent = '🪙';
+      coin.style.left = cx + 'px';
+      coin.style.top = cy + 'px';
+      coin.style.setProperty('--dx', (Math.random() - 0.5) * 80 + 'px');
+      coin.style.setProperty('--dy', -(Math.random() * 60 + 30) + 'px');
+      coin.style.animationDelay = (i * 50) + 'ms';
+      document.body.appendChild(coin);
+      coin.addEventListener('animationend', () => coin.remove());
     }
   }
 

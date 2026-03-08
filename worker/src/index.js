@@ -746,13 +746,15 @@ async function cheerRecord(env, user, recordId) {
   }
 
   // Any reaction = witness (mark as witnessed, both get coins)
+  let witnessBonus = false;
   if (!rec.witnessed) {
     await env.DB.prepare(
       'UPDATE records SET witnessed = 1, witnessed_by = ?, witnessed_at = ? WHERE id = ?'
     ).bind(user.id, Date.now(), recordId).run();
+    witnessBonus = true;
   }
 
-  return { ok: true, reacted: true, type };
+  return { ok: true, reacted: true, type, witnessBonus };
 }
 
 // --- Admin Functions ---

@@ -715,6 +715,9 @@ body {
   border-radius: 24px;
   font-size: 0.95rem;
   font-weight: 600;
+  white-space: pre-line;
+  text-align: center;
+  line-height: 1.4;
   z-index: 200;
   opacity: 0;
   pointer-events: none;
@@ -2221,6 +2224,22 @@ body {
 .my-reaction-label {
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+/* === Coin Burst Animation === */
+.coin-burst {
+  position: fixed;
+  font-size: 1.4rem;
+  pointer-events: none;
+  z-index: 500;
+  animation: coinBurst 0.8s ease-out forwards;
+  transform: translate(-50%, 0);
+}
+
+@keyframes coinBurst {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(0.5); }
+  30% { opacity: 1; transform: translate(calc(-50% + var(--dx) * 0.5), calc(var(--dy) * 0.5)) scale(1.2); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(0.3); }
 }
 
 /* === Privacy Consent === */
