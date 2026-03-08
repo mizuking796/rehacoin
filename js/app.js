@@ -306,7 +306,7 @@ const App = (() => {
     grid.innerHTML = categories.map(cat => {
       const count = monthlyCounts[cat.code] || 0;
       const badge = count > 0 ? `<span class="cat-badge">${count}</span>` : '';
-      return `<div class="category-card" data-code="${cat.code}" style="border-color: ${cat.color}">${badge}<span class="cat-icon">${cat.icon}</span><span class="cat-label">${cat.label}</span></div>`;
+      return `<div class="category-card" data-code="${cat.code}">${badge}<span class="cat-icon">${cat.icon}</span><span class="cat-label">${cat.label}</span></div>`;
     }).join('');
     grid.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => openCategory(card.dataset.code));
