@@ -704,6 +704,102 @@ body {
 }
 
 /* === Toast === */
+/* === My Area Divider === */
+.my-area-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+}
+
+.my-area-divider::before,
+.my-area-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.my-area-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* === Confirm Modal === */
+.confirm-overlay[hidden] { display: none; }
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 350;
+  animation: fadeIn 0.15s ease;
+}
+
+.confirm-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 20px;
+  text-align: center;
+  max-width: 300px;
+  width: 85%;
+  box-shadow: var(--shadow-lg);
+  animation: confirmPop 0.2s ease;
+}
+
+@keyframes confirmPop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.confirm-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.confirm-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.confirm-btn:active { opacity: 0.7; }
+
+.confirm-cancel {
+  background: var(--bg);
+  color: var(--text-light);
+}
+
+.confirm-ok {
+  background: var(--accent-gradient);
+  color: #fff;
+}
+
+/* === Toast === */
 .toast {
   position: fixed;
   bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 20px);

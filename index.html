@@ -86,6 +86,10 @@
         <div id="home-feed-list" class="home-feed-list"></div>
       </section>
 
+      <div class="my-area-divider">
+        <span class="my-area-label" data-i18n="myRecord">✏️ じぶんの記録</span>
+      </div>
+
       <section class="section section-quick-record">
         <div class="quick-record-bar">
           <input type="search" id="search-input" class="quick-record-input" data-i18n-placeholder="searchPlaceholder" placeholder="活動を検索..." autocomplete="off">
@@ -281,6 +285,18 @@
       <div class="mining-content">
         <div class="mining-icon">⏳</div>
         <div class="mining-title" id="loading-text">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="confirm-overlay" hidden>
+      <div class="confirm-card">
+        <div class="confirm-icon" id="confirm-icon">🪙</div>
+        <div class="confirm-text" id="confirm-text"></div>
+        <div class="confirm-actions">
+          <button class="confirm-btn confirm-cancel" id="confirm-cancel" data-i18n="btnCancel">やめる</button>
+          <button class="confirm-btn confirm-ok" id="confirm-ok" data-i18n="btnConfirmRecord">記録する</button>
+        </div>
       </div>
     </div>
 

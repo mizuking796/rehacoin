@@ -552,13 +552,13 @@ const App = (() => {
       <div class="favorite-chip" data-id="${act.id}"><span class="fav-icon">${act.icon}</span><span class="fav-label">${escapeHtml(act.label)}</span></div>
     `).join('');
     list.querySelectorAll('.favorite-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
+      chip.addEventListener('click', async () => {
         const act = Data.getActivity(chip.dataset.id);
         if (!act) return;
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (confirm(msg)) recordActivity(act);
+        if (await showConfirm(msg, act.icon)) recordActivity(act);
       });
     });
   }
@@ -583,13 +583,13 @@ const App = (() => {
       return `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${act.icon}</span><span class="act-label">${escapeHtml(act.label)}</span>${countBadge}</div>`;
     }).join('');
     list.querySelectorAll('.activity-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', async () => {
         const act = Data.getActivity(item.dataset.id);
         if (!act) return;
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (confirm(msg)) recordActivity(act, true);
+        if (await showConfirm(msg, act.icon)) recordActivity(act, true);
       });
     });
   }
@@ -682,6 +682,26 @@ const App = (() => {
     clearInterval(_coinRainInterval);
   }
 
+  // --- Custom Confirm Modal ---
+  function showConfirm(text, icon) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-text').textContent = text;
+      document.getElementById('confirm-icon').textContent = icon || '🪙';
+      modal.hidden = false;
+      const ok = document.getElementById('confirm-ok');
+      const cancel = document.getElementById('confirm-cancel');
+      function cleanup(result) {
+        modal.hidden = true;
+        ok.replaceWith(ok.cloneNode(true));
+        cancel.replaceWith(cancel.cloneNode(true));
+        resolve(result);
+      }
+      ok.addEventListener('click', () => cleanup(true), { once: true });
+      cancel.addEventListener('click', () => cleanup(false), { once: true });
+    });
+  }
+
   // --- Toast ---
   function showToast(text) {
     const toast = document.getElementById('toast');
@@ -727,13 +747,13 @@ const App = (() => {
       return `<div class="search-group-title">${group.category.icon} ${group.category.label}</div>${items}`;
     }).join('');
     results.querySelectorAll('.activity-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', async () => {
         const act = Data.getActivity(item.dataset.id);
         if (!act) return;
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (confirm(msg)) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
+        if (await showConfirm(msg, act.icon)) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
       });
     });
   }
@@ -743,13 +763,13 @@ const App = (() => {
     const input = document.getElementById('free-input');
     const btn = document.getElementById('free-input-btn');
     input.addEventListener('input', () => { btn.disabled = !input.value.trim(); });
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const label = input.value.trim();
       if (!label) return;
       const msg = I18n.getLang() === 'ja'
         ? `「${label}」を記録しますか？`
         : `Record "${label}"?`;
-      if (!confirm(msg)) return;
+      if (!await showConfirm(msg, '✏️')) return;
       recordActivity({ id: null, label, icon: '✏️', categoryCode: 'free' });
       input.value = ''; btn.disabled = true;
     });

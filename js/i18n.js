@@ -32,6 +32,9 @@ const I18n = (() => {
       sectionFreeInput: '自由入力',
       freeInputPlaceholder: '活動を自由に入力...',
       btnRecord: '記録',
+      btnConfirmRecord: '記録する',
+      btnCancel: 'やめる',
+      myRecord: '✏️ じぶんの記録',
       btnBack: '← 戻る',
 
       // History
@@ -176,6 +179,9 @@ const I18n = (() => {
       sectionFreeInput: 'Free Input',
       freeInputPlaceholder: 'Enter your activity...',
       btnRecord: 'Record',
+      btnConfirmRecord: 'Record it',
+      btnCancel: 'Cancel',
+      myRecord: '✏️ My Record',
       btnBack: '← Back',
 
       screenRecords: 'Records',
