@@ -767,15 +767,14 @@ async function adminResetPassword(env, userId, body) {
     return { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` };
   }
 
-  const salt = crypto.randomUUID();
-  const hash = await hashPassword(newPassword, salt);
-  const recoveryCode = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
-  const recSalt = crypto.randomUUID();
-  const recoveryHash = await hashPassword(recoveryCode, recSalt);
+  const newSalt = crypto.randomUUID();
+  const hash = await hashPassword(newPassword, newSalt);
+  const recoveryCode = genRecoveryCode();
+  const recoveryHash = await hashPassword(recoveryCode, newSalt);
 
   await env.DB.prepare(
-    'UPDATE users SET password_hash = ?, salt = ?, recovery_hash = ?, recovery_salt = ? WHERE id = ?'
-  ).bind(hash, salt, recoveryHash, recSalt, userId).run();
+    'UPDATE users SET password_hash = ?, salt = ?, recovery_hash = ? WHERE id = ?'
+  ).bind(hash, newSalt, recoveryHash, userId).run();
 
   return { ok: true, recoveryCode };
 }
