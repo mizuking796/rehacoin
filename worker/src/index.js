@@ -648,6 +648,7 @@ async function getFeed(env, user) {
   const recordIds = rows.results.map(r => r.id);
   let reactionsMap = {};  // recordId -> { like: N, cheer: N, ... }
   let userReactions = {}; // recordId -> type
+  let reactorsMap = {};   // recordId -> [{ nickname, type }]
 
   if (recordIds.length > 0) {
     const ph = recordIds.map(() => '?').join(',');
@@ -665,6 +666,15 @@ async function getFeed(env, user) {
     for (const row of userCheerRows.results) {
       userReactions[row.record_id] = row.type || 'like';
     }
+
+    // Get who reacted (nickname + type) for tooltip
+    const cheerDetailRows = await env.DB.prepare(
+      `SELECT c.record_id, c.type, u.nickname FROM cheers c JOIN users u ON c.from_user_id = u.id WHERE c.record_id IN (${ph}) ORDER BY c.created_at DESC`
+    ).bind(...recordIds).all();
+    for (const row of cheerDetailRows.results) {
+      if (!reactorsMap[row.record_id]) reactorsMap[row.record_id] = [];
+      reactorsMap[row.record_id].push({ nickname: row.nickname, type: row.type || 'like' });
+    }
   }
 
   const feed = rows.results.map(r => ({
@@ -676,6 +686,7 @@ async function getFeed(env, user) {
     categoryCode: r.category_code,
     witnessed: !!r.witnessed,
     reactions: reactionsMap[r.id] || {},
+    reactors: reactorsMap[r.id] || [],
     myReaction: userReactions[r.id] || null,
     timestamp: r.timestamp,
   }));

@@ -304,7 +304,12 @@ const App = (() => {
     if (totalReactions > 0) {
       const badges = REACTIONS.filter(r => reactions[r.type] > 0)
         .map(r => `<span class="reaction-icon-badge ri-${r.type}">${r.emoji}</span>`).join('');
-      reactionSummaryHtml = `<div class="reaction-summary"><span class="reaction-icons">${badges}</span><span class="reaction-count">${totalReactions}</span></div>`;
+      const reactors = item.reactors || [];
+      const tooltipItems = reactors.map(r => {
+        const rd = REACTIONS.find(x => x.type === r.type);
+        return `<div class="rt-line">${rd ? rd.emoji : '👍'} ${escapeHtml(r.nickname)}</div>`;
+      }).join('');
+      reactionSummaryHtml = `<div class="reaction-summary"><span class="reaction-icons">${badges}</span><span class="reaction-count">${totalReactions}</span><div class="reactor-tooltip">${tooltipItems}</div></div>`;
     }
 
     // My reaction - Facebook style: outline icon when unreacted, filled+colored when reacted
@@ -352,15 +357,20 @@ const App = (() => {
       let hoverTimeout;
       let pickerOpenedByHover = false;
 
+      let hideDelay;
       const showPicker = () => {
+        clearTimeout(hideDelay);
         picker.hidden = false;
         picker.classList.add('picker-animate');
         setTimeout(() => picker.classList.remove('picker-animate'), 300);
       };
-      const hidePicker = () => { picker.hidden = true; pickerOpenedByHover = false; };
+      const hidePicker = () => {
+        hideDelay = setTimeout(() => { picker.hidden = true; pickerOpenedByHover = false; }, 1000);
+      };
 
       // PC: hover on bar shows picker
       bar.addEventListener('mouseenter', () => {
+        clearTimeout(hideDelay);
         hoverTimeout = setTimeout(() => { showPicker(); pickerOpenedByHover = true; }, 300);
       });
       bar.addEventListener('mouseleave', () => {
