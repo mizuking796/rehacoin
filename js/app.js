@@ -369,7 +369,7 @@ const App = (() => {
 
       // Quick tap = toggle current reaction
       btn.addEventListener('click', async () => {
-        if (pickerOpenedByHover) return; // on PC, let picker handle it
+        picker.hidden = true;
         const recordId = btn.dataset.id;
         const item = Store.getFeed().find(f => f.id === recordId);
         const currentType = item?.myReaction || 'like';
