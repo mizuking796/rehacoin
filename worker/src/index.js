@@ -793,7 +793,7 @@ async function adminDeleteUser(env, userId) {
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM friends WHERE user_id = ? OR friend_id = ?').bind(userId, userId),
     env.DB.prepare('DELETE FROM friend_requests WHERE from_user_id = ? OR to_user_id = ?').bind(userId, userId),
-    env.DB.prepare('DELETE FROM login_attempts WHERE nickname = ?').bind(user.nickname),
+    env.DB.prepare('DELETE FROM login_attempts WHERE identifier = ?').bind(user.nickname),
     env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId),
   ]);
 
