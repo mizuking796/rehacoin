@@ -1,4 +1,4 @@
-// app.js — UI, routing, event handlers (API-backed)
+// app.js — UI, routing, event handlers (API-backed, i18n)
 
 const App = (() => {
   let currentScreen = 'screen-home';
@@ -13,7 +13,7 @@ const App = (() => {
       return;
     }
 
-    showLoadingOverlay('Loading...');
+    showLoadingOverlay(I18n.t('loading'));
     try {
       await Data.init();
       await Store.loadAll();
@@ -32,28 +32,62 @@ const App = (() => {
     bindHistoryTabs();
     bindExchange();
     bindFriends();
+    bindLangToggle();
+    updateLangToggleLabel();
+    I18n.applyToDOM();
     renderHome();
     updateHeaderCoins();
+  }
+
+  // --- Language toggle ---
+  function bindLangToggle() {
+    document.getElementById('btn-lang-toggle').addEventListener('click', () => {
+      const newLang = I18n.getLang() === 'ja' ? 'en' : 'ja';
+      I18n.setLang(newLang);
+      updateLangToggleLabel();
+      I18n.applyToDOM();
+      updateHeaderCoins();
+      // Re-render current screen
+      if (currentScreen === 'screen-home') renderHome();
+      else if (currentScreen === 'screen-history') renderHistory();
+      else if (currentScreen === 'screen-exchange') renderExchange();
+      else if (currentScreen === 'screen-friends') renderFriends();
+      else if (currentScreen === 'screen-profile') renderProfile();
+    });
+
+    // Profile language selector
+    const profileLang = document.getElementById('profile-lang');
+    if (profileLang) {
+      profileLang.addEventListener('change', () => {
+        I18n.setLang(profileLang.value);
+        updateLangToggleLabel();
+        I18n.applyToDOM();
+        updateHeaderCoins();
+        renderProfile();
+      });
+    }
+  }
+
+  function updateLangToggleLabel() {
+    const btn = document.getElementById('btn-lang-toggle');
+    btn.textContent = I18n.getLang() === 'ja' ? 'EN' : 'JA';
   }
 
   // --- Auth Screen ---
   function showAuthScreen() {
     document.getElementById('auth-screen').hidden = false;
     document.getElementById('app-container').hidden = true;
+    I18n.applyToDOM();
 
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const authError = document.getElementById('auth-error');
 
     document.getElementById('btn-show-register').onclick = () => {
-      loginForm.hidden = true;
-      registerForm.hidden = false;
-      authError.hidden = true;
+      loginForm.hidden = true; registerForm.hidden = false; authError.hidden = true;
     };
     document.getElementById('btn-show-login').onclick = () => {
-      loginForm.hidden = false;
-      registerForm.hidden = true;
-      authError.hidden = true;
+      loginForm.hidden = false; registerForm.hidden = true; authError.hidden = true;
     };
 
     document.getElementById('btn-login').onclick = async () => {
@@ -61,17 +95,11 @@ const App = (() => {
       const nickname = document.getElementById('login-nickname').value.trim();
       const password = document.getElementById('login-password').value;
       if (!nickname || !password) return;
-
       document.getElementById('btn-login').disabled = true;
       const res = await API.login(nickname, password);
       document.getElementById('btn-login').disabled = false;
-
-      if (res.error) {
-        authError.textContent = res.error;
-        authError.hidden = false;
-      } else {
-        init();
-      }
+      if (res.error) { authError.textContent = res.error; authError.hidden = false; }
+      else init();
     };
 
     document.getElementById('btn-register').onclick = async () => {
@@ -79,20 +107,13 @@ const App = (() => {
       const nickname = document.getElementById('register-nickname').value.trim();
       const password = document.getElementById('register-password').value;
       if (!nickname || !password) return;
-
       document.getElementById('btn-register').disabled = true;
       const res = await API.register(nickname, password);
       document.getElementById('btn-register').disabled = false;
-
-      if (res.error) {
-        authError.textContent = res.error;
-        authError.hidden = false;
-      } else {
-        init();
-      }
+      if (res.error) { authError.textContent = res.error; authError.hidden = false; }
+      else init();
     };
 
-    // Enter key support
     ['login-nickname', 'login-password'].forEach(id => {
       document.getElementById(id).addEventListener('keydown', e => {
         if (e.key === 'Enter') document.getElementById('btn-login').click();
@@ -105,13 +126,11 @@ const App = (() => {
     });
   }
 
-  // --- Loading overlay ---
+  // --- Loading ---
   function showLoadingOverlay(text) {
-    const el = document.getElementById('loading-overlay');
-    document.getElementById('loading-text').textContent = text || 'Loading...';
-    el.hidden = false;
+    document.getElementById('loading-text').textContent = text || I18n.t('loading');
+    document.getElementById('loading-overlay').hidden = false;
   }
-
   function hideLoadingOverlay() {
     document.getElementById('loading-overlay').hidden = true;
   }
@@ -121,17 +140,14 @@ const App = (() => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
     currentScreen = screenId;
-
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.screen === screenId);
     });
-
     if (screenId === 'screen-home') renderHome();
     else if (screenId === 'screen-history') renderHistory();
     else if (screenId === 'screen-exchange') renderExchange();
     else if (screenId === 'screen-friends') loadAndRenderFriends();
     else if (screenId === 'screen-profile') renderProfile();
-
     window.scrollTo(0, 0);
   }
 
@@ -141,9 +157,9 @@ const App = (() => {
     });
   }
 
-  // --- Header coins ---
+  // --- Header ---
   function updateHeaderCoins() {
-    document.getElementById('header-coins').textContent = Store.getBalance() + ' coin';
+    document.getElementById('header-coins').textContent = Store.getBalance() + ' ' + I18n.t('coin');
   }
 
   // --- Home ---
@@ -158,19 +174,11 @@ const App = (() => {
     const grid = document.getElementById('category-grid');
     const categories = Data.getCategories();
     const monthlyCounts = Store.getMonthlyCounts();
-
     grid.innerHTML = categories.map(cat => {
       const count = monthlyCounts[cat.code] || 0;
       const badge = count > 0 ? `<span class="cat-badge">${count}</span>` : '';
-      return `
-        <div class="category-card" data-code="${cat.code}" style="border-color: ${cat.color}">
-          ${badge}
-          <span class="cat-icon">${cat.icon}</span>
-          <span class="cat-label">${cat.label}</span>
-        </div>
-      `;
+      return `<div class="category-card" data-code="${cat.code}" style="border-color: ${cat.color}">${badge}<span class="cat-icon">${cat.icon}</span><span class="cat-label">${cat.label}</span></div>`;
     }).join('');
-
     grid.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => openCategory(card.dataset.code));
     });
@@ -180,29 +188,18 @@ const App = (() => {
     const section = document.getElementById('section-recent');
     const list = document.getElementById('recent-list');
     const recent = Store.getRecentRecords(3);
-
     if (recent.length === 0) { section.hidden = true; return; }
-
     section.hidden = false;
-    list.innerHTML = recent.map(r => {
-      const timeStr = formatTime(r.timestamp);
-      return `
-        <div class="recent-item" data-activity-id="${r.activityId || ''}" data-label="${escapeAttr(r.label)}" data-icon="${r.icon}" data-category="${r.categoryCode}">
-          <span class="ri-icon">${r.icon}</span>
-          <span class="ri-label">${escapeHtml(r.label)}</span>
-          <span class="ri-time">${timeStr}</span>
-        </div>
-      `;
-    }).join('');
-
+    list.innerHTML = recent.map(r => `
+      <div class="recent-item" data-activity-id="${r.activityId || ''}" data-label="${escapeAttr(r.label)}" data-icon="${r.icon}" data-category="${r.categoryCode}">
+        <span class="ri-icon">${r.icon}</span>
+        <span class="ri-label">${escapeHtml(r.label)}</span>
+        <span class="ri-time">${formatTime(r.timestamp)}</span>
+      </div>
+    `).join('');
     list.querySelectorAll('.recent-item').forEach(item => {
       item.addEventListener('click', () => {
-        recordActivity({
-          id: item.dataset.activityId || null,
-          label: item.dataset.label,
-          icon: item.dataset.icon,
-          categoryCode: item.dataset.category
-        });
+        recordActivity({ id: item.dataset.activityId || null, label: item.dataset.label, icon: item.dataset.icon, categoryCode: item.dataset.category });
       });
     });
   }
@@ -211,17 +208,11 @@ const App = (() => {
     const section = document.getElementById('section-favorites');
     const list = document.getElementById('favorites-list');
     const favorites = Store.getFrequentActivities(10);
-
     if (favorites.length === 0) { section.hidden = true; return; }
-
     section.hidden = false;
     list.innerHTML = favorites.map(act => `
-      <div class="favorite-chip" data-id="${act.id}">
-        <span class="fav-icon">${act.icon}</span>
-        <span class="fav-label">${escapeHtml(act.label)}</span>
-      </div>
+      <div class="favorite-chip" data-id="${act.id}"><span class="fav-icon">${act.icon}</span><span class="fav-label">${escapeHtml(act.label)}</span></div>
     `).join('');
-
     list.querySelectorAll('.favorite-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const act = Data.getActivity(chip.dataset.id);
@@ -230,7 +221,7 @@ const App = (() => {
     });
   }
 
-  // --- Category detail ---
+  // --- Category ---
   function openCategory(code) {
     currentCategoryCode = code;
     const cat = Data.getCategory(code);
@@ -244,19 +235,11 @@ const App = (() => {
     const list = document.getElementById('activity-list');
     const activities = Data.getActivities(code);
     const counts = Store.getActivityMonthlyCounts(code);
-
     list.innerHTML = activities.map(act => {
       const count = counts[act.id] || 0;
       const countBadge = count > 0 ? `<span class="act-count">${count}回</span>` : '';
-      return `
-        <div class="activity-item" data-id="${act.id}">
-          <span class="act-icon">${act.icon}</span>
-          <span class="act-label">${escapeHtml(act.label)}</span>
-          ${countBadge}
-        </div>
-      `;
+      return `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${act.icon}</span><span class="act-label">${escapeHtml(act.label)}</span>${countBadge}</div>`;
     }).join('');
-
     list.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', () => {
         const act = Data.getActivity(item.dataset.id);
@@ -265,57 +248,42 @@ const App = (() => {
     });
   }
 
-  // --- Record flow (async + mining animation) ---
+  // --- Record flow ---
   async function recordActivity(activity, stayInCategory = false) {
     if (isMining) return;
-
     isMining = true;
     showMiningOverlay();
-
     try {
       const record = await Store.addRecord(activity, !activity.id);
-      if (!record) {
-        showToastCustom('Error: record failed');
-        return;
-      }
-
+      if (!record) { showToast('Error'); return; }
       if (navigator.vibrate) navigator.vibrate(50);
       updateHeaderCoins();
-
       if (stayInCategory && currentCategoryCode) renderActivityList(currentCategoryCode);
       if (currentScreen === 'screen-home') renderHome();
 
-      // Mining animation (purely visual)
       const startTime = Date.now();
       let nonce = 0;
       const animDuration = 800 + Math.random() * 1200;
-
       await new Promise(resolve => {
         function step() {
           nonce += Math.floor(Math.random() * 50) + 10;
-          const fakeHash = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-            .map(b => b.toString(16).padStart(2, '0')).join('');
+          const fakeHash = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('');
           updateMiningOverlay(nonce, fakeHash);
-
-          if (Date.now() - startTime < animDuration) {
-            requestAnimationFrame(step);
-          } else {
-            resolve();
-          }
+          if (Date.now() - startTime < animDuration) requestAnimationFrame(step);
+          else resolve();
         }
         requestAnimationFrame(step);
       });
 
-      showToastCustom(`⛓️ Block confirmed! +1 coin`);
+      showToast(`⛓️ ${I18n.t('blockConfirmed')}`);
       if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
     } catch (e) {
       console.error('Record failed:', e);
-      showToastCustom('🪙 +1 coin');
+      showToast(I18n.t('plusOneCoin'));
     } finally {
       hideMiningOverlay();
       isMining = false;
     }
-
     checkBadgeUnlock();
   }
 
@@ -326,7 +294,7 @@ const App = (() => {
       if (!shown.includes(badge.id)) {
         shown.push(badge.id);
         localStorage.setItem('rehacoin_badges_shown', JSON.stringify(shown));
-        setTimeout(() => showToastCustom(`${badge.icon} Badge unlocked! ${badge.label}`), 1500);
+        setTimeout(() => showToast(`${badge.icon} ${I18n.t('badgeUnlocked')} ${badge.label}`), 1500);
         break;
       }
     }
@@ -334,23 +302,20 @@ const App = (() => {
 
   // --- Mining overlay ---
   function showMiningOverlay() {
-    const overlay = document.getElementById('mining-overlay');
     document.getElementById('mining-nonce-val').textContent = '0';
-    document.getElementById('mining-hash-val').textContent = 'Hash: computing...';
-    overlay.hidden = false;
+    document.getElementById('mining-hash-val').textContent = I18n.t('hashComputing');
+    document.getElementById('mining-overlay').hidden = false;
   }
-
   function updateMiningOverlay(nonce, hash) {
     document.getElementById('mining-nonce-val').textContent = nonce.toLocaleString();
     document.getElementById('mining-hash-val').textContent = 'Hash: ' + hash.slice(0, 24) + '...';
   }
-
   function hideMiningOverlay() {
     document.getElementById('mining-overlay').hidden = true;
   }
 
   // --- Toast ---
-  function showToastCustom(text) {
+  function showToast(text) {
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toast-text');
     toastText.textContent = text;
@@ -367,7 +332,6 @@ const App = (() => {
   function bindSearch() {
     const input = document.getElementById('search-input');
     const results = document.getElementById('search-results');
-
     input.addEventListener('input', () => {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => {
@@ -376,7 +340,6 @@ const App = (() => {
         renderSearchResults(query);
       }, 200);
     });
-
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { input.value = ''; results.hidden = true; results.innerHTML = ''; input.blur(); }
     });
@@ -385,24 +348,16 @@ const App = (() => {
   function renderSearchResults(query) {
     const results = document.getElementById('search-results');
     const groups = Data.search(query);
-
     if (groups.length === 0) {
       results.hidden = false;
-      results.innerHTML = '<div class="history-empty">Not found</div>';
+      results.innerHTML = `<div class="history-empty">${I18n.t('notFound')}</div>`;
       return;
     }
-
     results.hidden = false;
     results.innerHTML = groups.map(group => {
-      const items = group.items.map(act => `
-        <div class="activity-item" data-id="${act.id}">
-          <span class="act-icon">${act.icon}</span>
-          <span class="act-label">${escapeHtml(act.label)}</span>
-        </div>
-      `).join('');
+      const items = group.items.map(act => `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${act.icon}</span><span class="act-label">${escapeHtml(act.label)}</span></div>`).join('');
       return `<div class="search-group-title">${group.category.icon} ${group.category.label}</div>${items}`;
     }).join('');
-
     results.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', () => {
         const act = Data.getActivity(item.dataset.id);
@@ -422,16 +377,11 @@ const App = (() => {
       recordActivity({ id: null, label, icon: '✏️', categoryCode: 'free' });
       input.value = ''; btn.disabled = true;
     });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && input.value.trim()) btn.click();
-    });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) btn.click(); });
   }
 
   // --- History ---
-  function renderHistory() {
-    renderStats();
-    renderHistoryList();
-  }
+  function renderHistory() { renderStats(); renderHistoryList(); }
 
   function bindHistoryTabs() {
     document.querySelectorAll('.history-tab').forEach(tab => {
@@ -450,51 +400,36 @@ const App = (() => {
     const today = Store.getTodayCount();
     const streak = Store.getStreak();
     const topCat = Store.getTopCategory();
-
     container.innerHTML = `
-      <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Coins</div></div>
-      <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">Today</div></div>
-      <div class="stat-card"><div class="stat-value">${streak}d</div><div class="stat-label">Streak</div></div>
-      <div class="stat-card"><div class="stat-value">${topCat ? topCat.icon : '—'}</div><div class="stat-label">${topCat ? topCat.label : 'Top'}</div></div>
+      <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">${I18n.t('totalCoins')}</div></div>
+      <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">${I18n.t('today')}</div></div>
+      <div class="stat-card"><div class="stat-value">${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
+      <div class="stat-card"><div class="stat-value">${topCat ? topCat.icon : '—'}</div><div class="stat-label">${topCat ? topCat.label : I18n.t('top')}</div></div>
     `;
   }
 
   function renderHistoryList() {
     const container = document.getElementById('history-list');
     const groups = Store.getRecordsByDate();
-
     if (groups.length === 0) {
-      container.innerHTML = '<div class="history-empty">No records yet.</div>';
+      container.innerHTML = `<div class="history-empty">${I18n.t('noRecords')}</div>`;
       return;
     }
-
     container.innerHTML = groups.map(group => {
       const items = group.records.map(r => {
         const time = new Date(r.timestamp);
         const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-        const witnessHtml = r.witnessed
-          ? '<span class="hi-witnessed">👁️ confirmed</span>'
-          : '';
-        return `
-          <div class="history-item">
-            <span class="hi-icon">${r.icon}</span>
-            <span class="hi-label">${escapeHtml(r.label)}</span>
-            ${witnessHtml}
-            <span class="hi-time">${timeStr}</span>
-            <button class="hi-delete" data-id="${r.id}">×</button>
-          </div>
-        `;
+        const witnessHtml = r.witnessed ? `<span class="hi-witnessed">👁️ ${I18n.t('confirmed')}</span>` : '';
+        return `<div class="history-item"><span class="hi-icon">${r.icon}</span><span class="hi-label">${escapeHtml(r.label)}</span>${witnessHtml}<span class="hi-time">${timeStr}</span><button class="hi-delete" data-id="${r.id}">×</button></div>`;
       }).join('');
       return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
     }).join('');
-
     container.querySelectorAll('.hi-delete').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm('Delete this record?')) return;
+        if (!confirm(I18n.t('deleteRecordConfirm'))) return;
         await Store.deleteRecord(btn.dataset.id);
-        renderHistory();
-        updateHeaderCoins();
+        renderHistory(); updateHeaderCoins();
       });
     });
   }
@@ -505,23 +440,17 @@ const App = (() => {
       const input = document.getElementById('friend-code-input');
       const code = input.value.trim().toUpperCase();
       if (!code) return;
-
       const res = await Store.sendFriendRequest(code);
-      if (res.error) {
-        showToastCustom(res.error);
-      } else {
-        showToastCustom(`Friend request sent to ${res.targetNickname}!`);
-        input.value = '';
-      }
+      if (res.error) showToast(res.error);
+      else { showToast(`${I18n.t('friendRequestSent')}`); input.value = ''; }
     });
-
     document.getElementById('friend-code-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('btn-send-friend-request').click();
     });
   }
 
   async function loadAndRenderFriends() {
-    showLoadingOverlay('Loading friends...');
+    showLoadingOverlay(I18n.t('loadingFriends'));
     await Store.loadFriends();
     hideLoadingOverlay();
     renderFriends();
@@ -531,71 +460,43 @@ const App = (() => {
     renderFriendRequests();
     renderFriendList();
     renderFeed();
-
     const profile = Store.getProfile();
-    if (profile) {
-      document.getElementById('my-friend-code').textContent = profile.friendCode;
-    }
+    if (profile) document.getElementById('my-friend-code').textContent = profile.friendCode;
   }
 
   function renderFriendRequests() {
     const container = document.getElementById('friend-requests-list');
     const requests = Store.getFriendRequests();
-
-    if (requests.length === 0) {
-      container.innerHTML = '';
-      document.getElementById('section-friend-requests').hidden = true;
-      return;
-    }
-
+    if (requests.length === 0) { container.innerHTML = ''; document.getElementById('section-friend-requests').hidden = true; return; }
     document.getElementById('section-friend-requests').hidden = false;
     container.innerHTML = requests.map(r => `
       <div class="friend-request-item">
         <span class="fr-name">${escapeHtml(r.from_nickname)}</span>
         <div class="fr-actions">
-          <button class="btn-accept" data-id="${r.id}">Accept</button>
-          <button class="btn-reject" data-id="${r.id}">Reject</button>
+          <button class="btn-accept" data-id="${r.id}">${I18n.t('btnAccept')}</button>
+          <button class="btn-reject" data-id="${r.id}">${I18n.t('btnReject')}</button>
         </div>
       </div>
     `).join('');
-
     container.querySelectorAll('.btn-accept').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        await Store.acceptFriendRequest(btn.dataset.id);
-        showToastCustom('Friend added!');
-        renderFriends();
-      });
+      btn.addEventListener('click', async () => { await Store.acceptFriendRequest(btn.dataset.id); showToast(I18n.t('friendAdded')); renderFriends(); });
     });
-
     container.querySelectorAll('.btn-reject').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        await Store.rejectFriendRequest(btn.dataset.id);
-        renderFriends();
-      });
+      btn.addEventListener('click', async () => { await Store.rejectFriendRequest(btn.dataset.id); renderFriends(); });
     });
   }
 
   function renderFriendList() {
     const container = document.getElementById('friend-list');
     const friends = Store.getFriends();
-
-    if (friends.length === 0) {
-      container.innerHTML = '<div class="history-empty">No friends yet. Share your code!</div>';
-      return;
-    }
-
+    if (friends.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFriends')}</div>`; return; }
     container.innerHTML = friends.map(f => `
-      <div class="friend-item">
-        <span class="fi-name">${escapeHtml(f.nickname)}</span>
-        <button class="fi-remove" data-id="${f.id}" title="Remove">×</button>
-      </div>
+      <div class="friend-item"><span class="fi-name">${escapeHtml(f.nickname)}</span><button class="fi-remove" data-id="${f.id}">×</button></div>
     `).join('');
-
     container.querySelectorAll('.fi-remove').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Remove this friend?')) return;
-        await Store.removeFriend(btn.dataset.id);
-        renderFriends();
+        if (!confirm(I18n.t('removeFriendConfirm'))) return;
+        await Store.removeFriend(btn.dataset.id); renderFriends();
       });
     });
   }
@@ -603,42 +504,22 @@ const App = (() => {
   function renderFeed() {
     const container = document.getElementById('feed-list');
     const feed = Store.getFeed();
-
-    if (feed.length === 0) {
-      container.innerHTML = '<div class="history-empty">No activity from friends yet.</div>';
-      return;
-    }
-
+    if (feed.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFeed')}</div>`; return; }
     container.innerHTML = feed.map(item => {
       const time = formatTime(item.timestamp);
-      const actLabel = item.label
-        ? `${item.icon || '🪙'} ${escapeHtml(item.label)}`
-        : '🪙 Activity recorded';
+      const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
       const witnessBtn = item.witnessed
-        ? '<span class="feed-witnessed">👁️ confirmed</span>'
-        : `<button class="feed-witness-btn" data-id="${item.id}">👁️ Confirm</button>`;
-
-      return `
-        <div class="feed-item">
-          <div class="feed-header">
-            <span class="feed-name">${escapeHtml(item.nickname)}</span>
-            <span class="feed-time">${time}</span>
-          </div>
-          <div class="feed-body">
-            <span class="feed-activity">${actLabel}</span>
-            ${witnessBtn}
-          </div>
-        </div>
-      `;
+        ? `<span class="feed-witnessed">👁️ ${I18n.t('confirmed')}</span>`
+        : `<button class="feed-witness-btn" data-id="${item.id}">👁️</button>`;
+      return `<div class="feed-item"><div class="feed-header"><span class="feed-name">${escapeHtml(item.nickname)}</span><span class="feed-time">${time}</span></div><div class="feed-body"><span class="feed-activity">${actLabel}</span>${witnessBtn}</div></div>`;
     }).join('');
-
     container.querySelectorAll('.feed-witness-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const ok = await Store.witnessRecord(btn.dataset.id);
         if (ok) {
-          showToastCustom('👁️ Witnessed! +1 bonus coin for them');
+          showToast(`${I18n.t('witnessConfirm')} ${I18n.t('witnessBonus')}`);
           btn.replaceWith(Object.assign(document.createElement('span'), {
-            className: 'feed-witnessed', textContent: '👁️ confirmed'
+            className: 'feed-witnessed', textContent: `👁️ ${I18n.t('confirmed')}`
           }));
         }
       });
@@ -653,7 +534,6 @@ const App = (() => {
       const name = nameInput.value.trim();
       const cost = parseInt(costInput.value);
       if (!name || !cost || cost < 1) return;
-
       await Store.addReward(name, cost);
       nameInput.value = ''; costInput.value = '';
       renderExchange();
@@ -662,51 +542,34 @@ const App = (() => {
 
   function renderExchange() {
     document.getElementById('exchange-balance').textContent = Store.getBalance();
-
     const badgeList = document.getElementById('badge-list');
     badgeList.innerHTML = Store.getAllBadges().map(b => `
-      <div class="badge-card ${b.unlocked ? '' : 'locked'}">
-        <span class="badge-icon">${b.icon}</span>
-        <span class="badge-label">${b.label}</span>
-        <span class="badge-coins">${b.coins} coin</span>
-      </div>
+      <div class="badge-card ${b.unlocked ? '' : 'locked'}"><span class="badge-icon">${b.icon}</span><span class="badge-label">${b.label}</span><span class="badge-coins">${b.coins} ${I18n.t('coin')}</span></div>
     `).join('');
 
     const rewardList = document.getElementById('reward-list');
     const rewards = Store.getRewards();
     const balance = Store.getBalance();
-
     if (rewards.length === 0) {
-      rewardList.innerHTML = '<div class="reward-empty">Add rewards!</div>';
+      rewardList.innerHTML = `<div class="reward-empty">${I18n.t('noRewards')}</div>`;
     } else {
       rewardList.innerHTML = rewards.map(r => `
-        <div class="reward-item">
-          <span class="rw-label">${escapeHtml(r.label)}</span>
-          <span class="rw-cost">🪙 ${r.cost}</span>
-          <button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>Exchange</button>
-          <button class="rw-del" data-id="${r.id}">×</button>
-        </div>
+        <div class="reward-item"><span class="rw-label">${escapeHtml(r.label)}</span><span class="rw-cost">🪙 ${r.cost}</span><button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>${I18n.t('btnExchange')}</button><button class="rw-del" data-id="${r.id}">×</button></div>
       `).join('');
-
       rewardList.querySelectorAll('.rw-use').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (confirm(`Spend ${btn.dataset.cost} coins?`)) {
+          if (confirm(`${btn.dataset.cost} ${I18n.t('coin')} - ${I18n.t('spendConfirm')}`)) {
             if (await Store.spendCoins(btn.dataset.id)) {
-              showToastCustom('🎉 Exchanged!');
+              showToast(I18n.t('exchanged'));
               if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-              renderExchange();
-              updateHeaderCoins();
+              renderExchange(); updateHeaderCoins();
             }
           }
         });
       });
-
       rewardList.querySelectorAll('.rw-del').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (confirm('Delete this reward?')) {
-            await Store.deleteReward(btn.dataset.id);
-            renderExchange();
-          }
+          if (confirm(I18n.t('deleteRewardConfirm'))) { await Store.deleteReward(btn.dataset.id); renderExchange(); }
         });
       });
     }
@@ -716,7 +579,6 @@ const App = (() => {
   function renderProfile() {
     const profile = Store.getProfile();
     if (!profile) return;
-
     document.getElementById('profile-nickname').textContent = profile.nickname;
     document.getElementById('profile-friend-code').textContent = profile.friendCode;
     document.getElementById('profile-total-coins').textContent = profile.totalCoins;
@@ -726,9 +588,10 @@ const App = (() => {
 
     const visSelect = document.getElementById('profile-visibility');
     visSelect.value = profile.feedVisibility;
-    visSelect.onchange = async () => {
-      await API.updateProfile({ feedVisibility: visSelect.value });
-    };
+    visSelect.onchange = async () => { await API.updateProfile({ feedVisibility: visSelect.value }); };
+
+    const langSelect = document.getElementById('profile-lang');
+    langSelect.value = I18n.getLang();
   }
 
   // --- Settings ---
@@ -738,26 +601,22 @@ const App = (() => {
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `rehacoin_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      a.href = url; a.download = `rehacoin_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click(); URL.revokeObjectURL(url);
     });
-
     document.getElementById('btn-logout').addEventListener('click', () => {
-      if (confirm('Logout?')) API.logout();
+      if (confirm(I18n.t('logoutConfirm'))) API.logout();
     });
   }
 
   // --- Utilities ---
   function formatTime(timestamp) {
     const d = new Date(timestamp);
-    const now = new Date();
-    const diffMin = Math.floor((now - d) / 60000);
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffMin = Math.floor((Date.now() - d) / 60000);
+    if (diffMin < 1) return I18n.t('justNow');
+    if (diffMin < 60) return `${diffMin}${I18n.t('mAgo')}`;
     const diffHour = Math.floor(diffMin / 60);
-    if (diffHour < 24) return `${diffHour}h ago`;
+    if (diffHour < 24) return `${diffHour}${I18n.t('hAgo')}`;
     return `${d.getMonth() + 1}/${d.getDate()}`;
   }
 
