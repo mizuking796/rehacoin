@@ -414,6 +414,7 @@ const App = (() => {
       isMining = false;
     }
     checkBadgeUnlock();
+    showScreen('screen-home');
   }
 
   function checkBadgeUnlock() {
