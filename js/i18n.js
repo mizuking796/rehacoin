@@ -22,8 +22,7 @@ const I18n = (() => {
       navHome: 'ホーム',
       navRecords: 'きろく',
       navFriends: 'フレンド',
-      navExchange: '交換',
-      navProfile: 'プロフィール',
+      navMyPage: 'マイページ',
 
       // Home
       searchPlaceholder: '活動を検索...',
@@ -168,8 +167,7 @@ const I18n = (() => {
       navHome: 'Home',
       navRecords: 'Records',
       navFriends: 'Friends',
-      navExchange: 'Exchange',
-      navProfile: 'Profile',
+      navMyPage: 'My Page',
 
       searchPlaceholder: 'Search activities...',
       sectionRecent: 'Recent',

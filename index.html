@@ -188,31 +188,9 @@
       </div>
     </main>
 
-    <!-- Exchange -->
-    <main id="screen-exchange" class="screen">
-      <h2 class="screen-title-fixed" data-i18n="screenExchange">交換</h2>
-      <div class="exchange-balance">
-        <div class="balance-amount" id="exchange-balance">0</div>
-        <div class="balance-label" data-i18n="availableCoins">使えるコイン</div>
-      </div>
-      <section class="section">
-        <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
-        <div id="badge-list" class="badge-list"></div>
-      </section>
-      <section class="section">
-        <h2 class="section-title" data-i18n="sectionRewards">ご褒美リスト</h2>
-        <div id="reward-list" class="reward-list"></div>
-        <div class="reward-add-row">
-          <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
-          <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
-          <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
-        </div>
-      </section>
-    </main>
-
-    <!-- Profile -->
+    <!-- My Page (Profile + Exchange merged) -->
     <main id="screen-profile" class="screen">
-      <h2 class="screen-title-fixed" data-i18n="screenProfile">プロフィール</h2>
+      <h2 class="screen-title-fixed" data-i18n="navMyPage">マイページ</h2>
       <div class="profile-content">
         <div class="profile-header">
           <div class="profile-avatar">👤</div>
@@ -233,6 +211,26 @@
             <div class="ps-label" data-i18n="profileFriends">フレンド</div>
           </div>
         </div>
+
+        <div class="exchange-balance">
+          <div class="balance-amount" id="exchange-balance">0</div>
+          <div class="balance-label" data-i18n="availableCoins">使えるコイン</div>
+        </div>
+
+        <section class="section">
+          <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
+          <div id="badge-list" class="badge-list"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title" data-i18n="sectionRewards">ご褒美リスト</h2>
+          <div id="reward-list" class="reward-list"></div>
+          <div class="reward-add-row">
+            <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
+            <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
+            <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
+          </div>
+        </section>
 
         <div class="settings-content">
           <div class="settings-item">
@@ -259,7 +257,7 @@
           </div>
           <div class="settings-item">
             <span data-i18n="version">バージョン</span>
-            <span>3.1.0</span>
+            <span>3.2.0</span>
           </div>
           <div class="settings-item">
             <a href="privacy.html" target="_blank" data-i18n="privacyPolicy" style="color:var(--accent);text-decoration:none;font-weight:500">プライバシーポリシー</a>
@@ -315,13 +313,9 @@
         <span class="nav-icon">👥<span id="friend-badge" class="nav-badge" hidden></span></span>
         <span class="nav-label" data-i18n="navFriends">フレンド</span>
       </button>
-      <button class="nav-btn" data-screen="screen-exchange">
-        <span class="nav-icon">🎁</span>
-        <span class="nav-label" data-i18n="navExchange">交換</span>
-      </button>
       <button class="nav-btn" data-screen="screen-profile">
         <span class="nav-icon">👤</span>
-        <span class="nav-label" data-i18n="navProfile">プロフィール</span>
+        <span class="nav-label" data-i18n="navMyPage">マイページ</span>
       </button>
     </nav>
 

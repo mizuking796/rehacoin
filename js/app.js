@@ -54,7 +54,6 @@ const App = (() => {
       // Re-render current screen
       if (currentScreen === 'screen-home') renderHome();
       else if (currentScreen === 'screen-history') renderHistory();
-      else if (currentScreen === 'screen-exchange') renderExchange();
       else if (currentScreen === 'screen-friends') renderFriends();
       else if (currentScreen === 'screen-profile') renderProfile();
     });
@@ -202,7 +201,6 @@ const App = (() => {
     });
     if (screenId === 'screen-home') renderHome();
     else if (screenId === 'screen-history') renderHistory();
-    else if (screenId === 'screen-exchange') renderExchange();
     else if (screenId === 'screen-friends') loadAndRenderFriends();
     else if (screenId === 'screen-profile') renderProfile();
     window.scrollTo(0, 0);
@@ -936,6 +934,9 @@ const App = (() => {
 
     const langSelect = document.getElementById('profile-lang');
     langSelect.value = I18n.getLang();
+
+    // Exchange content (merged into profile)
+    renderExchange();
   }
 
   // --- Settings ---
