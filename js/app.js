@@ -391,11 +391,15 @@ const App = (() => {
     });
   }
 
+  let _reactionLock = new Set();
   async function sendReaction(recordId, type, bar) {
+    if (_reactionLock.has(recordId)) return;
+    _reactionLock.add(recordId);
     const trigger = bar.querySelector('.reaction-trigger');
     trigger.disabled = true;
     const res = await Store.cheerRecord(recordId, type);
     trigger.disabled = false;
+    _reactionLock.delete(recordId);
     if (!res.ok) return;
 
     // Update UI in-place (no DOM rebuild)

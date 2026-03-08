@@ -720,7 +720,7 @@ async function cheerRecord(env, user, recordId) {
   if (existing) {
     if (existing.type === type) {
       // Same type: toggle off
-      await env.DB.prepare('DELETE FROM cheers WHERE id = ?').bind(existing.id).run();
+      await env.DB.prepare('DELETE FROM cheers WHERE from_user_id = ? AND record_id = ?').bind(user.id, recordId).run();
       return { ok: true, reacted: false, type };
     } else {
       // Different type: update
