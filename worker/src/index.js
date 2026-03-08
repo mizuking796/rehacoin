@@ -36,6 +36,32 @@ export default {
         return json(await resetPassword(env, await request.json()), headers);
       }
 
+      // --- Admin routes ---
+      if (path.startsWith('/admin/')) {
+        const adminKey = request.headers.get('X-Admin-Key');
+        if (!adminKey || adminKey !== env.ADMIN_KEY) return json({ error: 'Forbidden' }, headers, 403);
+
+        if (path === '/admin/stats' && method === 'GET') {
+          return json(await adminStats(env), headers);
+        }
+        if (path === '/admin/users' && method === 'GET') {
+          return json(await adminUsers(env, url), headers);
+        }
+        if (path.match(/^\/admin\/users\/[^/]+$/) && method === 'GET') {
+          const id = path.split('/')[3];
+          return json(await adminUserDetail(env, id), headers);
+        }
+        if (path.match(/^\/admin\/users\/[^/]+$/) && method === 'DELETE') {
+          const id = path.split('/')[3];
+          return json(await adminDeleteUser(env, id), headers);
+        }
+        if (path.match(/^\/admin\/users\/[^/]+\/reset-password$/) && method === 'POST') {
+          const id = path.split('/')[3];
+          return json(await adminResetPassword(env, id, await request.json()), headers);
+        }
+        return json({ error: 'Not Found' }, headers, 404);
+      }
+
       // --- Authenticated routes ---
       const user = await authenticate(env, request);
       if (!user) return json({ error: 'Unauthorized' }, headers, 401);
@@ -599,4 +625,148 @@ async function witnessRecord(env, user, recordId) {
   ).bind(user.id, Date.now(), recordId).run();
 
   return { ok: true };
+}
+
+// --- Admin Functions ---
+async function adminStats(env) {
+  const totalUsers = await env.DB.prepare('SELECT COUNT(*) as c FROM users').first();
+  const totalRecords = await env.DB.prepare('SELECT COUNT(*) as c FROM records').first();
+  const totalCoins = await env.DB.prepare('SELECT COALESCE(SUM(coins),0) as c FROM records').first();
+  const totalFriendships = await env.DB.prepare('SELECT COUNT(*) as c FROM friends').first();
+  const totalWitnessed = await env.DB.prepare('SELECT COUNT(*) as c FROM records WHERE witnessed = 1').first();
+
+  // Daily records for last 30 days
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const daily = await env.DB.prepare(
+    `SELECT DATE(timestamp/1000, 'unixepoch') as day, COUNT(*) as count, SUM(coins) as coins
+     FROM records WHERE timestamp > ? GROUP BY day ORDER BY day`
+  ).bind(thirtyDaysAgo).all();
+
+  // Top categories
+  const topCategories = await env.DB.prepare(
+    `SELECT category_code, COUNT(*) as count, SUM(coins) as coins
+     FROM records GROUP BY category_code ORDER BY count DESC LIMIT 10`
+  ).all();
+
+  return {
+    totalUsers: totalUsers.c,
+    totalRecords: totalRecords.c,
+    totalCoins: totalCoins.c,
+    totalFriendships: Math.floor(totalFriendships.c / 2),
+    totalWitnessed: totalWitnessed.c,
+    dailyRecords: daily.results,
+    topCategories: topCategories.results,
+  };
+}
+
+async function adminUsers(env, url) {
+  const search = url.searchParams.get('search') || '';
+  const sort = url.searchParams.get('sort') || 'created_at';
+  const order = url.searchParams.get('order') === 'asc' ? 'ASC' : 'DESC';
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 200);
+  const offset = parseInt(url.searchParams.get('offset') || '0');
+
+  let query = `SELECT u.id, u.nickname, u.friend_code, u.feed_visibility, u.created_at,
+    (SELECT COUNT(*) FROM records WHERE user_id = u.id) as record_count,
+    (SELECT COALESCE(SUM(coins),0) FROM records WHERE user_id = u.id) as total_coins,
+    (SELECT COUNT(*) FROM records WHERE witnessed_by = u.id) as witness_count,
+    (SELECT COUNT(*) FROM friends WHERE user_id = u.id) as friend_count,
+    (SELECT MAX(timestamp) FROM records WHERE user_id = u.id) as last_activity
+    FROM users u`;
+
+  const params = [];
+  if (search) {
+    query += ` WHERE u.nickname LIKE ?`;
+    params.push(`%${search}%`);
+  }
+
+  const validSorts = ['created_at', 'nickname', 'record_count', 'total_coins', 'last_activity'];
+  const sortCol = validSorts.includes(sort) ? sort : 'created_at';
+  query += ` ORDER BY ${sortCol} ${order} LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const users = await env.DB.prepare(query).bind(...params).all();
+
+  const countQuery = search
+    ? await env.DB.prepare('SELECT COUNT(*) as c FROM users WHERE nickname LIKE ?').bind(`%${search}%`).first()
+    : await env.DB.prepare('SELECT COUNT(*) as c FROM users').first();
+
+  return { users: users.results, total: countQuery.c };
+}
+
+async function adminUserDetail(env, userId) {
+  const user = await env.DB.prepare(
+    'SELECT id, nickname, friend_code, feed_visibility, created_at FROM users WHERE id = ?'
+  ).bind(userId).first();
+  if (!user) return { error: 'User not found' };
+
+  const records = await env.DB.prepare(
+    'SELECT * FROM records WHERE user_id = ? ORDER BY timestamp DESC LIMIT 100'
+  ).bind(userId).all();
+
+  const rewards = await env.DB.prepare(
+    'SELECT * FROM rewards WHERE user_id = ? ORDER BY created_at DESC'
+  ).bind(userId).all();
+
+  const friends = await env.DB.prepare(
+    `SELECT u.id, u.nickname, u.friend_code FROM friends f
+     JOIN users u ON u.id = f.friend_id WHERE f.user_id = ?`
+  ).bind(userId).all();
+
+  const totalCoins = await env.DB.prepare(
+    'SELECT COALESCE(SUM(coins),0) as c FROM records WHERE user_id = ?'
+  ).bind(userId).first();
+
+  const spentCoins = await env.DB.prepare(
+    'SELECT COALESCE(SUM(coins_spent),0) as c FROM coin_spending WHERE user_id = ?'
+  ).bind(userId).first();
+
+  return {
+    user,
+    records: records.results,
+    rewards: rewards.results,
+    friends: friends.results,
+    totalCoins: totalCoins.c,
+    spentCoins: spentCoins.c,
+    availableCoins: totalCoins.c - spentCoins.c,
+  };
+}
+
+async function adminDeleteUser(env, userId) {
+  const user = await env.DB.prepare('SELECT id, nickname FROM users WHERE id = ?').bind(userId).first();
+  if (!user) return { error: 'User not found' };
+
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(userId),
+    env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(userId),
+    env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(userId),
+    env.DB.prepare('DELETE FROM friends WHERE user_id = ? OR friend_id = ?').bind(userId, userId),
+    env.DB.prepare('DELETE FROM friend_requests WHERE from_id = ? OR to_id = ?').bind(userId, userId),
+    env.DB.prepare('DELETE FROM login_attempts WHERE nickname = ?').bind(user.nickname),
+    env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId),
+  ]);
+
+  return { ok: true, deleted: user.nickname };
+}
+
+async function adminResetPassword(env, userId, body) {
+  const user = await env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
+  if (!user) return { error: 'User not found' };
+
+  const newPassword = body.password;
+  if (!newPassword || newPassword.length < MIN_PASSWORD_LENGTH) {
+    return { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` };
+  }
+
+  const salt = crypto.randomUUID();
+  const hash = await hashPassword(newPassword, salt);
+  const recoveryCode = crypto.randomUUID().replace(/-/g, '').substring(0, 8).toUpperCase();
+  const recSalt = crypto.randomUUID();
+  const recoveryHash = await hashPassword(recoveryCode, recSalt);
+
+  await env.DB.prepare(
+    'UPDATE users SET password_hash = ?, salt = ?, recovery_hash = ?, recovery_salt = ? WHERE id = ?'
+  ).bind(hash, salt, recoveryHash, recSalt, userId).run();
+
+  return { ok: true, recoveryCode };
 }
