@@ -259,7 +259,7 @@ const App = (() => {
   // --- Home ---
   function renderHome() {
     renderHomeFeed();
-    renderRecentRecords();
+    // renderRecentRecords removed
     renderFavorites();
     renderCategoryGrid();
     updateHeaderCoins();
@@ -461,20 +461,21 @@ const App = (() => {
 
     if (res.reacted) {
       const rd = REACTIONS.find(r => r.type === type);
-      if (navigator.vibrate) navigator.vibrate(50);
+      if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
       showFloatingEmoji(rd.emoji, trigger);
+      showCoinBurst(trigger);
 
+      const ja = I18n.getLang() === 'ja';
       if (res.witnessBonus) {
-        // First witness! Show exciting coin reward
-        const ja = I18n.getLang() === 'ja';
         showToast(ja
           ? `${rd.emoji} ${rd.label}\n🪙 あなたと相手に +1コイン！`
           : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin for you & them!`);
-        showCoinBurst(trigger);
-        updateHeaderCoins();
       } else {
-        showToast(`${rd.emoji} ${I18n.getLang() === 'ja' ? rd.label : rd.labelEn}`);
+        showToast(ja
+          ? `${rd.emoji} ${rd.label}\n🪙 応援を送りました！`
+          : `${rd.emoji} ${rd.labelEn}\n🪙 Cheered!`);
       }
+      updateHeaderCoins();
     }
   }
 
@@ -553,7 +554,11 @@ const App = (() => {
     list.querySelectorAll('.favorite-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const act = Data.getActivity(chip.dataset.id);
-        if (act) recordActivity(act);
+        if (!act) return;
+        const msg = I18n.getLang() === 'ja'
+          ? `「${act.label}」を記録しますか？`
+          : `Record "${act.label}"?`;
+        if (confirm(msg)) recordActivity(act);
       });
     });
   }
@@ -580,7 +585,11 @@ const App = (() => {
     list.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', () => {
         const act = Data.getActivity(item.dataset.id);
-        if (act) recordActivity(act, true);
+        if (!act) return;
+        const msg = I18n.getLang() === 'ja'
+          ? `「${act.label}」を記録しますか？`
+          : `Record "${act.label}"?`;
+        if (confirm(msg)) recordActivity(act, true);
       });
     });
   }
@@ -699,7 +708,11 @@ const App = (() => {
     results.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', () => {
         const act = Data.getActivity(item.dataset.id);
-        if (act) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
+        if (!act) return;
+        const msg = I18n.getLang() === 'ja'
+          ? `「${act.label}」を記録しますか？`
+          : `Record "${act.label}"?`;
+        if (confirm(msg)) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
       });
     });
   }
@@ -712,6 +725,10 @@ const App = (() => {
     btn.addEventListener('click', () => {
       const label = input.value.trim();
       if (!label) return;
+      const msg = I18n.getLang() === 'ja'
+        ? `「${label}」を記録しますか？`
+        : `Record "${label}"?`;
+      if (!confirm(msg)) return;
       recordActivity({ id: null, label, icon: '✏️', categoryCode: 'free' });
       input.value = ''; btn.disabled = true;
     });
