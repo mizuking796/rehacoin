@@ -69,6 +69,12 @@ body {
   gap: 8px;
 }
 
+.header-nickname {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 .lang-toggle {
   background: none;
   border: 1px solid var(--border);

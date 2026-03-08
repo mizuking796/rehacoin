@@ -37,6 +37,7 @@ const App = (() => {
     I18n.applyToDOM();
     renderHome();
     updateHeaderCoins();
+    updateHeaderNickname();
   }
 
   // --- Language toggle ---
@@ -211,6 +212,14 @@ const App = (() => {
   // --- Header ---
   function updateHeaderCoins() {
     document.getElementById('header-coins').textContent = Store.getBalance() + ' ' + I18n.t('coin');
+  }
+
+  function updateHeaderNickname() {
+    const profile = Store.getProfile();
+    const el = document.getElementById('header-nickname');
+    if (profile && profile.nickname) {
+      el.textContent = profile.nickname;
+    }
   }
 
   // --- Home ---
