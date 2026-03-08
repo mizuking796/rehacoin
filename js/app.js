@@ -287,7 +287,7 @@ const App = (() => {
     const feed = Store.getFeed();
     if (feed.length === 0) { section.hidden = true; return; }
     section.hidden = false;
-    const items = feed.slice(0, 10);
+    const items = feed.slice(0, 20);
     list.innerHTML = items.map(item => renderFeedCard(item, 'home')).join('');
     bindFeedActions(list);
   }
@@ -321,23 +321,30 @@ const App = (() => {
       ? (I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn)
       : (I18n.getLang() === 'ja' ? 'いいね！' : 'Like');
 
-    const reactionBar = `
-      <div class="reaction-bar" data-id="${item.id}">
-        ${reactionSummaryHtml}
-        <div class="reaction-buttons">
-          <button class="${triggerClass}" data-id="${item.id}"><span class="rt-icon">${triggerIcon}</span>${triggerLabel}</button>
-        </div>
-        <div class="reaction-picker" hidden>
-          ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
-        </div>
-      </div>`;
+    // Own posts: show reactions received but no reaction buttons
+    let reactionBar = '';
+    if (item.isOwn) {
+      reactionBar = reactionSummaryHtml ? `<div class="reaction-bar">${reactionSummaryHtml}</div>` : '';
+    } else {
+      reactionBar = `
+        <div class="reaction-bar" data-id="${item.id}">
+          ${reactionSummaryHtml}
+          <div class="reaction-buttons">
+            <button class="${triggerClass}" data-id="${item.id}"><span class="rt-icon">${triggerIcon}</span>${triggerLabel}</button>
+          </div>
+          <div class="reaction-picker" hidden>
+            ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
+          </div>
+        </div>`;
+    }
 
     const cardClass = context === 'home' ? 'home-feed-card' : 'feed-item';
     const avatarClass = context === 'home' ? 'home-feed-avatar' : 'feed-avatar';
     const contentClass = context === 'home' ? 'home-feed-content' : 'feed-content';
+    const ownClass = item.isOwn ? ' feed-own' : '';
 
     return `
-    <div class="${cardClass}">
+    <div class="${cardClass}${ownClass}">
       <div class="${avatarClass}">${initial}</div>
       <div class="${contentClass}">
         <div class="${context === 'home' ? 'home-feed-header' : 'feed-header'}"><span class="${context === 'home' ? 'home-feed-name' : 'feed-name'}">${escapeHtml(item.nickname)}</span><span class="${context === 'home' ? 'home-feed-time' : 'feed-time'}">${time}</span></div>

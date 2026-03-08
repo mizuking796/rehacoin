@@ -223,6 +223,14 @@ body {
   transform: scale(0.99);
 }
 
+.home-feed-card.feed-own {
+  border-left: 3px solid var(--accent);
+}
+
+.feed-item.feed-own {
+  border-left: 3px solid var(--accent);
+}
+
 .home-feed-avatar {
   width: 42px;
   height: 42px;

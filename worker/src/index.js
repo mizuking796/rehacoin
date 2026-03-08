@@ -630,10 +630,10 @@ async function removeFriend(env, user, friendId) {
 // --- Feed ---
 async function getFeed(env, user) {
   const friendRows = await env.DB.prepare('SELECT friend_id FROM friends WHERE user_id = ?').bind(user.id).all();
-  if (friendRows.results.length === 0) return { feed: [] };
 
-  const friendIds = friendRows.results.map(f => f.friend_id);
-  const placeholders = friendIds.map(() => '?').join(',');
+  // Include own records + friends' records
+  const feedUserIds = [user.id, ...friendRows.results.map(f => f.friend_id)];
+  const placeholders = feedUserIds.map(() => '?').join(',');
 
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const rows = await env.DB.prepare(`
@@ -642,7 +642,7 @@ async function getFeed(env, user) {
     FROM records r JOIN users u ON r.user_id = u.id
     WHERE r.user_id IN (${placeholders}) AND r.timestamp > ?
     ORDER BY r.timestamp DESC LIMIT 50
-  `).bind(...friendIds, sevenDaysAgo).all();
+  `).bind(...feedUserIds, sevenDaysAgo).all();
 
   // Get reaction data for all feed records
   const recordIds = rows.results.map(r => r.id);
@@ -681,8 +681,9 @@ async function getFeed(env, user) {
     id: r.id,
     userId: r.user_id,
     nickname: r.nickname,
-    label: r.feed_visibility === 'activity_name' ? r.label : null,
-    icon: r.feed_visibility === 'activity_name' ? r.icon : null,
+    isOwn: r.user_id === user.id,
+    label: (r.user_id === user.id || r.feed_visibility === 'activity_name') ? r.label : null,
+    icon: (r.user_id === user.id || r.feed_visibility === 'activity_name') ? r.icon : null,
     categoryCode: r.category_code,
     witnessed: !!r.witnessed,
     reactions: reactionsMap[r.id] || {},
