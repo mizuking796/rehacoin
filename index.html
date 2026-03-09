@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#4A90D9">
+  <meta name="theme-color" content="#0D9488">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>リハコイン</title>
@@ -11,6 +11,7 @@
   <link rel="icon" href="img/coin.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="img/coin.svg">
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -186,7 +187,7 @@
       <h2 class="screen-title-fixed" data-i18n="navMyPage">マイページ</h2>
       <div class="profile-content">
         <div class="profile-header">
-          <div class="profile-avatar">👤</div>
+          <div class="profile-avatar" id="profile-avatar-circle"></div>
           <div class="profile-name" id="profile-nickname">---</div>
           <div id="profile-rank-title" class="profile-rank-title"></div>
         </div>
@@ -211,46 +212,57 @@
           <div class="balance-label" data-i18n="availableCoins">使えるコイン</div>
         </div>
 
-        <section class="section">
-          <h2 class="section-title">🎯 デイリーミッション</h2>
-          <div id="daily-missions" class="daily-missions"></div>
-        </section>
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-ptab="ptab-game">ゲーム</button>
+          <button class="profile-tab" data-ptab="ptab-rewards">ご褒美</button>
+          <button class="profile-tab" data-ptab="ptab-settings">設定</button>
+        </div>
 
-        <section class="section">
-          <h2 class="section-title">🎰 デイリーガチャ</h2>
-          <div id="gacha-section" class="gacha-section"></div>
-        </section>
+        <div id="ptab-game" class="profile-tab-content active">
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionMissions">デイリーミッション</h2>
+            <div id="daily-missions" class="daily-missions"></div>
+          </section>
 
-        <section class="section">
-          <h2 class="section-title">🧊 ストリークフリーズ</h2>
-          <div id="streak-freeze-section"></div>
-        </section>
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionGacha">デイリーガチャ</h2>
+            <div id="gacha-section" class="gacha-section"></div>
+          </section>
 
-        <section class="section">
-          <h2 class="section-title">🏆 フレンドランキング</h2>
-          <div id="friend-ranking" class="friend-ranking"></div>
-        </section>
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionStreakFreeze">ストリークフリーズ</h2>
+            <div id="streak-freeze-section"></div>
+          </section>
 
-        <section class="section">
-          <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
-          <div id="badge-list" class="badge-list"></div>
-        </section>
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionRanking">フレンドランキング</h2>
+            <div id="friend-ranking" class="friend-ranking"></div>
+          </section>
 
-        <section class="section">
-          <h2 class="section-title">🎨 テーマ</h2>
-          <div id="theme-store" class="theme-store"></div>
-        </section>
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
+            <div id="badge-list" class="badge-list"></div>
+          </section>
 
-        <section class="section">
-          <h2 class="section-title" data-i18n="sectionRewards">ご褒美リスト</h2>
-          <div id="reward-list" class="reward-list"></div>
-          <div class="reward-add-row">
-            <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
-            <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
-            <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
-          </div>
-        </section>
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionTheme">テーマ</h2>
+            <div id="theme-store" class="theme-store"></div>
+          </section>
+        </div>
 
+        <div id="ptab-rewards" class="profile-tab-content">
+          <section class="section">
+            <h2 class="section-title" data-i18n="sectionRewards">ご褒美リスト</h2>
+            <div id="reward-list" class="reward-list"></div>
+            <div class="reward-add-row">
+              <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
+              <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
+              <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
+            </div>
+          </section>
+        </div>
+
+        <div id="ptab-settings" class="profile-tab-content">
         <div class="settings-content">
           <div class="settings-item">
             <span data-i18n="friendCode">フレンドコード</span>
@@ -295,6 +307,7 @@
             <button id="btn-delete-account" class="btn-danger" style="background:#8B0000" data-i18n="deleteAccount">アカウント削除</button>
           </div>
         </div>
+        </div>
       </div>
     </main>
 
@@ -304,8 +317,8 @@
       <div class="mining-content">
         <div class="mining-icon"><img src="img/coin.svg" alt="" class="mining-coin-img"></div>
         <div class="mining-title" data-i18n="mining">マイニング中...</div>
-        <div class="mining-nonce">Nonce: <span id="mining-nonce-val">0</span></div>
-        <div class="mining-hash" id="mining-hash-val">Hash: 計算中...</div>
+        <div class="mining-nonce" hidden>Nonce: <span id="mining-nonce-val">0</span></div>
+        <div class="mining-hash" id="mining-hash-val" hidden>Hash: 計算中...</div>
         <div class="mining-progress"></div>
       </div>
     </div>
@@ -313,7 +326,7 @@
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="mining-overlay" hidden>
       <div class="mining-content">
-        <div class="mining-icon">⏳</div>
+        <div class="mining-icon" style="animation:none"><i data-lucide="loader-2" style="width:48px;height:48px;color:var(--accent);animation:spin 1s linear infinite"></i></div>
         <div class="mining-title" id="loading-text">読み込み中...</div>
       </div>
     </div>
@@ -338,19 +351,19 @@
     <!-- Bottom Nav -->
     <nav id="bottom-nav" class="bottom-nav">
       <button class="nav-btn active" data-screen="screen-home">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon"><i data-lucide="home" style="width:22px;height:22px"></i></span>
         <span class="nav-label" data-i18n="navHome">ホーム</span>
       </button>
       <button class="nav-btn" data-screen="screen-history">
-        <span class="nav-icon">📊</span>
+        <span class="nav-icon"><i data-lucide="bar-chart-3" style="width:22px;height:22px"></i></span>
         <span class="nav-label" data-i18n="navRecords">きろく</span>
       </button>
       <button class="nav-btn" data-screen="screen-friends">
-        <span class="nav-icon">👥<span id="friend-badge" class="nav-badge" hidden></span></span>
+        <span class="nav-icon"><i data-lucide="users" style="width:22px;height:22px"></i><span id="friend-badge" class="nav-badge" hidden></span></span>
         <span class="nav-label" data-i18n="navFriends">フレンド</span>
       </button>
       <button class="nav-btn" data-screen="screen-profile">
-        <span class="nav-icon">👤</span>
+        <span class="nav-icon"><i data-lucide="user" style="width:22px;height:22px"></i></span>
         <span class="nav-label" data-i18n="navMyPage">マイページ</span>
       </button>
     </nav>
@@ -366,6 +379,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
+      lucide.createIcons();
     }
   </script>
 </body>

@@ -32,6 +32,7 @@ const App = (() => {
     bindSettings();
     bindHistoryTabs();
     bindExchange();
+    bindProfileTabs();
     bindFriends();
     bindLangToggle();
     updateLangToggleLabel();
@@ -207,11 +208,25 @@ const App = (() => {
     else if (screenId === 'screen-friends') loadAndRenderFriends();
     else if (screenId === 'screen-profile') renderProfile();
     window.scrollTo(0, 0);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   function bindNav() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => showScreen(btn.dataset.screen));
+    });
+  }
+
+
+  // --- Profile Tabs ---
+  function bindProfileTabs() {
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.ptab).classList.add('active');
+      });
     });
   }
 
@@ -1487,6 +1502,8 @@ const App = (() => {
     const ja = I18n.getLang() === 'ja';
 
     document.getElementById('profile-nickname').textContent = profile.nickname;
+    const avatarEl = document.getElementById('profile-avatar-circle');
+    if (avatarEl) avatarEl.textContent = (profile.nickname || '?')[0].toUpperCase();
     document.getElementById('profile-friend-code').textContent = profile.friendCode;
     document.getElementById('profile-total-coins').textContent = profile.totalCoins;
     document.getElementById('profile-witness-bonus').textContent = profile.witnessBonus;
