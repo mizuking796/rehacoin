@@ -6,8 +6,13 @@
     "icon": "📖",
     "color": "#4A90D9",
     "description": "読む、覚える、調べる、考える、決める",
-    "sources": ["ICF d110-d177", "興味関心CS「生涯学習」", "NPI「教育的文化的活動」"],
-    "itemCount": 15
+    "sources": [
+      "ICF d110-d177",
+      "興味関心CS「生涯学習」",
+      "NPI「教育的文化的活動」"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "book-open"
   },
   {
     "id": "cat-02",
@@ -16,8 +21,13 @@
     "icon": "📋",
     "color": "#7B68EE",
     "description": "予定を立てる、時間管理、ストレス対処",
-    "sources": ["ICF d210-d240", "Lawton IADL", "COPM"],
-    "itemCount": 10
+    "sources": [
+      "ICF d210-d240",
+      "Lawton IADL",
+      "COPM"
+    ],
+    "itemCount": 10,
+    "lucideIcon": "clipboard-list"
   },
   {
     "id": "cat-03",
@@ -26,8 +36,13 @@
     "icon": "💬",
     "color": "#20B2AA",
     "description": "会話、電話、メール、手紙、SNS",
-    "sources": ["ICF d310-d360", "FIM認知項目", "COPM"],
-    "itemCount": 15
+    "sources": [
+      "ICF d310-d360",
+      "FIM認知項目",
+      "COPM"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "message-circle"
   },
   {
     "id": "cat-04",
@@ -36,8 +51,13 @@
     "icon": "🚶",
     "color": "#FF6347",
     "description": "歩く、立つ、乗り物、手の操作",
-    "sources": ["ICF d410-d480", "FIM移動項目", "Barthel Index"],
-    "itemCount": 20
+    "sources": [
+      "ICF d410-d480",
+      "FIM移動項目",
+      "Barthel Index"
+    ],
+    "itemCount": 20,
+    "lucideIcon": "footprints"
   },
   {
     "id": "cat-05",
@@ -46,8 +66,14 @@
     "icon": "🪥",
     "color": "#FF69B4",
     "description": "洗顔、入浴、着替え、食事、トイレ",
-    "sources": ["ICF d510-d570", "FIMセルフケア", "Barthel Index", "興味関心CS"],
-    "itemCount": 15
+    "sources": [
+      "ICF d510-d570",
+      "FIMセルフケア",
+      "Barthel Index",
+      "興味関心CS"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "sparkles"
   },
   {
     "id": "cat-06",
@@ -56,8 +82,14 @@
     "icon": "🏠",
     "color": "#F4A460",
     "description": "料理、掃除、洗濯、買い物、庭仕事",
-    "sources": ["ICF d610-d660", "Lawton IADL", "興味関心CS", "COPM"],
-    "itemCount": 20
+    "sources": [
+      "ICF d610-d660",
+      "Lawton IADL",
+      "興味関心CS",
+      "COPM"
+    ],
+    "itemCount": 20,
+    "lucideIcon": "home"
   },
   {
     "id": "cat-07",
@@ -66,8 +98,14 @@
     "icon": "🤝",
     "color": "#FFD700",
     "description": "家族、友人、ご近所、助け合い",
-    "sources": ["ICF d710-d770", "Role Checklist", "COPM", "PERMA-R"],
-    "itemCount": 15
+    "sources": [
+      "ICF d710-d770",
+      "Role Checklist",
+      "COPM",
+      "PERMA-R"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "handshake"
   },
   {
     "id": "cat-08",
@@ -76,8 +114,14 @@
     "icon": "💼",
     "color": "#708090",
     "description": "就労、学業、金銭管理、手続き",
-    "sources": ["ICF d810-d870", "Lawton IADL", "Role Checklist", "COPM"],
-    "itemCount": 15
+    "sources": [
+      "ICF d810-d870",
+      "Lawton IADL",
+      "Role Checklist",
+      "COPM"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "briefcase"
   },
   {
     "id": "cat-09",
@@ -86,8 +130,13 @@
     "icon": "🏘️",
     "color": "#32CD32",
     "description": "地域活動、ボランティア、デイサービス",
-    "sources": ["ICF d910-d950", "興味関心CS", "Role Checklist"],
-    "itemCount": 15
+    "sources": [
+      "ICF d910-d950",
+      "興味関心CS",
+      "Role Checklist"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "building-2"
   },
   {
     "id": "cat-10",
@@ -96,8 +145,15 @@
     "icon": "⚽",
     "color": "#FF4500",
     "description": "体操、散歩、水泳、球技、自主トレ",
-    "sources": ["興味関心CS", "ACS", "ADOC", "NPI", "高齢者余暇活動データ"],
-    "itemCount": 20
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "ADOC",
+      "NPI",
+      "高齢者余暇活動データ"
+    ],
+    "itemCount": 20,
+    "lucideIcon": "dumbbell"
   },
   {
     "id": "cat-11",
@@ -106,8 +162,15 @@
     "icon": "🎨",
     "color": "#DA70D6",
     "description": "読書、音楽、手芸、園芸、旅行",
-    "sources": ["興味関心CS", "ACS", "ADOC", "NPI", "PERMA-E,A"],
-    "itemCount": 35
+    "sources": [
+      "興味関心CS",
+      "ACS",
+      "ADOC",
+      "NPI",
+      "PERMA-E,A"
+    ],
+    "itemCount": 35,
+    "lucideIcon": "palette"
   },
   {
     "id": "cat-12",
@@ -116,8 +179,13 @@
     "icon": "💛",
     "color": "#FFB347",
     "description": "喜び、達成感、感謝、自分らしさ",
-    "sources": ["PERMA-P,M", "WHOQOL心理領域", "SF-36 MH,VT"],
-    "itemCount": 15
+    "sources": [
+      "PERMA-P,M",
+      "WHOQOL心理領域",
+      "SF-36 MH,VT"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "heart"
   },
   {
     "id": "cat-13",
@@ -126,8 +194,13 @@
     "icon": "😴",
     "color": "#87CEEB",
     "description": "睡眠、リラックス、瞑想、体調管理",
-    "sources": ["SF-36 VT", "WHOQOL身体領域", "ICF d5補完"],
-    "itemCount": 10
+    "sources": [
+      "SF-36 VT",
+      "WHOQOL身体領域",
+      "ICF d5補完"
+    ],
+    "itemCount": 10,
+    "lucideIcon": "moon"
   },
   {
     "id": "cat-14",
@@ -136,8 +209,12 @@
     "icon": "📱",
     "color": "#00CED1",
     "description": "LINE、動画、ネット買い物、アプリ",
-    "sources": ["高齢者ICT活用データ", "現代補完"],
-    "itemCount": 15
+    "sources": [
+      "高齢者ICT活用データ",
+      "現代補完"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "smartphone"
   },
   {
     "id": "cat-15",
@@ -146,8 +223,12 @@
     "icon": "⛩️",
     "color": "#CD853F",
     "description": "お参り、祭り、年中行事、冠婚葬祭",
-    "sources": ["文化的活動調査", "ICF d930"],
-    "itemCount": 15
+    "sources": [
+      "文化的活動調査",
+      "ICF d930"
+    ],
+    "itemCount": 15,
+    "lucideIcon": "calendar-heart"
   },
   {
     "id": "cat-16",
@@ -156,7 +237,12 @@
     "icon": "👨‍👩‍👧",
     "color": "#9ACD32",
     "description": "孫の世話、家族の介護、近所の見守り",
-    "sources": ["ICF d660", "Role Checklist", "文化的活動"],
-    "itemCount": 10
+    "sources": [
+      "ICF d660",
+      "Role Checklist",
+      "文化的活動"
+    ],
+    "itemCount": 10,
+    "lucideIcon": "baby"
   }
 ]

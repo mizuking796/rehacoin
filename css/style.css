@@ -3317,6 +3317,56 @@ body {
   .gacha-btn.disabled, .gacha-btn:disabled {
     background: var(--border);
   }
+
+  .cat-lucide-icon {
+    background: color-mix(in srgb, var(--cat-color, var(--accent)) 18%, transparent);
+  }
+}
+
+
+/* === Category Lucide Icon === */
+.cat-lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cat-color, var(--accent)) 12%, transparent);
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.cat-lucide-icon svg {
+  stroke-width: 1.8;
+}
+
+.category-card .cat-icon {
+  font-size: unset;
+  line-height: unset;
+}
+
+.category-card .cat-lucide-icon {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px;
+}
+
+.act-icon .cat-lucide-icon,
+.hi-icon .cat-lucide-icon,
+.ri-icon .cat-lucide-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px;
+}
+
+.fav-icon .cat-lucide-icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 7px;
+}
+
+/* Confirm dialog: use Lucide check-circle */
+.confirm-icon:empty {
+  display: none;
 }
 
 /* === Profile Tabs === */

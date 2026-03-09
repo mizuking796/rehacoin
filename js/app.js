@@ -7,6 +7,37 @@ const App = (() => {
   let isMining = false;
   let feedRefreshTimer = null;
 
+
+  // --- Category Icon Helper ---
+  function getCategoryIcon(categoryCode, size = 16) {
+    const cat = Data.getCategory(categoryCode);
+    if (!cat) return '<span style="width:' + size + 'px;height:' + size + 'px;display:inline-block"></span>';
+    const iconName = cat.lucideIcon || 'circle';
+    const color = cat.color || 'var(--accent)';
+    return '<span class="cat-lucide-icon" style="--cat-color:' + color + ';width:' + (size + 12) + 'px;height:' + (size + 12) + 'px"><i data-lucide="' + iconName + '" style="width:' + size + 'px;height:' + size + 'px;color:' + color + '"></i></span>';
+  }
+
+  function getCategoryIconFromAct(act, size = 16) {
+    if (!act) return '';
+    return getCategoryIcon(act.categoryCode || act.category_code, size);
+  }
+
+
+  // --- Lucide refresh (debounced) ---
+  let _lucideTimer;
+  function refreshLucideIcons() {
+    clearTimeout(_lucideTimer);
+    _lucideTimer = setTimeout(() => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }, 50);
+  }
+
+  // Auto-refresh Lucide icons on DOM changes
+  const _iconObserver = new MutationObserver(() => refreshLucideIcons());
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('app-container');
+    if (container) _iconObserver.observe(container, { childList: true, subtree: true });
+  });
   // --- Init ---
   async function init() {
     if (!API.isLoggedIn()) {
@@ -410,7 +441,7 @@ const App = (() => {
   function renderFeedCard(item, context) {
     const time = formatTime(item.timestamp);
     const initial = item.nickname.charAt(0).toUpperCase();
-    const iconHtml = item.icon ? item.icon : '<img src="img/coin.svg" width="16" height="16" class="inline-coin">';
+    const iconHtml = item.categoryCode ? getCategoryIcon(item.categoryCode, 16) : '<img src="img/coin.svg" width="16" height="16" class="inline-coin">';
     const actLabel = item.label ? `${iconHtml} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
 
     // Reaction summary (Facebook-style icon badges + count)
@@ -661,7 +692,7 @@ const App = (() => {
     grid.innerHTML = categories.map(cat => {
       const count = monthlyCounts[cat.code] || 0;
       const badge = count > 0 ? `<span class="cat-badge">${count}</span>` : '';
-      return `<div class="category-card" data-code="${cat.code}">${badge}<span class="cat-icon">${cat.icon}</span><span class="cat-label">${cat.label}</span></div>`;
+      return `<div class="category-card" data-code="${cat.code}">${badge}<span class="cat-icon">${getCategoryIcon(cat.code, 24)}</span><span class="cat-label">${cat.label}</span></div>`;
     }).join('');
     grid.querySelectorAll('.category-card').forEach(card => {
       card.addEventListener('click', () => openCategory(card.dataset.code));
@@ -676,7 +707,7 @@ const App = (() => {
     section.hidden = false;
     list.innerHTML = recent.map(r => `
       <div class="recent-item" data-activity-id="${r.activityId || ''}" data-label="${escapeAttr(r.label)}" data-icon="${r.icon}" data-category="${r.categoryCode}">
-        <span class="ri-icon">${r.icon}</span>
+        <span class="ri-icon">${getCategoryIcon(r.categoryCode, 18)}</span>
         <span class="ri-label">${escapeHtml(r.label)}</span>
         <span class="ri-time">${formatTime(r.timestamp)}</span>
       </div>
@@ -704,7 +735,7 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, act.icon)) recordActivity(act);
+        if (await showConfirm(msg, '')) recordActivity(act);
       });
     });
   }
@@ -713,7 +744,7 @@ const App = (() => {
   function openCategory(code) {
     currentCategoryCode = code;
     const cat = Data.getCategory(code);
-    document.getElementById('category-title').textContent = cat.icon + ' ' + cat.label;
+    document.getElementById('category-title').innerHTML = getCategoryIcon(cat.code, 18) + ' ' + escapeHtml(cat.label); if (typeof lucide !== 'undefined') lucide.createIcons();
     renderActivityList(code);
     showScreen('screen-category');
     document.getElementById('category-back').onclick = () => showScreen('screen-home');
@@ -726,7 +757,7 @@ const App = (() => {
     list.innerHTML = activities.map(act => {
       const count = counts[act.id] || 0;
       const countBadge = count > 0 ? `<span class="act-count">${count}回</span>` : '';
-      return `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${act.icon}</span><span class="act-label">${escapeHtml(act.label)}</span>${countBadge}</div>`;
+      return `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${getCategoryIconFromAct(act, 18)}</span><span class="act-label">${escapeHtml(act.label)}</span>${countBadge}</div>`;
     }).join('');
     list.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', async () => {
@@ -735,7 +766,7 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, act.icon)) recordActivity(act, true);
+        if (await showConfirm(msg, '')) recordActivity(act, true);
       });
     });
   }
@@ -1075,8 +1106,8 @@ const App = (() => {
     }
     results.hidden = false;
     results.innerHTML = groups.map(group => {
-      const items = group.items.map(act => `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${act.icon}</span><span class="act-label">${escapeHtml(act.label)}</span></div>`).join('');
-      return `<div class="search-group-title">${group.category.icon} ${group.category.label}</div>${items}`;
+      const items = group.items.map(act => `<div class="activity-item" data-id="${act.id}"><span class="act-icon">${getCategoryIconFromAct(act, 18)}</span><span class="act-label">${escapeHtml(act.label)}</span></div>`).join('');
+      return `<div class="search-group-title">${getCategoryIcon(group.category.code, 14)} ${escapeHtml(group.category.label)}</div>${items}`;
     }).join('');
     results.querySelectorAll('.activity-item').forEach(item => {
       item.addEventListener('click', async () => {
@@ -1085,7 +1116,7 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, act.icon)) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
+        if (await showConfirm(msg, '')) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
       });
     });
   }
@@ -1150,7 +1181,7 @@ const App = (() => {
     const catChartHtml = catEntries.map(([code, count]) => {
       const cat = Data.getCategory(code);
       const pct = Math.round((count / maxCat) * 100);
-      return `<div class="cc-row"><span class="cc-label">${cat ? cat.icon + ' ' + cat.label : code}</span><div class="cc-bar-wrap"><div class="cc-bar" style="width:${pct}%"></div></div><span class="cc-count">${count}</span></div>`;
+      return `<div class="cc-row"><span class="cc-label">${cat ? escapeHtml(cat.label) : code}</span><div class="cc-bar-wrap"><div class="cc-bar" style="width:${pct}%"></div></div><span class="cc-count">${count}</span></div>`;
     }).join('');
 
     container.innerHTML = `
@@ -1196,7 +1227,7 @@ const App = (() => {
         const time = new Date(r.timestamp);
         const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
         const witnessHtml = r.witnessed ? `<span class="hi-witnessed">👁️ ${I18n.t('confirmed')}</span>` : '';
-        return `<div class="history-item"><span class="hi-icon">${r.icon}</span><span class="hi-label">${escapeHtml(r.label)}</span>${witnessHtml}<span class="hi-time">${timeStr}</span><button class="hi-delete" data-id="${r.id}">×</button></div>`;
+        return `<div class="history-item"><span class="hi-icon">${getCategoryIcon(r.categoryCode, 18)}</span><span class="hi-label">${escapeHtml(r.label)}</span>${witnessHtml}<span class="hi-time">${timeStr}</span><button class="hi-delete" data-id="${r.id}">×</button></div>`;
       }).join('');
       return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
     }).join('');
@@ -1234,7 +1265,7 @@ const App = (() => {
         const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
         let typeIcon, typeLabel, amountClass;
         switch (item.type) {
-          case 'record': typeIcon = item.icon || '📝'; typeLabel = item.label; amountClass = 'ch-plus'; break;
+          case 'record': typeIcon = ''; typeLabel = item.label; amountClass = 'ch-plus'; break;
           case 'bonus': typeIcon = '🎁'; typeLabel = item.label || item.detail; amountClass = 'ch-plus'; break;
           case 'witness': typeIcon = '👁️'; typeLabel = ja ? `目撃ボーナス: ${item.label}` : `Witness: ${item.label}`; amountClass = 'ch-plus'; break;
           case 'spend': typeIcon = '🛒'; typeLabel = item.label; amountClass = 'ch-minus'; break;
