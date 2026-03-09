@@ -36,11 +36,14 @@ const App = (() => {
     bindLangToggle();
     updateLangToggleLabel();
     I18n.applyToDOM();
+    _prevRankId = Store.getRank().id;
+    applyTheme(getCurrentTheme());
     renderHome();
     updateHeaderCoins();
     updateHeaderNickname();
     updateFriendBadge();
     startFeedRefresh();
+    checkLoginBonus();
   }
 
   // --- Language toggle ---
@@ -213,8 +216,105 @@ const App = (() => {
   }
 
   // --- Header ---
-  function updateHeaderCoins() {
-    document.getElementById('header-coins').textContent = Store.getBalance() + ' ' + I18n.t('coin');
+  let _prevRankId = null;
+
+  function updateHeaderCoins(animate = false, fromEl = null) {
+    const el = document.getElementById('header-coins');
+    const newVal = Store.getTotalCoins();
+    const oldVal = parseInt(el.dataset.val || '0') || 0;
+    el.dataset.val = newVal;
+
+    if (animate && oldVal !== newVal) {
+      // Rolling number animation
+      const duration = 600;
+      const start = performance.now();
+      function step(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        const current = Math.round(oldVal + (newVal - oldVal) * eased);
+        el.textContent = current + ' ' + I18n.t('coin');
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+
+      // Coin fly to header
+      if (fromEl) {
+        const fromRect = fromEl.getBoundingClientRect();
+        const toRect = el.getBoundingClientRect();
+        for (let i = 0; i < 5; i++) {
+          const coin = document.createElement('div');
+          coin.className = 'coin-fly';
+          coin.innerHTML = '<img src="img/coin.svg" width="20" height="20">';
+          coin.style.left = fromRect.left + fromRect.width / 2 + 'px';
+          coin.style.top = fromRect.top + 'px';
+          coin.style.setProperty('--tx', (toRect.left + toRect.width / 2 - fromRect.left - fromRect.width / 2) + 'px');
+          coin.style.setProperty('--ty', (toRect.top - fromRect.top) + 'px');
+          coin.style.animationDelay = (i * 80) + 'ms';
+          document.body.appendChild(coin);
+          coin.addEventListener('animationend', () => {
+            coin.remove();
+            // Pulse the counter
+            if (i === 4) el.classList.add('coin-pulse');
+            setTimeout(() => el.classList.remove('coin-pulse'), 300);
+          });
+          setTimeout(() => { if (coin.parentNode) coin.remove(); }, 2000);
+        }
+      }
+    } else {
+      el.textContent = newVal + ' ' + I18n.t('coin');
+    }
+
+    // Update streak fire
+    updateStreakDisplay();
+    // Check rank up
+    checkRankUp();
+  }
+
+  function updateStreakDisplay() {
+    let el = document.getElementById('streak-fire');
+    const streak = Store.getStreak();
+    if (streak === 0) { if (el) el.hidden = true; return; }
+    if (!el) return;
+    el.hidden = false;
+    let colorClass = 'streak-low';
+    if (streak >= 30) colorClass = 'streak-epic';
+    else if (streak >= 7) colorClass = 'streak-high';
+    else if (streak >= 3) colorClass = 'streak-mid';
+    el.className = `streak-display ${colorClass}`;
+    el.innerHTML = `<span class="streak-flame">🔥</span><span class="streak-num">${streak}</span>`;
+  }
+
+  function checkRankUp() {
+    const rank = Store.getRank();
+    if (_prevRankId && _prevRankId !== rank.id) {
+      showRankUpOverlay(rank);
+    }
+    _prevRankId = rank.id;
+  }
+
+  function showRankUpOverlay(rank) {
+    const overlay = document.createElement('div');
+    overlay.className = 'rankup-overlay';
+    const ja = I18n.getLang() === 'ja';
+    overlay.innerHTML = `
+      <div class="rankup-flash"></div>
+      <div class="rankup-content">
+        <div class="rankup-label">RANK UP!</div>
+        <div class="rankup-icon" style="color:${rank.color}">${rank.icon}</div>
+        <div class="rankup-name" style="color:${rank.color}">${ja ? rank.label : rank.labelEn}</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    // confetti if available
+    if (window.confetti) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: [rank.color, '#FFD700', '#FFFFFF'] });
+    }
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    setTimeout(() => { overlay.classList.add('rankup-fade'); }, 2500);
+    setTimeout(() => overlay.remove(), 3200);
+  }
+
+  function _oldUpdateHeaderCoins() {
+    document.getElementById('header-coins').textContent = Store.getTotalCoins() + ' ' + I18n.t('coin');
   }
 
   function updateHeaderNickname() {
@@ -295,7 +395,8 @@ const App = (() => {
   function renderFeedCard(item, context) {
     const time = formatTime(item.timestamp);
     const initial = item.nickname.charAt(0).toUpperCase();
-    const actLabel = item.label ? `${item.icon || '🪙'} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
+    const iconHtml = item.icon ? item.icon : '<img src="img/coin.svg" width="16" height="16" class="inline-coin">';
+    const actLabel = item.label ? `${iconHtml} ${escapeHtml(item.label)}` : I18n.t('feedActivityRecorded');
 
     // Reaction summary (Facebook-style icon badges + count)
     const reactions = item.reactions || {};
@@ -467,6 +568,7 @@ const App = (() => {
     }
 
     if (res.reacted) {
+      incrementDailyCheer();
       const rd = REACTIONS.find(r => r.type === type);
       if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
       showFloatingEmoji(rd.emoji, trigger);
@@ -482,7 +584,7 @@ const App = (() => {
           ? `${rd.emoji} ${rd.label}\n🪙 応援を送りました！`
           : `${rd.emoji} ${rd.labelEn}\n🪙 Cheered!`);
       }
-      updateHeaderCoins();
+      updateHeaderCoins(true, trigger);
     }
   }
 
@@ -490,18 +592,40 @@ const App = (() => {
     const rect = anchorEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top;
-    for (let i = 0; i < 6; i++) {
+    // Wave 1: big burst
+    for (let i = 0; i < 12; i++) {
       const coin = document.createElement('div');
       coin.className = 'coin-burst';
-      coin.textContent = '🪙';
+      const sz = 18 + Math.floor(Math.random() * 16);
+      coin.innerHTML = `<img src="img/coin.svg" width="${sz}" height="${sz}">`;
       coin.style.left = cx + 'px';
       coin.style.top = cy + 'px';
-      coin.style.setProperty('--dx', (Math.random() - 0.5) * 80 + 'px');
-      coin.style.setProperty('--dy', -(Math.random() * 60 + 30) + 'px');
-      coin.style.animationDelay = (i * 50) + 'ms';
+      const angle = (Math.PI * 2 * i / 12) + (Math.random() - 0.5) * 0.5;
+      const dist = 40 + Math.random() * 80;
+      coin.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      coin.style.setProperty('--dy', Math.sin(angle) * dist - 40 + 'px');
+      coin.style.animationDelay = (i * 30) + 'ms';
       document.body.appendChild(coin);
       coin.addEventListener('animationend', () => coin.remove());
+      setTimeout(() => { if (coin.parentNode) coin.remove(); }, 2000);
     }
+    // Wave 2: upward fountain
+    setTimeout(() => {
+      for (let i = 0; i < 6; i++) {
+        const coin = document.createElement('div');
+        coin.className = 'coin-burst coin-burst-slow';
+        const sz = 14 + Math.floor(Math.random() * 10);
+        coin.innerHTML = `<img src="img/coin.svg" width="${sz}" height="${sz}">`;
+        coin.style.left = (cx + (Math.random() - 0.5) * 40) + 'px';
+        coin.style.top = cy + 'px';
+        coin.style.setProperty('--dx', (Math.random() - 0.5) * 60 + 'px');
+        coin.style.setProperty('--dy', -(60 + Math.random() * 100) + 'px');
+        coin.style.animationDelay = (i * 60) + 'ms';
+        document.body.appendChild(coin);
+        coin.addEventListener('animationend', () => coin.remove());
+        setTimeout(() => { if (coin.parentNode) coin.remove(); }, 2500);
+      }
+    }, 150);
   }
 
   function showFloatingEmoji(emoji, anchorEl) {
@@ -512,7 +636,7 @@ const App = (() => {
     el.style.left = rect.left + rect.width / 2 + 'px';
     el.style.top = rect.top + 'px';
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
+    setTimeout(() => { if (el.parentNode) el.remove(); }, 1500);
   }
 
   function renderCategoryGrid() {
@@ -610,9 +734,15 @@ const App = (() => {
       const record = await Store.addRecord(activity, !activity.id);
       if (!record) { showToast('Error'); return; }
       if (navigator.vibrate) navigator.vibrate(50);
-      updateHeaderCoins();
       if (stayInCategory && currentCategoryCode) renderActivityList(currentCategoryCode);
       if (currentScreen === 'screen-home') renderHome();
+
+      // Random bonus multiplier
+      const rand = Math.random();
+      let multiplier = 1;
+      let bonusLabel = '';
+      if (rand < 0.01) { multiplier = 5; bonusLabel = '🎰 JACKPOT! x5'; }
+      else if (rand < 0.11) { multiplier = 2; bonusLabel = '✨ BONUS! x2'; }
 
       const startTime = Date.now();
       let nonce = 0;
@@ -628,7 +758,20 @@ const App = (() => {
         requestAnimationFrame(step);
       });
 
-      showToast(`⛓️ ${I18n.t('blockConfirmed')}`);
+      // Bonus coins (visual only for now, backend always gives 1)
+      if (multiplier > 1) {
+        showBonusOverlay(bonusLabel, multiplier);
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+      }
+
+      const miningIcon = document.querySelector('.mining-icon');
+      updateHeaderCoins(true, miningIcon);
+
+      const ja = I18n.getLang() === 'ja';
+      const msg = multiplier > 1
+        ? `⛓️ ${I18n.t('blockConfirmed')}\n${bonusLabel}`
+        : `⛓️ ${I18n.t('blockConfirmed')}`;
+      showToast(msg);
       if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
     } catch (e) {
       console.error('Record failed:', e);
@@ -648,10 +791,27 @@ const App = (() => {
       if (!shown.includes(badge.id)) {
         shown.push(badge.id);
         localStorage.setItem('rehacoin_badges_shown', JSON.stringify(shown));
-        setTimeout(() => showToast(`${badge.icon} ${I18n.t('badgeUnlocked')} ${badge.label}`), 1500);
+        setTimeout(() => showBadgeReveal(badge), 1500);
         break;
       }
     }
+  }
+
+  function showBadgeReveal(badge) {
+    const ja = I18n.getLang() === 'ja';
+    const el = document.createElement('div');
+    el.className = 'badge-reveal-overlay';
+    el.innerHTML = `
+      <div class="badge-reveal-card">
+        <div class="badge-reveal-label">${ja ? 'バッジ獲得！' : 'Badge Unlocked!'}</div>
+        <div class="badge-reveal-icon">${badge.icon}</div>
+        <div class="badge-reveal-name">${ja ? badge.label : badge.labelEn}</div>
+      </div>`;
+    document.body.appendChild(el);
+    if (window.confetti) confetti({ particleCount: 60, spread: 60, origin: { y: 0.45 } });
+    if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
+    el.addEventListener('click', () => { el.classList.add('badge-reveal-closing'); setTimeout(() => el.remove(), 500); });
+    setTimeout(() => { el.classList.add('badge-reveal-closing'); setTimeout(() => el.remove(), 500); }, 3500);
   }
 
   // --- Mining overlay ---
@@ -670,17 +830,32 @@ const App = (() => {
     document.getElementById('mining-overlay').hidden = true;
     stopCoinRain();
   }
+
+  function showBonusOverlay(label, multiplier) {
+    const el = document.createElement('div');
+    el.className = 'bonus-overlay';
+    el.innerHTML = `<div class="bonus-text">${label}</div>`;
+    document.body.appendChild(el);
+    if (window.confetti) {
+      const colors = multiplier >= 5
+        ? ['#FFD700', '#FF6B00', '#FF0000']
+        : ['#FFD700', '#3B93FF', '#FFFFFF'];
+      confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 }, colors });
+    }
+    setTimeout(() => { el.classList.add('bonus-fade'); }, 1500);
+    setTimeout(() => el.remove(), 2200);
+  }
   function startCoinRain() {
     const container = document.getElementById('coin-rain');
     container.innerHTML = '';
-    const coins = ['🪙', '💰', '✨', '🪙', '🪙'];
+    const coinSizes = [24, 28, 32, 36, 20];
     _coinRainInterval = setInterval(() => {
       const coin = document.createElement('div');
       coin.className = 'coin-drop';
-      coin.textContent = coins[Math.floor(Math.random() * coins.length)];
+      const sz = coinSizes[Math.floor(Math.random() * coinSizes.length)];
+      coin.innerHTML = `<img src="img/coin.svg" width="${sz}" height="${sz}">`;
       coin.style.left = Math.random() * 100 + '%';
       coin.style.animationDuration = (1.2 + Math.random() * 1.0) + 's';
-      coin.style.fontSize = (1.2 + Math.random() * 0.8) + 'rem';
       container.appendChild(coin);
       coin.addEventListener('animationend', () => coin.remove());
     }, 80);
@@ -709,11 +884,72 @@ const App = (() => {
     });
   }
 
+  // --- Login Bonus ---
+  const LOGIN_BONUS_REWARDS = [1, 1, 2, 2, 3, 3, 10]; // Day 1-7
+
+  function checkLoginBonus() {
+    const key = 'rehacoin_login_bonus';
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    const today = new Date().toDateString();
+    if (data.lastDate === today) return; // Already claimed today
+
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    let streak = (data.lastDate === yesterday) ? (data.streak || 0) : 0;
+    if (streak >= 7) streak = 0; // Reset after 7 days
+    streak++;
+
+    const reward = LOGIN_BONUS_REWARDS[streak - 1] || 1;
+    localStorage.setItem(key, JSON.stringify({ lastDate: today, streak }));
+
+    // Show login bonus overlay after a short delay
+    setTimeout(() => showLoginBonusOverlay(streak, reward), 800);
+  }
+
+  function showLoginBonusOverlay(day, reward) {
+    const ja = I18n.getLang() === 'ja';
+    const overlay = document.createElement('div');
+    overlay.className = 'login-bonus-overlay';
+
+    let daysHtml = '';
+    for (let i = 1; i <= 7; i++) {
+      const r = LOGIN_BONUS_REWARDS[i - 1];
+      const cls = i < day ? 'lb-day claimed' : (i === day ? 'lb-day today' : 'lb-day');
+      const icon = i === 7 ? '🎁' : '<img src="img/coin.svg" width="20" height="20">';
+      daysHtml += `<div class="${cls}"><div class="lb-day-num">${ja ? `${i}日目` : `Day ${i}`}</div><div class="lb-day-icon">${icon}</div><div class="lb-day-reward">+${r}</div></div>`;
+    }
+
+    overlay.innerHTML = `
+      <div class="login-bonus-card">
+        <div class="lb-title">${ja ? 'ログインボーナス' : 'Login Bonus'}</div>
+        <div class="lb-streak">${ja ? `${day}日目！` : `Day ${day}!`}</div>
+        <div class="lb-days">${daysHtml}</div>
+        <div class="lb-reward-msg"><img src="img/coin.svg" width="24" height="24" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
+        <button class="lb-claim btn-primary">${ja ? '受け取る' : 'Claim'}</button>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.lb-claim').addEventListener('click', () => {
+      overlay.classList.add('lb-closing');
+      // Coin fly from button to header
+      const btn = overlay.querySelector('.lb-claim');
+      updateHeaderCoins(true, btn);
+      if (window.confetti) {
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+      }
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+      setTimeout(() => overlay.remove(), 600);
+    });
+  }
+
   // --- Toast ---
+  const COIN_ICON_SM = '<img src="img/coin.svg" width="16" height="16" class="inline-coin">';
+
   function showToast(text) {
     const toast = document.getElementById('toast');
     const toastText = document.getElementById('toast-text');
-    toastText.textContent = text;
+    // Replace 🪙 with gold coin icon
+    const html = text.replace(/🪙/g, COIN_ICON_SM).replace(/\n/g, '<br>');
+    toastText.innerHTML = html;
     toast.hidden = false;
     toast.offsetHeight;
     toast.classList.add('show');
@@ -803,11 +1039,20 @@ const App = (() => {
     const today = Store.getTodayCount();
     const streak = Store.getStreak();
     const topCat = Store.getTopCategory();
+    const rp = Store.getRankProgress();
+    const ja = I18n.getLang() === 'ja';
+    const rankLabel = ja ? rp.current.label : rp.current.labelEn;
+    const nextLabel = rp.next ? (ja ? rp.next.label : rp.next.labelEn) : '';
+    const progressPct = Math.round(rp.progress * 100);
+
     container.innerHTML = `
+      <div class="stat-card stat-rank" style="border-top: 3px solid ${rp.current.color}">
+        <div class="stat-value" style="color:${rp.current.color}">${rp.current.icon} ${rankLabel}</div>
+        ${rp.next ? `<div class="rank-progress-bar"><div class="rank-progress-fill" style="width:${progressPct}%;background:${rp.current.color}"></div></div><div class="rank-next-label">${nextLabel} ${ja ? 'まで' : 'to'} ${rp.next.minCoins - total} ${I18n.t('coin')}</div>` : '<div class="rank-next-label">MAX</div>'}
+      </div>
       <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">${I18n.t('totalCoins')}</div></div>
       <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">${I18n.t('today')}</div></div>
-      <div class="stat-card"><div class="stat-value">${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
-      <div class="stat-card"><div class="stat-value">${topCat ? topCat.icon : '—'}</div><div class="stat-label">${topCat ? topCat.label : I18n.t('top')}</div></div>
+      <div class="stat-card"><div class="stat-value"><span class="streak-flame-sm ${streak >= 7 ? 'streak-active' : ''}">🔥</span>${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
     `;
   }
 
@@ -839,16 +1084,6 @@ const App = (() => {
 
   // --- Friends ---
   function bindFriends() {
-    // Friends tabs
-    document.querySelectorAll('.friends-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.friends-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.friends-tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.ftab).classList.add('active');
-      });
-    });
-
     // Friend code request
     document.getElementById('btn-send-friend-request').addEventListener('click', async () => {
       const input = document.getElementById('friend-code-input');
@@ -1005,9 +1240,16 @@ const App = (() => {
   function renderExchange() {
     document.getElementById('exchange-balance').textContent = Store.getBalance();
     const badgeList = document.getElementById('badge-list');
-    badgeList.innerHTML = Store.getAllBadges().map(b => `
-      <div class="badge-card ${b.unlocked ? '' : 'locked'}"><span class="badge-icon">${b.icon}</span><span class="badge-label">${b.label}</span><span class="badge-coins">${b.coins} ${I18n.t('coin')}</span></div>
-    `).join('');
+    const ja2 = I18n.getLang() === 'ja';
+    badgeList.innerHTML = Store.getAllBadges().map(b => {
+      let condLabel = '';
+      if (b.coins) condLabel = `${b.coins} ${I18n.t('coin')}`;
+      else if (b.streak) condLabel = ja2 ? `${b.streak}日連続` : `${b.streak} day streak`;
+      else if (b.records) condLabel = ja2 ? `${b.records}回記録` : `${b.records} records`;
+      else if (b.friends) condLabel = ja2 ? `${b.friends}人のフレンド` : `${b.friends} friends`;
+      else if (b.witness) condLabel = ja2 ? `${b.witness}回応援` : `${b.witness} cheers`;
+      return `<div class="badge-card ${b.unlocked ? '' : 'locked'}"><span class="badge-icon">${b.icon}</span><span class="badge-label">${ja2 ? b.label : b.labelEn}</span><span class="badge-coins">${condLabel}</span></div>`;
+    }).join('');
 
     const rewardList = document.getElementById('reward-list');
     const rewards = Store.getRewards();
@@ -1016,7 +1258,7 @@ const App = (() => {
       rewardList.innerHTML = `<div class="reward-empty">${I18n.t('noRewards')}</div>`;
     } else {
       rewardList.innerHTML = rewards.map(r => `
-        <div class="reward-item"><span class="rw-label">${escapeHtml(r.label)}</span><span class="rw-cost">🪙 ${r.cost}</span><button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>${I18n.t('btnExchange')}</button><button class="rw-del" data-id="${r.id}">×</button></div>
+        <div class="reward-item"><span class="rw-label">${escapeHtml(r.label)}</span><span class="rw-cost"><img src="img/coin.svg" width="14" height="14" class="inline-coin"> ${r.cost}</span><button class="rw-use" data-id="${r.id}" data-cost="${r.cost}" ${balance < r.cost ? 'disabled' : ''}>${I18n.t('btnExchange')}</button><button class="rw-del" data-id="${r.id}">×</button></div>
       `).join('');
       rewardList.querySelectorAll('.rw-use').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -1038,15 +1280,65 @@ const App = (() => {
   }
 
   // --- Profile ---
+  // --- Themes ---
+  const THEMES = [
+    { id: 'default', label: 'デフォルト', labelEn: 'Default', cost: 0, accent: '#1B74E4', bg: '#F0F2F5' },
+    { id: 'sakura', label: '桜', labelEn: 'Sakura', cost: 30, accent: '#E91E63', bg: '#FFF0F5' },
+    { id: 'ocean', label: '海', labelEn: 'Ocean', cost: 30, accent: '#0097A7', bg: '#E0F7FA' },
+    { id: 'forest', label: '森', labelEn: 'Forest', cost: 30, accent: '#2E7D32', bg: '#E8F5E9' },
+    { id: 'night', label: '夜', labelEn: 'Night', cost: 50, accent: '#7C4DFF', bg: '#EDE7F6' },
+    { id: 'sunset', label: '夕焼け', labelEn: 'Sunset', cost: 50, accent: '#FF6D00', bg: '#FFF3E0' },
+  ];
+
+  function getOwnedThemes() {
+    return JSON.parse(localStorage.getItem('rehacoin_themes') || '["default"]');
+  }
+  function setOwnedThemes(arr) {
+    localStorage.setItem('rehacoin_themes', JSON.stringify(arr));
+  }
+  function getCurrentTheme() {
+    return localStorage.getItem('rehacoin_current_theme') || 'default';
+  }
+  function applyTheme(id) {
+    const theme = THEMES.find(t => t.id === id);
+    if (!theme) return;
+    localStorage.setItem('rehacoin_current_theme', id);
+    document.documentElement.style.setProperty('--accent', theme.accent);
+    document.documentElement.style.setProperty('--accent-dark', theme.accent);
+    document.documentElement.style.setProperty('--bg', theme.bg);
+    document.getElementById('app-header').style.background =
+      `linear-gradient(135deg, ${theme.accent} 0%, ${adjustColor(theme.accent, 30)} 100%)`;
+  }
+  function adjustColor(hex, amount) {
+    const num = parseInt(hex.replace('#', ''), 16);
+    const r = Math.min(255, (num >> 16) + amount);
+    const g = Math.min(255, ((num >> 8) & 0xFF) + amount);
+    const b = Math.min(255, (num & 0xFF) + amount);
+    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+  }
+
   function renderProfile() {
     const profile = Store.getProfile();
     if (!profile) return;
+    const rank = Store.getRank();
+    const ja = I18n.getLang() === 'ja';
+
     document.getElementById('profile-nickname').textContent = profile.nickname;
     document.getElementById('profile-friend-code').textContent = profile.friendCode;
     document.getElementById('profile-total-coins').textContent = profile.totalCoins;
     document.getElementById('profile-witness-bonus').textContent = profile.witnessBonus;
     document.getElementById('profile-friends-count').textContent = profile.friendCount;
     document.getElementById('profile-created').textContent = new Date(profile.createdAt).toLocaleDateString('ja-JP');
+
+    // Rank badge on avatar
+    const avatar = document.querySelector('#screen-profile .profile-avatar');
+    if (avatar) {
+      avatar.style.boxShadow = `0 0 0 3px ${rank.color}, 0 0 12px ${rank.color}40`;
+      avatar.dataset.rank = rank.id;
+    }
+    // Rank title
+    let rankEl = document.getElementById('profile-rank-title');
+    if (rankEl) rankEl.innerHTML = `<span style="color:${rank.color}">${rank.icon} ${ja ? rank.label : rank.labelEn}</span>`;
 
     const visSelect = document.getElementById('profile-visibility');
     visSelect.value = profile.feedVisibility;
@@ -1055,8 +1347,62 @@ const App = (() => {
     const langSelect = document.getElementById('profile-lang');
     langSelect.value = I18n.getLang();
 
+    // Theme store
+    renderThemeStore();
+    // Daily missions
+    renderDailyMissions();
+    // Daily gacha
+    renderGachaSection();
+    // Friend ranking
+    renderFriendRanking();
+
     // Exchange content (merged into profile)
     renderExchange();
+  }
+
+  function renderThemeStore() {
+    const container = document.getElementById('theme-store');
+    if (!container) return;
+    const owned = getOwnedThemes();
+    const current = getCurrentTheme();
+    const balance = Store.getBalance();
+    const ja = I18n.getLang() === 'ja';
+
+    container.innerHTML = THEMES.map(t => {
+      const isOwned = owned.includes(t.id);
+      const isCurrent = current === t.id;
+      const canBuy = balance >= t.cost;
+      let btnHtml;
+      if (isCurrent) btnHtml = `<span class="theme-active">${ja ? '使用中' : 'Active'}</span>`;
+      else if (isOwned) btnHtml = `<button class="theme-use-btn" data-id="${t.id}">${ja ? '使う' : 'Use'}</button>`;
+      else btnHtml = `<button class="theme-buy-btn" data-id="${t.id}" ${canBuy ? '' : 'disabled'}><img src="img/coin.svg" width="12" height="12" class="inline-coin"> ${t.cost}</button>`;
+
+      return `<div class="theme-card ${isCurrent ? 'theme-current' : ''}">
+        <div class="theme-preview" style="background:${t.bg};border-top:3px solid ${t.accent}"></div>
+        <div class="theme-name">${ja ? t.label : t.labelEn}</div>
+        ${btnHtml}
+      </div>`;
+    }).join('');
+
+    container.querySelectorAll('.theme-use-btn').forEach(btn => {
+      btn.addEventListener('click', () => { applyTheme(btn.dataset.id); renderThemeStore(); });
+    });
+    container.querySelectorAll('.theme-buy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const theme = THEMES.find(t => t.id === btn.dataset.id);
+        const ja = I18n.getLang() === 'ja';
+        if (await showConfirm(ja ? `「${theme.label}」テーマを${theme.cost}コインで購入？` : `Buy "${theme.labelEn}" for ${theme.cost} coins?`, '🎨')) {
+          const owned = getOwnedThemes();
+          owned.push(theme.id);
+          setOwnedThemes(owned);
+          applyTheme(theme.id);
+          showToast(ja ? `🎨 ${theme.label}テーマ獲得！` : `🎨 ${theme.labelEn} theme unlocked!`);
+          if (window.confetti) confetti({ particleCount: 40, spread: 50 });
+          renderThemeStore();
+          updateHeaderCoins();
+        }
+      });
+    });
   }
 
   // --- Settings ---
@@ -1131,6 +1477,189 @@ const App = (() => {
       clearInterval(feedRefreshTimer);
       feedRefreshTimer = null;
     }
+  }
+
+  // --- Daily Missions ---
+  const MISSION_POOL = [
+    { id: 'm_record1', label: '1回記録する', labelEn: 'Record 1 activity', check: () => Store.getTodayCount() >= 1, reward: 1 },
+    { id: 'm_record3', label: '3回記録する', labelEn: 'Record 3 activities', check: () => Store.getTodayCount() >= 3, reward: 3 },
+    { id: 'm_record5', label: '5回記録する', labelEn: 'Record 5 activities', check: () => Store.getTodayCount() >= 5, reward: 5 },
+    { id: 'm_cheer1', label: '1人を応援する', labelEn: 'Cheer 1 friend', check: () => getDailyCheerCount() >= 1, reward: 2 },
+    { id: 'm_cheer3', label: '3人を応援する', labelEn: 'Cheer 3 friends', check: () => getDailyCheerCount() >= 3, reward: 4 },
+    { id: 'm_streak', label: '連続記録を維持する', labelEn: 'Keep your streak', check: () => Store.getStreak() >= 1, reward: 2 },
+  ];
+
+  function getDailyCheerCount() {
+    return parseInt(localStorage.getItem('rehacoin_daily_cheers_' + getTodayKey()) || '0');
+  }
+  function incrementDailyCheer() {
+    const key = 'rehacoin_daily_cheers_' + getTodayKey();
+    localStorage.setItem(key, (parseInt(localStorage.getItem(key) || '0') + 1).toString());
+  }
+  function getTodayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  }
+
+  function getDailyMissions() {
+    const key = 'rehacoin_daily_missions';
+    const data = JSON.parse(localStorage.getItem(key) || '{}');
+    const today = getTodayKey();
+    if (data.date === today) return data;
+    // Generate 3 random missions for today
+    const shuffled = MISSION_POOL.slice().sort(() => Math.random() - 0.5);
+    const missions = shuffled.slice(0, 3).map(m => ({ ...m, claimed: false }));
+    const newData = { date: today, missions };
+    localStorage.setItem(key, JSON.stringify(newData));
+    return newData;
+  }
+
+  function renderDailyMissions() {
+    const container = document.getElementById('daily-missions');
+    if (!container) return;
+    const data = getDailyMissions();
+    const ja = I18n.getLang() === 'ja';
+    container.innerHTML = data.missions.map((m, i) => {
+      const done = m.check();
+      const claimed = m.claimed;
+      let btnHtml;
+      if (claimed) btnHtml = `<span class="mission-done">${ja ? '受取済' : 'Claimed'}</span>`;
+      else if (done) btnHtml = `<button class="mission-claim-btn" data-idx="${i}"><img src="img/coin.svg" width="12" height="12" class="inline-coin"> +${m.reward}</button>`;
+      else btnHtml = `<span class="mission-pending">${ja ? '未達成' : 'In Progress'}</span>`;
+      return `<div class="mission-item ${claimed ? 'claimed' : done ? 'ready' : ''}">
+        <span class="mission-check">${claimed ? '✅' : done ? '🟢' : '⬜'}</span>
+        <span class="mission-label">${ja ? m.label : m.labelEn}</span>
+        ${btnHtml}
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.mission-claim-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        const data = getDailyMissions();
+        data.missions[idx].claimed = true;
+        localStorage.setItem('rehacoin_daily_missions', JSON.stringify(data));
+        showToast(ja ? `🎯 ミッション達成！ +${data.missions[idx].reward}コイン` : `🎯 Mission complete! +${data.missions[idx].reward} coins`);
+        if (window.confetti) confetti({ particleCount: 30, spread: 40 });
+        renderDailyMissions();
+      });
+    });
+  }
+
+  // --- Daily Gacha ---
+  const GACHA_ITEMS = [
+    // Common (60%)
+    { rarity: 'common', icon: '💊', label: 'ビタミン剤', labelEn: 'Vitamin', coins: 1 },
+    { rarity: 'common', icon: '🩹', label: 'ばんそうこう', labelEn: 'Bandage', coins: 1 },
+    { rarity: 'common', icon: '🧴', label: 'ハンドクリーム', labelEn: 'Hand Cream', coins: 1 },
+    { rarity: 'common', icon: '🧊', label: 'アイスパック', labelEn: 'Ice Pack', coins: 1 },
+    // Uncommon (25%)
+    { rarity: 'uncommon', icon: '🎗️', label: '応援リボン', labelEn: 'Cheer Ribbon', coins: 3 },
+    { rarity: 'uncommon', icon: '🧃', label: 'エナジードリンク', labelEn: 'Energy Drink', coins: 3 },
+    { rarity: 'uncommon', icon: '🌟', label: 'スターチャーム', labelEn: 'Star Charm', coins: 3 },
+    // Rare (12%)
+    { rarity: 'rare', icon: '💎', label: 'クリスタル', labelEn: 'Crystal', coins: 5 },
+    { rarity: 'rare', icon: '🏅', label: 'ゴールドメダル', labelEn: 'Gold Medal', coins: 5 },
+    // Legendary (3%)
+    { rarity: 'legendary', icon: '👑', label: '黄金の王冠', labelEn: 'Golden Crown', coins: 10 },
+  ];
+  const GACHA_RARITY_COLORS = {
+    common: '#9E9E9E', uncommon: '#4CAF50', rare: '#2196F3', legendary: '#FFD700'
+  };
+
+  function canDoGacha() {
+    const last = localStorage.getItem('rehacoin_gacha_date');
+    return last !== getTodayKey();
+  }
+
+  function doGacha() {
+    const r = Math.random();
+    let pool;
+    if (r < 0.03) pool = GACHA_ITEMS.filter(g => g.rarity === 'legendary');
+    else if (r < 0.15) pool = GACHA_ITEMS.filter(g => g.rarity === 'rare');
+    else if (r < 0.40) pool = GACHA_ITEMS.filter(g => g.rarity === 'uncommon');
+    else pool = GACHA_ITEMS.filter(g => g.rarity === 'common');
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    localStorage.setItem('rehacoin_gacha_date', getTodayKey());
+    // Save to collection
+    const collection = JSON.parse(localStorage.getItem('rehacoin_gacha_collection') || '[]');
+    collection.push({ ...item, date: Date.now() });
+    localStorage.setItem('rehacoin_gacha_collection', JSON.stringify(collection));
+    return item;
+  }
+
+  function showGachaOverlay(item) {
+    const ja = I18n.getLang() === 'ja';
+    const color = GACHA_RARITY_COLORS[item.rarity];
+    const rarityLabel = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', legendary: 'Legendary' };
+    const el = document.createElement('div');
+    el.className = 'gacha-overlay';
+    el.innerHTML = `
+      <div class="gacha-card" style="--gacha-color: ${color}">
+        <div class="gacha-rarity">${rarityLabel[item.rarity]}</div>
+        <div class="gacha-icon">${item.icon}</div>
+        <div class="gacha-name">${ja ? item.label : item.labelEn}</div>
+        <div class="gacha-reward"><img src="img/coin.svg" width="16" height="16" class="inline-coin"> +${item.coins}</div>
+        <button class="btn-primary gacha-close">${ja ? '閉じる' : 'Close'}</button>
+      </div>`;
+    document.body.appendChild(el);
+    if (item.rarity === 'legendary') {
+      if (window.confetti) confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#FFD700', '#FF6B00', '#FF0000'] });
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200, 50, 300]);
+    } else if (item.rarity === 'rare') {
+      if (window.confetti) confetti({ particleCount: 80, spread: 70, colors: ['#2196F3', '#64B5F6'] });
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    } else {
+      if (navigator.vibrate) navigator.vibrate(50);
+    }
+    el.querySelector('.gacha-close').addEventListener('click', () => {
+      el.classList.add('gacha-closing');
+      setTimeout(() => el.remove(), 400);
+    });
+  }
+
+  function renderGachaSection() {
+    const container = document.getElementById('gacha-section');
+    if (!container) return;
+    const ja = I18n.getLang() === 'ja';
+    const available = canDoGacha();
+    container.innerHTML = `
+      <button id="btn-gacha" class="gacha-btn ${available ? '' : 'disabled'}" ${available ? '' : 'disabled'}>
+        ${available ? (ja ? '🎰 ガチャを回す（1日1回）' : '🎰 Daily Gacha (1/day)') : (ja ? '🎰 また明日！' : '🎰 Come back tomorrow!')}
+      </button>`;
+    if (available) {
+      container.querySelector('#btn-gacha').addEventListener('click', () => {
+        const item = doGacha();
+        showGachaOverlay(item);
+        renderGachaSection();
+      });
+    }
+  }
+
+  // --- Friend Ranking ---
+  function renderFriendRanking() {
+    const container = document.getElementById('friend-ranking');
+    if (!container) return;
+    const ja = I18n.getLang() === 'ja';
+    const friends = Store.getFriends();
+    const profile = Store.getProfile();
+    if (!profile || friends.length === 0) {
+      container.innerHTML = `<div class="ranking-empty">${ja ? 'フレンドを追加してランキングに参加しよう！' : 'Add friends to see rankings!'}</div>`;
+      return;
+    }
+    // Build ranking: self + friends by totalCoins
+    const entries = [
+      { nickname: profile.nickname, totalCoins: profile.totalCoins, isMe: true },
+      ...friends.map(f => ({ nickname: f.nickname, totalCoins: f.totalCoins || 0, isMe: false }))
+    ].sort((a, b) => b.totalCoins - a.totalCoins);
+
+    container.innerHTML = entries.map((e, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`;
+      return `<div class="ranking-item ${e.isMe ? 'ranking-me' : ''}">
+        <span class="ranking-pos">${medal}</span>
+        <span class="ranking-name">${escapeHtml(e.nickname)}</span>
+        <span class="ranking-coins"><img src="img/coin.svg" width="14" height="14" class="inline-coin"> ${e.totalCoins}</span>
+      </div>`;
+    }).join('');
   }
 
   return { init };

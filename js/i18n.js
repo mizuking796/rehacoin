@@ -81,7 +81,7 @@ const I18n = (() => {
       friendRequestSent: 'フレンド申請を送信しました！',
       witnessConfirm: '👁️ 確認しました！',
       witnessBonus: '+1 ボーナスコイン',
-      feedActivityRecorded: '🪙 活動を記録',
+      feedActivityRecorded: '活動を記録',
 
       // Exchange
       screenExchange: '交換',
@@ -118,7 +118,7 @@ const I18n = (() => {
       mining: 'マイニング中...',
       hashComputing: 'Hash: 計算中...',
       blockConfirmed: 'ブロック確認！ +1 コイン',
-      plusOneCoin: '🪙 リハコイン +1',
+      plusOneCoin: 'リハコイン +1',
       badgeUnlocked: 'バッジ解放！',
 
       // Loading
@@ -226,7 +226,7 @@ const I18n = (() => {
       friendRequestSent: 'Friend request sent!',
       witnessConfirm: '👁️ Witnessed!',
       witnessBonus: '+1 bonus coin',
-      feedActivityRecorded: '🪙 Activity recorded',
+      feedActivityRecorded: 'Activity recorded',
 
       screenExchange: 'Exchange',
       availableCoins: 'Available Coins',
@@ -260,7 +260,7 @@ const I18n = (() => {
       mining: 'Mining...',
       hashComputing: 'Hash: computing...',
       blockConfirmed: 'Block confirmed! +1 coin',
-      plusOneCoin: '🪙 +1 coin',
+      plusOneCoin: '+1 coin',
       badgeUnlocked: 'Badge unlocked!',
 
       loading: 'Loading...',

@@ -63,6 +63,18 @@ const Store = (() => {
         _profile.totalCoins++;
         _profile.balance++;
       }
+      // Instantly insert into feed for immediate visual feedback
+      _feed.unshift({
+        id: rec.id,
+        nickname: _profile ? _profile.nickname : '',
+        label: activity.label,
+        icon: activity.icon || '',
+        timestamp: rec.timestamp,
+        reactions: {},
+        reactors: [],
+        myReaction: null,
+        isOwn: true
+      });
       return rec;
     }
     return null;
@@ -234,6 +246,12 @@ const Store = (() => {
           // Update reactors list
           item.reactors = item.reactors.filter(r => r.nickname !== myNickname);
           item.reactors.unshift({ nickname: myNickname, type });
+          // Update local coin balance immediately
+          if (res.witnessBonus && _profile) {
+            _profile.balance++;
+            _profile.totalCoins++;
+            _profile.witnessBonus = (_profile.witnessBonus || 0) + 1;
+          }
         } else {
           // Toggled off
           item.reactions[type] = Math.max(0, (item.reactions[type] || 0) - 1);
@@ -249,24 +267,77 @@ const Store = (() => {
     return _profile ? _profile.witnessBonus : 0;
   }
 
-  // --- Badges ---
-  const BADGES = [
-    { id: 'b1', coins: 10, icon: '🥉', label: 'はじめの一歩' },
-    { id: 'b2', coins: 50, icon: '🥈', label: '習慣マスター' },
-    { id: 'b3', coins: 100, icon: '🥇', label: 'リハビリスト' },
-    { id: 'b4', coins: 250, icon: '💎', label: 'ゴールドリハビリスト' },
-    { id: 'b5', coins: 500, icon: '👑', label: 'プラチナリハビリスト' },
-    { id: 'b6', coins: 1000, icon: '🏆', label: 'レジェンド' }
+  // --- Ranks ---
+  const RANKS = [
+    { id: 'bronze',   minCoins: 0,    color: '#CD7F32', label: 'リハビリ見習い', labelEn: 'Beginner',   icon: '🟤' },
+    { id: 'silver',   minCoins: 50,   color: '#C0C0C0', label: 'リハビリ初段',   labelEn: 'Silver',     icon: '⚪' },
+    { id: 'gold',     minCoins: 200,  color: '#FFD700', label: 'リハビリ戦士',   labelEn: 'Gold',       icon: '🟡' },
+    { id: 'platinum', minCoins: 500,  color: '#E5E4E2', label: 'リハビリ達人',   labelEn: 'Platinum',   icon: '💠' },
+    { id: 'diamond',  minCoins: 1000, color: '#B9F2FF', label: 'リハビリマスター', labelEn: 'Diamond', icon: '💎' },
   ];
 
-  function getUnlockedBadges() {
+  function getRank() {
     const total = getTotalCoins() + getWitnessBonus();
-    return BADGES.filter(b => total >= b.coins);
+    let rank = RANKS[0];
+    for (const r of RANKS) {
+      if (total >= r.minCoins) rank = r;
+    }
+    return rank;
+  }
+
+  function getRankProgress() {
+    const total = getTotalCoins() + getWitnessBonus();
+    const rank = getRank();
+    const idx = RANKS.indexOf(rank);
+    if (idx >= RANKS.length - 1) return { current: rank, next: null, progress: 1 };
+    const next = RANKS[idx + 1];
+    const progress = (total - rank.minCoins) / (next.minCoins - rank.minCoins);
+    return { current: rank, next, progress: Math.min(1, progress) };
+  }
+
+  // --- Badges ---
+  const BADGES = [
+    // Milestone badges
+    { id: 'b1', coins: 10, icon: '🥉', label: 'はじめの一歩', labelEn: 'First Steps' },
+    { id: 'b2', coins: 50, icon: '🥈', label: '習慣マスター', labelEn: 'Habit Master' },
+    { id: 'b3', coins: 100, icon: '🥇', label: 'リハビリスト', labelEn: 'Rehabist' },
+    { id: 'b4', coins: 250, icon: '💎', label: 'ゴールドリハビリスト', labelEn: 'Gold Rehabist' },
+    { id: 'b5', coins: 500, icon: '👑', label: 'プラチナリハビリスト', labelEn: 'Platinum Rehabist' },
+    { id: 'b6', coins: 1000, icon: '🏆', label: 'レジェンド', labelEn: 'Legend' },
+    // Streak badges
+    { id: 's3', streak: 3, icon: '🔥', label: '3日連続', labelEn: '3 Day Streak' },
+    { id: 's7', streak: 7, icon: '🔥', label: '1週間連続', labelEn: '7 Day Streak' },
+    { id: 's30', streak: 30, icon: '🔥', label: '1ヶ月連続', labelEn: '30 Day Streak' },
+    { id: 's100', streak: 100, icon: '🔥', label: '100日連続', labelEn: '100 Day Streak' },
+    // Activity count badges
+    { id: 'a10', records: 10, icon: '📝', label: '10回記録', labelEn: '10 Records' },
+    { id: 'a50', records: 50, icon: '📝', label: '50回記録', labelEn: '50 Records' },
+    { id: 'a100', records: 100, icon: '📝', label: '100回記録', labelEn: '100 Records' },
+    { id: 'a500', records: 500, icon: '📝', label: '500回記録', labelEn: '500 Records' },
+    // Social badges
+    { id: 'f1', friends: 1, icon: '🤝', label: '初めてのフレンド', labelEn: 'First Friend' },
+    { id: 'f5', friends: 5, icon: '🤝', label: '5人のフレンド', labelEn: '5 Friends' },
+    // Witness badges
+    { id: 'w1', witness: 1, icon: '👁️', label: '初めての応援', labelEn: 'First Cheer' },
+    { id: 'w10', witness: 10, icon: '👁️', label: '10回応援', labelEn: '10 Cheers' },
+    { id: 'w50', witness: 50, icon: '👁️', label: '応援マスター', labelEn: 'Cheer Master' },
+  ];
+
+  function _isBadgeUnlocked(b) {
+    if (b.coins) return (getTotalCoins() + getWitnessBonus()) >= b.coins;
+    if (b.streak) return getStreak() >= b.streak;
+    if (b.records) return _records.length >= b.records;
+    if (b.friends) return _friends.length >= b.friends;
+    if (b.witness) return getWitnessBonus() >= b.witness;
+    return false;
+  }
+
+  function getUnlockedBadges() {
+    return BADGES.filter(_isBadgeUnlocked);
   }
 
   function getAllBadges() {
-    const total = getTotalCoins() + getWitnessBonus();
-    return BADGES.map(b => ({ ...b, unlocked: total >= b.coins }));
+    return BADGES.map(b => ({ ...b, unlocked: _isBadgeUnlocked(b) }));
   }
 
   // --- Friends ---
@@ -341,6 +412,7 @@ const Store = (() => {
     getRewards, addReward, deleteReward,
     getBalance, spendCoins,
     witnessRecord, cheerRecord, getWitnessBonus,
+    getRank, getRankProgress, RANKS,
     getUnlockedBadges, getAllBadges,
     loadFriends, getFriends, getFeed, _updateFeed,
     getFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, removeFriend,

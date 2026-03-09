@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <!-- Coin face: rich gold gradient -->
+    <radialGradient id="coinFace" cx="0.4" cy="0.35" r="0.65">
+      <stop offset="0%" stop-color="#FFF1A8"/>
+      <stop offset="35%" stop-color="#FFD700"/>
+      <stop offset="70%" stop-color="#E6AC00"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </radialGradient>
+    <!-- Edge: dark gold for thickness -->
+    <linearGradient id="coinEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C8960C"/>
+      <stop offset="40%" stop-color="#8B6914"/>
+      <stop offset="100%" stop-color="#6B4F0A"/>
+    </linearGradient>
+    <!-- Inner ring gradient -->
+    <linearGradient id="innerRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE88A"/>
+      <stop offset="50%" stop-color="#B8860B"/>
+      <stop offset="100%" stop-color="#FFE88A"/>
+    </linearGradient>
+    <!-- R emboss shadow (darker gold, offset down-right) -->
+    <linearGradient id="rShadow" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#8B6914"/>
+      <stop offset="100%" stop-color="#6B4F0A"/>
+    </linearGradient>
+    <!-- R emboss highlight (lighter gold, offset up-left) -->
+    <linearGradient id="rHighlight" x1="0" y1="1" x2="0.5" y2="0">
+      <stop offset="0%" stop-color="#FFE88A"/>
+      <stop offset="100%" stop-color="#FFF5CC"/>
+    </linearGradient>
+    <!-- Top shine -->
+    <radialGradient id="shine" cx="0.35" cy="0.25" r="0.4">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Rim light -->
+    <linearGradient id="rimLight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF5CC" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#FFD700" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#FFF5CC" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Coin edge / thickness (shifted down for 3D depth) -->
+  <ellipse cx="50" cy="55" rx="44" ry="44" fill="url(#coinEdge)"/>
+  <ellipse cx="50" cy="54" rx="44" ry="44" fill="#9B7510"/>
+  <ellipse cx="50" cy="53" rx="44" ry="44" fill="#A67C12"/>
+
+  <!-- Main coin face -->
+  <circle cx="50" cy="50" r="44" fill="url(#coinFace)"/>
+
+  <!-- Outer rim bevel -->
+  <circle cx="50" cy="50" r="43" fill="none" stroke="url(#rimLight)" stroke-width="1.5"/>
+  <circle cx="50" cy="50" r="44" fill="none" stroke="#A67C12" stroke-width="0.5" opacity="0.6"/>
+
+  <!-- Inner decorative ring -->
+  <circle cx="50" cy="50" r="35" fill="none" stroke="url(#innerRing)" stroke-width="2"/>
+  <circle cx="50" cy="50" r="33.5" fill="none" stroke="#C8960C" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- R letter - embossed effect: shadow layer (down-right) -->
+  <text x="51.5" y="62" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="bold" fill="url(#rShadow)" opacity="0.6">R</text>
+  <!-- R letter - main body (mid gold) -->
+  <text x="50" y="61" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="bold" fill="#C8960C" opacity="0.85">R</text>
+  <!-- R letter - highlight layer (up-left, lighter) -->
+  <text x="49.2" y="60.2" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="bold" fill="url(#rHighlight)" opacity="0.5">R</text>
+
+  <!-- Top-left shine/gloss -->
+  <circle cx="50" cy="50" r="44" fill="url(#shine)"/>
+
+  <!-- Specular highlight arc -->
+  <path d="M22 30 Q 38 14, 65 22" stroke="#FFFFFF" stroke-width="2.5" stroke-opacity="0.35" fill="none" stroke-linecap="round"/>
+  <path d="M26 34 Q 40 20, 60 26" stroke="#FFFFFF" stroke-width="1.2" stroke-opacity="0.2" fill="none" stroke-linecap="round"/>
+</svg>

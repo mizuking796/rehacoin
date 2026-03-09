@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>リハコイン</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪙</text></svg>">
+  <link rel="icon" href="img/coin.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/coin.svg">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
   <!-- Auth Screen -->
   <div id="auth-screen" class="auth-screen" hidden>
     <div class="auth-container">
-      <div class="auth-logo">🪙</div>
+      <div class="auth-logo"><img src="img/coin.svg" alt="coin" class="gold-coin-logo"></div>
       <h1 class="auth-title" data-i18n="appName">リハコイン</h1>
       <p class="auth-subtitle" data-i18n="authSubtitle">リハビリでコインを貯めよう</p>
 
@@ -68,11 +68,12 @@
   <div id="app-container" hidden>
 
     <header id="app-header">
-      <h1>🪙 <span data-i18n="appName">リハコイン</span></h1>
+      <h1><img src="img/coin.svg" alt="" class="header-coin-icon"> <span data-i18n="appName">リハコイン</span></h1></invoke>
       <div class="header-right">
+        <span id="streak-fire" class="streak-display" hidden></span>
         <span id="header-nickname" class="header-nickname"></span>
         <button id="btn-lang-toggle" class="lang-toggle">EN</button>
-        <span id="header-coins" class="header-coins">0 コイン</span>
+        <span id="header-coins" class="header-coins" data-val="0">0 コイン</span>
       </div>
     </header>
 
@@ -133,50 +134,41 @@
     <!-- Friends -->
     <main id="screen-friends" class="screen">
       <h2 class="screen-title-fixed" data-i18n="navFriends">フレンド</h2>
-      <div class="friends-tabs">
-        <button class="friends-tab active" data-ftab="friends-tab-list" data-i18n="tabFriendList">フレンド</button>
-        <button class="friends-tab" data-ftab="friends-tab-add" data-i18n="tabFriendAdd">追加</button>
+
+      <!-- Add Friend -->
+      <div class="fr-search-section">
+        <div class="fr-search-bar">
+          <input type="text" id="user-search-input" data-i18n-placeholder="userSearchPlaceholder" placeholder="ニックネームで検索..." autocomplete="off">
+        </div>
+        <div id="user-search-results"></div>
       </div>
 
-      <!-- Tab: Friend List -->
-      <div id="friends-tab-list" class="friends-tab-content active">
-        <div id="section-friend-requests" hidden>
-          <div class="fr-section-header" data-i18n="friendRequests">フレンド申請</div>
-          <div id="friend-requests-list"></div>
-        </div>
-        <div id="friend-list-container">
-          <div class="fr-section-header"><span data-i18n="sectionFriends">フレンド一覧</span> <span id="friend-count-label" class="fr-count"></span></div>
-          <div id="friend-list"></div>
+      <div class="fr-code-section">
+        <div class="fr-code-input-row">
+          <input type="text" id="friend-code-input" data-i18n-placeholder="friendCodePlaceholder" placeholder="フレンドコードを入力" autocomplete="off" maxlength="6" style="text-transform:uppercase">
+          <button id="btn-send-friend-request" class="btn-primary" data-i18n="btnSend">送信</button>
         </div>
       </div>
 
-      <!-- Tab: Add Friend -->
-      <div id="friends-tab-add" class="friends-tab-content">
-        <div class="fr-search-section">
-          <div class="fr-search-bar">
-            <input type="text" id="user-search-input" data-i18n-placeholder="userSearchPlaceholder" placeholder="ニックネームで検索..." autocomplete="off">
-          </div>
-          <div id="user-search-results"></div>
+      <div class="fr-mycode-section">
+        <div class="fr-mycode-label" data-i18n="myFriendCode">マイフレンドコード</div>
+        <div class="fr-mycode-display">
+          <span id="my-friend-code" class="fr-mycode-value">------</span>
+          <button id="btn-copy-friend-code" class="fr-copy-btn">Copy</button>
         </div>
+        <div class="fr-mycode-hint" data-i18n="shareCodeHint">このコードを共有してフレンドに追加してもらおう</div>
+      </div>
 
-        <div class="fr-divider"><span data-i18n="orLabel">または</span></div>
+      <!-- Friend Requests -->
+      <div id="section-friend-requests" hidden>
+        <div class="fr-section-header" data-i18n="friendRequests">フレンド申請</div>
+        <div id="friend-requests-list"></div>
+      </div>
 
-        <div class="fr-code-section">
-          <div class="fr-code-label" data-i18n="addFriendByCode">コードで追加</div>
-          <div class="fr-code-input-row">
-            <input type="text" id="friend-code-input" data-i18n-placeholder="friendCodePlaceholder" placeholder="フレンドコードを入力" autocomplete="off" maxlength="6" style="text-transform:uppercase">
-            <button id="btn-send-friend-request" class="btn-primary" data-i18n="btnSend">送信</button>
-          </div>
-        </div>
-
-        <div class="fr-mycode-section">
-          <div class="fr-mycode-label" data-i18n="myFriendCode">マイフレンドコード</div>
-          <div class="fr-mycode-display">
-            <span id="my-friend-code" class="fr-mycode-value">------</span>
-            <button id="btn-copy-friend-code" class="fr-copy-btn">Copy</button>
-          </div>
-          <div class="fr-mycode-hint" data-i18n="shareCodeHint">このコードを共有してフレンドに追加してもらおう</div>
-        </div>
+      <!-- Friend List -->
+      <div id="friend-list-container">
+        <div class="fr-section-header"><span data-i18n="sectionFriends">フレンド一覧</span> <span id="friend-count-label" class="fr-count"></span></div>
+        <div id="friend-list"></div>
       </div>
 
     </main>
@@ -188,6 +180,7 @@
         <div class="profile-header">
           <div class="profile-avatar">👤</div>
           <div class="profile-name" id="profile-nickname">---</div>
+          <div id="profile-rank-title" class="profile-rank-title"></div>
         </div>
 
         <div class="profile-stats">
@@ -211,8 +204,28 @@
         </div>
 
         <section class="section">
+          <h2 class="section-title">🎯 デイリーミッション</h2>
+          <div id="daily-missions" class="daily-missions"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">🎰 デイリーガチャ</h2>
+          <div id="gacha-section" class="gacha-section"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">🏆 フレンドランキング</h2>
+          <div id="friend-ranking" class="friend-ranking"></div>
+        </section>
+
+        <section class="section">
           <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
           <div id="badge-list" class="badge-list"></div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">🎨 テーマ</h2>
+          <div id="theme-store" class="theme-store"></div>
         </section>
 
         <section class="section">
@@ -250,7 +263,7 @@
           </div>
           <div class="settings-item">
             <span data-i18n="version">バージョン</span>
-            <span>3.2.0</span>
+            <span>3.3.0</span>
           </div>
           <div class="settings-item">
             <a href="privacy.html" target="_blank" data-i18n="privacyPolicy" style="color:var(--accent);text-decoration:none;font-weight:500">プライバシーポリシー</a>
@@ -272,7 +285,7 @@
     <div id="mining-overlay" class="mining-overlay" hidden>
       <div id="coin-rain" class="coin-rain"></div>
       <div class="mining-content">
-        <div class="mining-icon">🪙</div>
+        <div class="mining-icon"><img src="img/coin.svg" alt="" class="mining-coin-img"></div>
         <div class="mining-title" data-i18n="mining">マイニング中...</div>
         <div class="mining-nonce">Nonce: <span id="mining-nonce-val">0</span></div>
         <div class="mining-hash" id="mining-hash-val">Hash: 計算中...</div>
@@ -327,6 +340,7 @@
 
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/api.js"></script>
   <script src="js/data.js"></script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rehacoin-v36';
+const CACHE_NAME = 'rehacoin-v51';
 const ASSETS = [
   './',
   './index.html',
@@ -11,7 +11,8 @@ const ASSETS = [
   './categories.json',
   './activities.json',
   './manifest.json',
-  './privacy.html'
+  './privacy.html',
+  './img/coin.svg'
 ];
 
 // インストール: アセットをキャッシュ
