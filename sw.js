@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rehacoin-v51';
+const CACHE_NAME = 'rehacoin-v52';
 const ASSETS = [
   './',
   './index.html',

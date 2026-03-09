@@ -93,3 +93,15 @@ CREATE TABLE IF NOT EXISTS cheers (
 );
 CREATE INDEX IF NOT EXISTS idx_cheers_record ON cheers(record_id);
 CREATE INDEX IF NOT EXISTS idx_cheers_user ON cheers(from_user_id);
+
+-- ボーナスコイン（ガチャ、ミッション、ログインボーナス等）
+CREATE TABLE IF NOT EXISTS bonus_coins (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  source TEXT NOT NULL,
+  label TEXT DEFAULT '',
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE INDEX IF NOT EXISTS idx_bonus_coins_user ON bonus_coins(user_id);

@@ -1073,6 +1073,60 @@ body {
   100% { transform: translateX(100%); }
 }
 
+/* === Stats Charts === */
+.stat-chart-card {
+  grid-column: 1 / -1;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.sc-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.week-chart {
+  display: flex;
+  gap: 4px;
+  height: 80px;
+  align-items: flex-end;
+}
+.wc-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.wc-bar-wrap {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.wc-bar {
+  width: 70%;
+  min-height: 2px;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.5s ease;
+}
+.wc-label { font-size: 0.65rem; color: var(--text-light); }
+.wc-count { font-size: 0.7rem; font-weight: 700; color: var(--text); }
+.cc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.cc-label { font-size: 0.78rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+.cc-bar-wrap { flex: 1; height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; }
+.cc-bar { height: 100%; background: var(--accent); border-radius: 7px; transition: width 0.5s ease; }
+.cc-count { font-size: 0.78rem; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
+
 /* === History Tabs === */
 .history-tabs {
   display: flex;
@@ -1109,6 +1163,36 @@ body {
 .tab-content.active {
   display: block;
 }
+#screen-history .tab-content {
+  display: none;
+}
+#screen-history .tab-content.active {
+  display: block;
+}
+
+/* === Coin History === */
+.coin-history-list {
+  padding: 0 16px;
+}
+.ch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.88rem;
+}
+.ch-item:last-child { border-bottom: none; }
+.ch-icon { font-size: 1.1rem; flex-shrink: 0; width: 24px; text-align: center; }
+.ch-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-amount {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ch-plus { color: var(--success); }
+.ch-minus { color: var(--danger); }
+.ch-time { font-size: 0.72rem; color: var(--text-light); white-space: nowrap; }
 
 /* === Verify Button === */
 .btn-verify {
@@ -2702,6 +2786,19 @@ body {
   font-size: 1rem;
   padding: 12px;
 }
+.lb-treasure {
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), var(--shadow-lg);
+}
+.lb-treasure-icon {
+  font-size: 3rem;
+  animation: treasureBounce 0.6s ease-in-out infinite alternate;
+  margin: 8px 0;
+}
+@keyframes treasureBounce {
+  0% { transform: scale(1) rotate(-5deg); }
+  100% { transform: scale(1.15) rotate(5deg); }
+}
 .lb-closing {
   animation: fadeOutScale 0.5s ease-out forwards;
 }
@@ -2882,6 +2979,38 @@ body {
 }
 .gacha-closing {
   animation: fadeOutScale 0.4s ease-out forwards;
+}
+
+/* === Streak Freeze === */
+.sf-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.sf-icon { font-size: 2rem; }
+.sf-detail { flex: 1; }
+.sf-label { font-size: 0.9rem; font-weight: 700; }
+.sf-desc { font-size: 0.75rem; color: var(--text-muted); }
+.sf-count { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+.sf-buy-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #00BCD4, #26C6DA);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sf-buy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* === Friend Ranking === */

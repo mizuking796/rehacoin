@@ -162,6 +162,21 @@ const API = (() => {
     return request(`/records/${recordId}/cheer`, 'POST', { type });
   }
 
+  // --- Bonus Coins ---
+  async function addBonusCoins(amount, source, label = '') {
+    return request('/coins/bonus', 'POST', { amount, source, label });
+  }
+
+  // --- Spend Coins (generic) ---
+  async function spendCoinsGeneric(amount, label) {
+    return request('/coins/spend', 'POST', { amount, label });
+  }
+
+  // --- Coin History ---
+  async function getCoinHistory(limit = 50, offset = 0) {
+    return request(`/coin-history?limit=${limit}&offset=${offset}`);
+  }
+
   return {
     isLoggedIn, getUser, logout,
     register, login, resetPassword, deleteAccount,
@@ -171,6 +186,7 @@ const API = (() => {
     getFriends, getFeed, searchUsers, sendFriendRequest, sendFriendRequestById,
     getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
     witnessRecord,
-    cheerRecord
+    cheerRecord,
+    addBonusCoins, spendCoinsGeneric, getCoinHistory
   };
 })();

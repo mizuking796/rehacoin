@@ -125,9 +125,17 @@
     <!-- History -->
     <main id="screen-history" class="screen">
       <h2 class="screen-title-fixed" data-i18n="screenRecords">きろく</h2>
+      <div class="history-tabs">
+        <button class="history-tab active" data-tab="records" data-i18n="tabRecords">活動履歴</button>
+        <button class="history-tab" data-tab="coin-history" data-i18n="tabCoinHistory">コイン履歴</button>
+      </div>
       <div id="tab-records" class="tab-content active">
         <div id="stats-summary" class="stats-summary"></div>
         <div id="history-list" class="history-list"></div>
+      </div>
+      <div id="tab-coin-history" class="tab-content">
+        <div id="coin-history-list" class="coin-history-list"></div>
+        <button id="btn-load-more-history" class="btn-secondary" style="width:100%;margin-top:12px" hidden>もっと見る</button>
       </div>
     </main>
 
@@ -214,6 +222,11 @@
         </section>
 
         <section class="section">
+          <h2 class="section-title">🧊 ストリークフリーズ</h2>
+          <div id="streak-freeze-section"></div>
+        </section>
+
+        <section class="section">
           <h2 class="section-title">🏆 フレンドランキング</h2>
           <div id="friend-ranking" class="friend-ranking"></div>
         </section>
@@ -263,7 +276,7 @@
           </div>
           <div class="settings-item">
             <span data-i18n="version">バージョン</span>
-            <span>3.3.0</span>
+            <span>4.0.0</span>
           </div>
           <div class="settings-item">
             <a href="privacy.html" target="_blank" data-i18n="privacyPolicy" style="color:var(--accent);text-decoration:none;font-weight:500">プライバシーポリシー</a>

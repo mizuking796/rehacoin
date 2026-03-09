@@ -148,6 +148,21 @@ export default {
         return json(await cheerRecord(env, user, id, await request.json()), headers);
       }
 
+      // Bonus coins (gacha, missions, login bonus)
+      if (path === '/coins/bonus' && method === 'POST') {
+        return json(await addBonusCoins(env, user, await request.json()), headers);
+      }
+
+      // Spend coins (generic purchase)
+      if (path === '/coins/spend' && method === 'POST') {
+        return json(await spendCoins(env, user, await request.json()), headers);
+      }
+
+      // Coin history
+      if (path === '/coin-history' && method === 'GET') {
+        return json(await getCoinHistory(env, user, url), headers);
+      }
+
       return json({ error: 'Not Found' }, headers, 404);
     } catch (e) {
       console.error(e);
@@ -362,6 +377,7 @@ async function resetPassword(env, body) {
 async function deleteAccount(env, user) {
   await env.DB.batch([
     env.DB.prepare('DELETE FROM cheers WHERE from_user_id = ?').bind(user.id),
+    env.DB.prepare('DELETE FROM bonus_coins WHERE user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(user.id),
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(user.id),
@@ -378,17 +394,20 @@ async function getProfile(env, user) {
   const recordCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ?').bind(user.id).first();
   const witnessCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ? AND witnessed = 1').bind(user.id).first();
   const spentResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM coin_spending WHERE user_id = ?').bind(user.id).first();
+  const bonusResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM bonus_coins WHERE user_id = ?').bind(user.id).first();
   const friendCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM friends WHERE user_id = ?').bind(user.id).first();
 
+  const totalCoins = recordCount.cnt + bonusResult.total;
   return {
     id: user.id,
     nickname: user.nickname,
     friendCode: user.friend_code,
     feedVisibility: user.feed_visibility,
-    totalCoins: recordCount.cnt,
+    totalCoins,
     witnessBonus: witnessCount.cnt,
+    bonusCoins: bonusResult.total,
     spentCoins: spentResult.total,
-    balance: recordCount.cnt + witnessCount.cnt - spentResult.total,
+    balance: totalCoins + witnessCount.cnt - spentResult.total,
     friendCount: friendCount.cnt,
     createdAt: user.created_at
   };
@@ -493,7 +512,8 @@ async function exchangeReward(env, user, rewardId) {
   const recordCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ?').bind(user.id).first();
   const witnessCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ? AND witnessed = 1').bind(user.id).first();
   const spentResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM coin_spending WHERE user_id = ?').bind(user.id).first();
-  const balance = recordCount.cnt + witnessCount.cnt - spentResult.total;
+  const bonusResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM bonus_coins WHERE user_id = ?').bind(user.id).first();
+  const balance = recordCount.cnt + bonusResult.total + witnessCount.cnt - spentResult.total;
 
   if (balance < reward.cost) return { error: 'Not enough coins' };
 
@@ -507,7 +527,9 @@ async function exchangeReward(env, user, rewardId) {
 // --- Friends ---
 async function getFriends(env, user) {
   const rows = await env.DB.prepare(`
-    SELECT u.id, u.nickname, u.friend_code, u.feed_visibility, f.created_at as friends_since
+    SELECT u.id, u.nickname, u.friend_code, u.feed_visibility, f.created_at as friends_since,
+      (SELECT COUNT(*) FROM records WHERE user_id = u.id) +
+      (SELECT COALESCE(SUM(amount), 0) FROM bonus_coins WHERE user_id = u.id) as totalCoins
     FROM friends f JOIN users u ON f.friend_id = u.id
     WHERE f.user_id = ?
     ORDER BY u.nickname
@@ -878,6 +900,7 @@ async function adminDeleteUser(env, userId) {
 
   await env.DB.batch([
     env.DB.prepare('DELETE FROM cheers WHERE from_user_id = ?').bind(userId),
+    env.DB.prepare('DELETE FROM bonus_coins WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM records WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM rewards WHERE user_id = ?').bind(userId),
     env.DB.prepare('DELETE FROM coin_spending WHERE user_id = ?').bind(userId),
@@ -909,4 +932,81 @@ async function adminResetPassword(env, userId, body) {
   ).bind(hash, newSalt, recoveryHash, userId).run();
 
   return { ok: true, recoveryCode };
+}
+
+// --- Bonus Coins ---
+const BONUS_SOURCES = ['login_bonus', 'gacha', 'mission', 'comeback', 'first_login'];
+const BONUS_LIMITS = { login_bonus: 10, gacha: 10, mission: 15, comeback: 20, first_login: 10 };
+
+async function addBonusCoins(env, user, body) {
+  const { amount, source, label } = body;
+  if (!amount || amount < 1 || amount > 50) return { error: 'Invalid amount (1-50)' };
+  if (!source || !BONUS_SOURCES.includes(source)) return { error: 'Invalid source' };
+
+  // Daily limit per source to prevent abuse
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayMs = todayStart.getTime();
+  const dailyTotal = await env.DB.prepare(
+    'SELECT COALESCE(SUM(amount), 0) as total FROM bonus_coins WHERE user_id = ? AND source = ? AND created_at >= ?'
+  ).bind(user.id, source, todayMs).first();
+
+  const limit = BONUS_LIMITS[source] || 10;
+  if ((dailyTotal.total || 0) + amount > limit) return { error: 'Daily bonus limit reached' };
+
+  const id = genId('bn_');
+  await env.DB.prepare(
+    'INSERT INTO bonus_coins (id, user_id, amount, source, label, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(id, user.id, amount, source, label || '', Date.now()).run();
+
+  // Return updated balance
+  const recordCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ?').bind(user.id).first();
+  const witnessCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ? AND witnessed = 1').bind(user.id).first();
+  const spentResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM coin_spending WHERE user_id = ?').bind(user.id).first();
+  const bonusResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM bonus_coins WHERE user_id = ?').bind(user.id).first();
+  const newBalance = recordCount.cnt + bonusResult.total + witnessCount.cnt - spentResult.total;
+
+  return { ok: true, amount, newBalance, totalCoins: recordCount.cnt + bonusResult.total };
+}
+
+// --- Spend Coins (generic) ---
+async function spendCoins(env, user, body) {
+  const { amount, label } = body;
+  if (!amount || amount < 1 || amount > 100) return { error: 'Invalid amount' };
+  if (!label) return { error: 'Label required' };
+
+  const recordCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ?').bind(user.id).first();
+  const witnessCount = await env.DB.prepare('SELECT COUNT(*) as cnt FROM records WHERE user_id = ? AND witnessed = 1').bind(user.id).first();
+  const spentResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM coin_spending WHERE user_id = ?').bind(user.id).first();
+  const bonusResult = await env.DB.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM bonus_coins WHERE user_id = ?').bind(user.id).first();
+  const balance = recordCount.cnt + bonusResult.total + witnessCount.cnt - spentResult.total;
+
+  if (balance < amount) return { error: 'Not enough coins' };
+
+  await env.DB.prepare(
+    'INSERT INTO coin_spending (id, user_id, amount, reward_label, spent_at) VALUES (?, ?, ?, ?, ?)'
+  ).bind(genId('sp_'), user.id, amount, label, Date.now()).run();
+
+  return { ok: true, newBalance: balance - amount };
+}
+
+// --- Coin History ---
+async function getCoinHistory(env, user, url) {
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 200);
+  const offset = parseInt(url.searchParams.get('offset') || '0');
+
+  // Unified history from 3 sources: records (earned), bonus_coins (bonus), coin_spending (spent)
+  const history = await env.DB.prepare(`
+    SELECT * FROM (
+      SELECT id, 'record' as type, label, icon, 1 as amount, category_code as detail, timestamp as created_at FROM records WHERE user_id = ?
+      UNION ALL
+      SELECT id, 'bonus' as type, label, '' as icon, amount, source as detail, created_at FROM bonus_coins WHERE user_id = ?
+      UNION ALL
+      SELECT id, 'spend' as type, reward_label as label, '' as icon, -amount as amount, '' as detail, spent_at as created_at FROM coin_spending WHERE user_id = ?
+      UNION ALL
+      SELECT r.id, 'witness' as type, r.label, r.icon, 1 as amount, 'witness_bonus' as detail, r.witnessed_at as created_at FROM records r WHERE r.user_id = ? AND r.witnessed = 1
+    ) ORDER BY created_at DESC LIMIT ? OFFSET ?
+  `).bind(user.id, user.id, user.id, user.id, limit, offset).all();
+
+  return { history: history.results };
 }

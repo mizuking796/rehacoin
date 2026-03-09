@@ -893,16 +893,80 @@ const App = (() => {
     const today = new Date().toDateString();
     if (data.lastDate === today) return; // Already claimed today
 
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-    let streak = (data.lastDate === yesterday) ? (data.streak || 0) : 0;
-    if (streak >= 7) streak = 0; // Reset after 7 days
-    streak++;
+    // First login bonus
+    if (!data.lastDate) {
+      localStorage.setItem(key, JSON.stringify({ lastDate: today, streak: 1, firstLogin: true }));
+      setTimeout(() => showFirstLoginBonus(), 800);
+      return;
+    }
 
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const isConsecutive = data.lastDate === yesterday;
+    let streak = isConsecutive ? (data.streak || 0) : 0;
+    if (streak >= 7) streak = 0; // Reset after 7 days
+
+    // Comeback bonus: away for 7+ days
+    if (!isConsecutive && data.lastDate) {
+      const lastDate = new Date(data.lastDate);
+      const daysSince = Math.floor((Date.now() - lastDate.getTime()) / 86400000);
+      if (daysSince >= 7) {
+        streak = 0;
+        localStorage.setItem(key, JSON.stringify({ lastDate: today, streak: 1 }));
+        setTimeout(() => showComebackBonus(daysSince), 800);
+        return;
+      }
+    }
+
+    streak++;
     const reward = LOGIN_BONUS_REWARDS[streak - 1] || 1;
     localStorage.setItem(key, JSON.stringify({ lastDate: today, streak }));
-
-    // Show login bonus overlay after a short delay
     setTimeout(() => showLoginBonusOverlay(streak, reward), 800);
+  }
+
+  function showFirstLoginBonus() {
+    const ja = I18n.getLang() === 'ja';
+    const reward = 10;
+    const overlay = document.createElement('div');
+    overlay.className = 'login-bonus-overlay';
+    overlay.innerHTML = `
+      <div class="login-bonus-card">
+        <div class="lb-title">${ja ? 'ようこそ！初回ボーナス' : 'Welcome! First Login Bonus'}</div>
+        <div class="lb-streak">🎉</div>
+        <div class="lb-reward-msg" style="font-size:1.5rem"><img src="img/coin.svg" width="32" height="32" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
+        <button class="lb-claim btn-primary">${ja ? '受け取る' : 'Claim'}</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.lb-claim').addEventListener('click', async () => {
+      overlay.classList.add('lb-closing');
+      await API.addBonusCoins(reward, 'first_login', ja ? '初回ログインボーナス' : 'First Login Bonus');
+      updateHeaderCoins(true, overlay.querySelector('.lb-claim'));
+      if (window.confetti) confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+      setTimeout(() => overlay.remove(), 600);
+    });
+  }
+
+  function showComebackBonus(daysSince) {
+    const ja = I18n.getLang() === 'ja';
+    const reward = Math.min(20, daysSince); // 1 coin per day away, max 20
+    const overlay = document.createElement('div');
+    overlay.className = 'login-bonus-overlay';
+    overlay.innerHTML = `
+      <div class="login-bonus-card">
+        <div class="lb-title">${ja ? 'おかえりなさい！' : 'Welcome Back!'}</div>
+        <div class="lb-streak">${ja ? `${daysSince}日ぶり！` : `${daysSince} days away!`}</div>
+        <div class="lb-reward-msg"><img src="img/coin.svg" width="24" height="24" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
+        <button class="lb-claim btn-primary">${ja ? '受け取る' : 'Claim'}</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.lb-claim').addEventListener('click', async () => {
+      overlay.classList.add('lb-closing');
+      await API.addBonusCoins(reward, 'comeback', ja ? `${daysSince}日ぶりのカムバックボーナス` : `Comeback Bonus (${daysSince} days)`);
+      updateHeaderCoins(true, overlay.querySelector('.lb-claim'));
+      if (window.confetti) confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      if (navigator.vibrate) navigator.vibrate([50, 30, 100]);
+      setTimeout(() => overlay.remove(), 600);
+    });
   }
 
   function showLoginBonusOverlay(day, reward) {
@@ -918,25 +982,35 @@ const App = (() => {
       daysHtml += `<div class="${cls}"><div class="lb-day-num">${ja ? `${i}日目` : `Day ${i}`}</div><div class="lb-day-icon">${icon}</div><div class="lb-day-reward">+${r}</div></div>`;
     }
 
+    const isDay7 = day === 7;
+    const titleText = isDay7
+      ? (ja ? '🎁 宝箱オープン！' : '🎁 Treasure Chest!')
+      : (ja ? 'ログインボーナス' : 'Login Bonus');
+
     overlay.innerHTML = `
-      <div class="login-bonus-card">
-        <div class="lb-title">${ja ? 'ログインボーナス' : 'Login Bonus'}</div>
+      <div class="login-bonus-card ${isDay7 ? 'lb-treasure' : ''}">
+        <div class="lb-title">${titleText}</div>
         <div class="lb-streak">${ja ? `${day}日目！` : `Day ${day}!`}</div>
         <div class="lb-days">${daysHtml}</div>
+        ${isDay7 ? '<div class="lb-treasure-icon">🎁</div>' : ''}
         <div class="lb-reward-msg"><img src="img/coin.svg" width="24" height="24" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
-        <button class="lb-claim btn-primary">${ja ? '受け取る' : 'Claim'}</button>
+        <button class="lb-claim btn-primary">${isDay7 ? (ja ? '宝箱を開ける！' : 'Open Chest!') : (ja ? '受け取る' : 'Claim')}</button>
       </div>`;
     document.body.appendChild(overlay);
 
-    overlay.querySelector('.lb-claim').addEventListener('click', () => {
+    overlay.querySelector('.lb-claim').addEventListener('click', async () => {
       overlay.classList.add('lb-closing');
-      // Coin fly from button to header
       const btn = overlay.querySelector('.lb-claim');
+      await API.addBonusCoins(reward, 'login_bonus', ja ? `ログインボーナス${day}日目` : `Login Bonus Day ${day}`);
       updateHeaderCoins(true, btn);
       if (window.confetti) {
-        confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+        const opts = isDay7
+          ? { particleCount: 150, spread: 100, origin: { y: 0.5 }, colors: ['#FFD700', '#FF6B00', '#E040FB'] }
+          : { particleCount: 60, spread: 60, origin: { y: 0.7 } };
+        confetti(opts);
+        if (isDay7) setTimeout(() => confetti({ particleCount: 80, spread: 80, origin: { x: 0.3, y: 0.6 } }), 300);
       }
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+      if (navigator.vibrate) navigator.vibrate(isDay7 ? [100, 50, 100, 50, 200, 50, 300] : [50, 30, 50]);
       setTimeout(() => overlay.remove(), 600);
     });
   }
@@ -1020,15 +1094,16 @@ const App = (() => {
   }
 
   // --- History ---
-  function renderHistory() { renderStats(); renderHistoryList(); }
+  function renderHistory() { renderStats(); renderHistoryList(); renderCoinHistory(); }
 
   function bindHistoryTabs() {
     document.querySelectorAll('.history-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.history-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('#screen-history .tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'coin-history') renderCoinHistory();
       });
     });
   }
@@ -1045,6 +1120,24 @@ const App = (() => {
     const nextLabel = rp.next ? (ja ? rp.next.label : rp.next.labelEn) : '';
     const progressPct = Math.round(rp.progress * 100);
 
+    // 7-day activity chart
+    const weekData = getLast7DaysCounts();
+    const maxDay = Math.max(...weekData.map(d => d.count), 1);
+    const weekChartHtml = weekData.map(d => {
+      const pct = Math.round((d.count / maxDay) * 100);
+      return `<div class="wc-col"><div class="wc-bar-wrap"><div class="wc-bar" style="height:${pct}%"></div></div><div class="wc-label">${d.label}</div><div class="wc-count">${d.count}</div></div>`;
+    }).join('');
+
+    // Category breakdown
+    const monthlyCounts = Store.getMonthlyCounts();
+    const catEntries = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
+    const maxCat = catEntries.length > 0 ? catEntries[0][1] : 1;
+    const catChartHtml = catEntries.map(([code, count]) => {
+      const cat = Data.getCategory(code);
+      const pct = Math.round((count / maxCat) * 100);
+      return `<div class="cc-row"><span class="cc-label">${cat ? cat.icon + ' ' + cat.label : code}</span><div class="cc-bar-wrap"><div class="cc-bar" style="width:${pct}%"></div></div><span class="cc-count">${count}</span></div>`;
+    }).join('');
+
     container.innerHTML = `
       <div class="stat-card stat-rank" style="border-top: 3px solid ${rp.current.color}">
         <div class="stat-value" style="color:${rp.current.color}">${rp.current.icon} ${rankLabel}</div>
@@ -1053,7 +1146,27 @@ const App = (() => {
       <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">${I18n.t('totalCoins')}</div></div>
       <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">${I18n.t('today')}</div></div>
       <div class="stat-card"><div class="stat-value"><span class="streak-flame-sm ${streak >= 7 ? 'streak-active' : ''}">🔥</span>${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
+      ${weekData.some(d => d.count > 0) ? `<div class="stat-chart-card"><div class="sc-title">${ja ? '過去7日間' : 'Last 7 Days'}</div><div class="week-chart">${weekChartHtml}</div></div>` : ''}
+      ${catEntries.length > 0 ? `<div class="stat-chart-card"><div class="sc-title">${ja ? 'カテゴリ別（30日）' : 'Categories (30 days)'}</div>${catChartHtml}</div>` : ''}
     `;
+  }
+
+  function getLast7DaysCounts() {
+    const records = Store.getRecords();
+    const days = [];
+    const dayLabels = I18n.getLang() === 'ja'
+      ? ['日', '月', '火', '水', '木', '金', '土']
+      : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const dayStart = d.getTime();
+      const dayEnd = dayStart + 86400000;
+      const count = records.filter(r => r.timestamp >= dayStart && r.timestamp < dayEnd).length;
+      days.push({ label: dayLabels[d.getDay()], count });
+    }
+    return days;
   }
 
   function renderHistoryList() {
@@ -1080,6 +1193,56 @@ const App = (() => {
         renderHistory(); updateHeaderCoins();
       });
     });
+  }
+
+  // --- Coin History ---
+  let _coinHistoryOffset = 0;
+  async function renderCoinHistory() {
+    const container = document.getElementById('coin-history-list');
+    const loadMoreBtn = document.getElementById('btn-load-more-history');
+    if (!container) return;
+    if (_coinHistoryOffset === 0) container.innerHTML = '<div class="history-empty">読み込み中...</div>';
+
+    try {
+      const res = await Store.getCoinHistory(50, _coinHistoryOffset);
+      const items = res.history || [];
+      const ja = I18n.getLang() === 'ja';
+
+      if (items.length === 0 && _coinHistoryOffset === 0) {
+        container.innerHTML = `<div class="history-empty">${ja ? 'コイン履歴がありません' : 'No coin history'}</div>`;
+        loadMoreBtn.hidden = true;
+        return;
+      }
+
+      const html = items.map(item => {
+        const d = new Date(item.created_at);
+        const dateStr = `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+        let typeIcon, typeLabel, amountClass;
+        switch (item.type) {
+          case 'record': typeIcon = item.icon || '📝'; typeLabel = item.label; amountClass = 'ch-plus'; break;
+          case 'bonus': typeIcon = '🎁'; typeLabel = item.label || item.detail; amountClass = 'ch-plus'; break;
+          case 'witness': typeIcon = '👁️'; typeLabel = ja ? `目撃ボーナス: ${item.label}` : `Witness: ${item.label}`; amountClass = 'ch-plus'; break;
+          case 'spend': typeIcon = '🛒'; typeLabel = item.label; amountClass = 'ch-minus'; break;
+          default: typeIcon = '❓'; typeLabel = item.label; amountClass = '';
+        }
+        const sign = item.amount > 0 ? '+' : '';
+        return `<div class="ch-item">
+          <span class="ch-icon">${typeIcon}</span>
+          <span class="ch-label">${escapeHtml(typeLabel || '')}</span>
+          <span class="ch-amount ${amountClass}">${sign}${item.amount}</span>
+          <span class="ch-time">${dateStr}</span>
+        </div>`;
+      }).join('');
+
+      if (_coinHistoryOffset === 0) container.innerHTML = html;
+      else container.insertAdjacentHTML('beforeend', html);
+
+      loadMoreBtn.hidden = items.length < 50;
+      loadMoreBtn.onclick = () => { _coinHistoryOffset += 50; renderCoinHistory(); };
+    } catch (e) {
+      console.error('Coin history failed:', e);
+      container.innerHTML = `<div class="history-empty">${ja ? 'エラーが発生しました' : 'Error loading history'}</div>`;
+    }
   }
 
   // --- Friends ---
@@ -1353,6 +1516,8 @@ const App = (() => {
     renderDailyMissions();
     // Daily gacha
     renderGachaSection();
+    // Streak freeze
+    renderStreakFreeze();
     // Friend ranking
     renderFriendRanking();
 
@@ -1392,6 +1557,8 @@ const App = (() => {
         const theme = THEMES.find(t => t.id === btn.dataset.id);
         const ja = I18n.getLang() === 'ja';
         if (await showConfirm(ja ? `「${theme.label}」テーマを${theme.cost}コインで購入？` : `Buy "${theme.labelEn}" for ${theme.cost} coins?`, '🎨')) {
+          const res = await API.spendCoinsGeneric(theme.cost, ja ? `テーマ: ${theme.label}` : `Theme: ${theme.labelEn}`);
+          if (!res.ok) { showToast(res.error || 'Error'); return; }
           const owned = getOwnedThemes();
           owned.push(theme.id);
           setOwnedThemes(owned);
@@ -1533,13 +1700,16 @@ const App = (() => {
       </div>`;
     }).join('');
     container.querySelectorAll('.mission-claim-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const idx = parseInt(btn.dataset.idx);
         const data = getDailyMissions();
+        const mission = data.missions[idx];
         data.missions[idx].claimed = true;
         localStorage.setItem('rehacoin_daily_missions', JSON.stringify(data));
-        showToast(ja ? `🎯 ミッション達成！ +${data.missions[idx].reward}コイン` : `🎯 Mission complete! +${data.missions[idx].reward} coins`);
+        await API.addBonusCoins(mission.reward, 'mission', ja ? mission.label : mission.labelEn);
+        showToast(ja ? `🎯 ミッション達成！ +${mission.reward}コイン` : `🎯 Mission complete! +${mission.reward} coins`);
         if (window.confetti) confetti({ particleCount: 30, spread: 40 });
+        updateHeaderCoins(true);
         renderDailyMissions();
       });
     });
@@ -1571,7 +1741,7 @@ const App = (() => {
     return last !== getTodayKey();
   }
 
-  function doGacha() {
+  async function doGacha() {
     const r = Math.random();
     let pool;
     if (r < 0.03) pool = GACHA_ITEMS.filter(g => g.rarity === 'legendary');
@@ -1584,6 +1754,9 @@ const App = (() => {
     const collection = JSON.parse(localStorage.getItem('rehacoin_gacha_collection') || '[]');
     collection.push({ ...item, date: Date.now() });
     localStorage.setItem('rehacoin_gacha_collection', JSON.stringify(collection));
+    // Add bonus coins via API
+    const ja = I18n.getLang() === 'ja';
+    await API.addBonusCoins(item.coins, 'gacha', ja ? `ガチャ: ${item.label}` : `Gacha: ${item.labelEn}`);
     return item;
   }
 
@@ -1627,12 +1800,54 @@ const App = (() => {
         ${available ? (ja ? '🎰 ガチャを回す（1日1回）' : '🎰 Daily Gacha (1/day)') : (ja ? '🎰 また明日！' : '🎰 Come back tomorrow!')}
       </button>`;
     if (available) {
-      container.querySelector('#btn-gacha').addEventListener('click', () => {
-        const item = doGacha();
+      container.querySelector('#btn-gacha').addEventListener('click', async () => {
+        const item = await doGacha();
         showGachaOverlay(item);
         renderGachaSection();
+        updateHeaderCoins(true);
       });
     }
+  }
+
+  // --- Streak Freeze ---
+  const STREAK_FREEZE_COST = 10;
+
+  function getStreakFreezeCount() {
+    return parseInt(localStorage.getItem('rehacoin_streak_freezes') || '0');
+  }
+
+  function renderStreakFreeze() {
+    const container = document.getElementById('streak-freeze-section');
+    if (!container) return;
+    const ja = I18n.getLang() === 'ja';
+    const freezes = getStreakFreezeCount();
+    const balance = Store.getBalance();
+    const canBuy = balance >= STREAK_FREEZE_COST;
+    container.innerHTML = `
+      <div class="sf-info">
+        <span class="sf-icon">🧊</span>
+        <div class="sf-detail">
+          <div class="sf-label">${ja ? 'ストリークフリーズ' : 'Streak Freeze'}</div>
+          <div class="sf-desc">${ja ? '1日休んでも連続記録が途切れない' : 'Protect your streak for 1 missed day'}</div>
+        </div>
+        <span class="sf-count">${ja ? `${freezes}枚` : `${freezes}x`}</span>
+      </div>
+      <button id="btn-buy-freeze" class="sf-buy-btn" ${canBuy ? '' : 'disabled'}>
+        <img src="img/coin.svg" width="14" height="14" class="inline-coin"> ${STREAK_FREEZE_COST} ${ja ? 'で購入' : 'to buy'}
+      </button>`;
+    container.querySelector('#btn-buy-freeze')?.addEventListener('click', async () => {
+      if (!canBuy) return;
+      const res = await API.spendCoinsGeneric(STREAK_FREEZE_COST, ja ? 'ストリークフリーズ' : 'Streak Freeze');
+      if (res.ok) {
+        localStorage.setItem('rehacoin_streak_freezes', (freezes + 1).toString());
+        showToast(ja ? '🧊 ストリークフリーズ獲得！' : '🧊 Streak Freeze acquired!');
+        if (navigator.vibrate) navigator.vibrate(50);
+        renderStreakFreeze();
+        updateHeaderCoins();
+      } else {
+        showToast(res.error || 'Error');
+      }
+    });
   }
 
   // --- Friend Ranking ---

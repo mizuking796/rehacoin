@@ -321,6 +321,12 @@ const Store = (() => {
     { id: 'w1', witness: 1, icon: '👁️', label: '初めての応援', labelEn: 'First Cheer' },
     { id: 'w10', witness: 10, icon: '👁️', label: '10回応援', labelEn: '10 Cheers' },
     { id: 'w50', witness: 50, icon: '👁️', label: '応援マスター', labelEn: 'Cheer Master' },
+    // Seasonal badges (active during specific months)
+    { id: 'spring', seasonal: [3, 4, 5], icon: '🌸', label: '春のリハビリスト', labelEn: 'Spring Rehabist' },
+    { id: 'summer', seasonal: [6, 7, 8], icon: '🌻', label: '夏のリハビリスト', labelEn: 'Summer Rehabist' },
+    { id: 'autumn', seasonal: [9, 10, 11], icon: '🍂', label: '秋のリハビリスト', labelEn: 'Autumn Rehabist' },
+    { id: 'winter', seasonal: [12, 1, 2], icon: '❄️', label: '冬のリハビリスト', labelEn: 'Winter Rehabist' },
+    { id: 'newyear', seasonal: [1], icon: '🎍', label: '新年リハビラー', labelEn: 'New Year Rehabber' },
   ];
 
   function _isBadgeUnlocked(b) {
@@ -329,6 +335,10 @@ const Store = (() => {
     if (b.records) return _records.length >= b.records;
     if (b.friends) return _friends.length >= b.friends;
     if (b.witness) return getWitnessBonus() >= b.witness;
+    if (b.seasonal) {
+      const month = new Date().getMonth() + 1;
+      return b.seasonal.includes(month) && _records.length >= 1;
+    }
     return false;
   }
 
@@ -403,8 +413,12 @@ const Store = (() => {
     return JSON.stringify(_records, null, 2);
   }
 
+  async function getCoinHistory(limit = 50, offset = 0) {
+    return API.getCoinHistory(limit, offset);
+  }
+
   return {
-    loadAll, getRecords, addRecord, deleteRecord,
+    loadAll, getRecords, addRecord, deleteRecord, getCoinHistory,
     getTotalCoins, getTodayCount, getStreak,
     getRecentRecords, getFrequentActivities,
     getMonthlyCounts, getActivityMonthlyCounts, getTopCategory,
