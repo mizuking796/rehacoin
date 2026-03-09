@@ -142,6 +142,7 @@ body {
 .screen {
   display: none;
   padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   animation: fadeIn 0.2s ease;
 }
 
@@ -1863,7 +1864,7 @@ body {
 
 .fr-request-actions .btn-accept {
   flex: 1;
-  height: 34px;
+  height: 44px;
   background: var(--accent);
   color: #fff;
   border: none;
@@ -1880,7 +1881,7 @@ body {
 
 .fr-request-actions .btn-reject {
   flex: 1;
-  height: 34px;
+  height: 44px;
   background: var(--bg);
   color: var(--text-muted);
   border: none;
@@ -1948,7 +1949,8 @@ body {
   font-size: 0.78rem;
   color: var(--text-light);
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 10px 16px;
+  min-height: 40px;
   border-radius: 16px;
   transition: background 0.15s, color 0.15s;
 }
@@ -2028,7 +2030,7 @@ body {
 }
 
 .btn-add-user {
-  height: 32px;
+  height: 44px;
   padding: 0 16px;
   background: var(--accent);
   color: #fff;
@@ -2158,8 +2160,8 @@ body {
 }
 
 .fr-copy-btn {
-  height: 30px;
-  padding: 0 14px;
+  height: 40px;
+  padding: 0 16px;
   background: var(--bg);
   border: none;
   border-radius: 15px;
@@ -2239,7 +2241,7 @@ body {
 }
 
 .feed-witness-btn {
-  height: 28px;
+  height: 38px;
   padding: 0 14px;
   background: var(--accent-light);
   color: var(--accent);
@@ -3323,6 +3325,29 @@ body {
 
   .cat-lucide-icon {
     background: color-mix(in srgb, var(--cat-color, var(--accent)) 18%, transparent);
+  }
+
+  .fi-remove:hover {
+    background: rgba(229, 57, 53, 0.15);
+    color: #ef5350;
+  }
+
+  .fr-mycode-section {
+    background: var(--bg);
+    border-color: var(--border);
+  }
+
+  .reaction-icon-badge.ri-like { background: #0D9488; }
+  .reaction-icon-badge.ri-cheer { background: #d4960a; }
+  .reaction-icon-badge.ri-empathy { background: #c73867; }
+  .reaction-icon-badge.ri-amazing { background: #d4422e; }
+
+  .feed-witness-btn {
+    background: rgba(13, 148, 136, 0.2);
+  }
+
+  .sf-info {
+    background: var(--bg);
   }
 }
 

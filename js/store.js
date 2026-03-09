@@ -10,22 +10,33 @@ const Store = (() => {
   let _friendRequests = [];
   let _loaded = false;
 
+  function safeSetItem(key, value) {
+    try { localStorage.setItem(key, value); }
+    catch (e) { console.warn('localStorage write failed:', e); }
+  }
+
   // --- Load all data from API ---
   async function loadAll() {
     if (!API.isLoggedIn()) return;
-    const [recordsRes, rewardsRes, profileRes, requestsRes, feedRes] = await Promise.all([
-      API.getRecords(),
-      API.getRewards(),
-      API.getProfile(),
-      API.getFriendRequests(),
-      API.getFeed()
-    ]);
-    _records = (recordsRes.records || []).map(normalizeRecord);
-    _rewards = rewardsRes.rewards || [];
-    _profile = profileRes;
-    _friendRequests = requestsRes.requests || [];
-    _feed = feedRes.feed || [];
-    _loaded = true;
+    try {
+      const [recordsRes, rewardsRes, profileRes, requestsRes, feedRes] = await Promise.all([
+        API.getRecords(),
+        API.getRewards(),
+        API.getProfile(),
+        API.getFriendRequests(),
+        API.getFeed()
+      ]);
+      if (profileRes.error) throw new Error(profileRes.error);
+      _records = (recordsRes.records || []).map(normalizeRecord);
+      _rewards = rewardsRes.rewards || [];
+      _profile = profileRes;
+      _friendRequests = requestsRes.requests || [];
+      _feed = feedRes.feed || [];
+      _loaded = true;
+    } catch (e) {
+      console.error('Store.loadAll failed:', e);
+      throw e;
+    }
   }
 
   function normalizeRecord(r) {
@@ -56,6 +67,7 @@ const Store = (() => {
       icon: activity.icon || '',
       isFreeInput
     });
+    if (res.error) return null;
     if (res.record) {
       const rec = normalizeRecord(res.record);
       _records.unshift(rec);
@@ -81,12 +93,14 @@ const Store = (() => {
   }
 
   async function deleteRecord(id) {
-    await API.deleteRecord(id);
+    const res = await API.deleteRecord(id);
+    if (res.error) return res;
     _records = _records.filter(r => r.id !== id);
     if (_profile) {
       _profile.totalCoins--;
       _profile.balance--;
     }
+    return { ok: true };
   }
 
   function getTotalCoins() {
@@ -144,8 +158,8 @@ const Store = (() => {
 
     // Persist newly frozen dates and deduct tickets
     if (freezesUsedNow > 0) {
-      localStorage.setItem('rehacoin_streak_freezes', (freezesAvailable - freezesUsedNow).toString());
-      localStorage.setItem('rehacoin_frozen_dates', JSON.stringify([...frozenDates, ...newFrozenDates]));
+      safeSetItem('rehacoin_streak_freezes', (freezesAvailable - freezesUsedNow).toString());
+      safeSetItem('rehacoin_frozen_dates', JSON.stringify([...frozenDates, ...newFrozenDates]));
     }
     return streak;
   }
@@ -231,8 +245,10 @@ const Store = (() => {
   }
 
   async function deleteReward(id) {
-    await API.deleteReward(id);
+    const res = await API.deleteReward(id);
+    if (res.error) return res;
     _rewards = _rewards.filter(r => r.id !== id);
+    return { ok: true };
   }
 
   function getBalance() {

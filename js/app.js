@@ -1,5 +1,7 @@
 // app.js — UI, routing, event handlers (API-backed, i18n)
 
+function safeSetItem(k, v) { try { safeSetItem(k, v); } catch(e) { console.warn('localStorage write failed:', e); } }
+
 const App = (() => {
   let currentScreen = 'screen-home';
   let currentCategoryCode = null;
@@ -51,6 +53,10 @@ const App = (() => {
       await Store.loadAll();
     } catch (e) {
       console.error('Init failed:', e);
+      hideLoadingOverlay();
+      const ja = I18n.getLang() === 'ja';
+      showToast(ja ? 'サーバーに接続できません。再読み込みしてください。' : 'Cannot connect to server. Please reload.');
+      return;
     }
     hideLoadingOverlay();
 
@@ -778,7 +784,7 @@ const App = (() => {
     showMiningOverlay();
     try {
       const record = await Store.addRecord(activity, !activity.id);
-      if (!record) { showToast('Error'); return; }
+      if (!record) { const ja3 = I18n.getLang() === 'ja'; showToast(ja3 ? '記録に失敗しました' : 'Failed to record'); return; }
       if (navigator.vibrate) navigator.vibrate(50);
       if (stayInCategory && currentCategoryCode) renderActivityList(currentCategoryCode);
       if (currentScreen === 'screen-home') renderHome();
@@ -821,7 +827,7 @@ const App = (() => {
       if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
     } catch (e) {
       console.error('Record failed:', e);
-      showToast(I18n.t('plusOneCoin'));
+      const ja2 = I18n.getLang() === 'ja'; showToast(ja2 ? 'エラーが発生しました' : 'An error occurred');
     } finally {
       hideMiningOverlay();
       isMining = false;
@@ -836,7 +842,7 @@ const App = (() => {
     for (const badge of unlocked) {
       if (!shown.includes(badge.id)) {
         shown.push(badge.id);
-        localStorage.setItem('rehacoin_badges_shown', JSON.stringify(shown));
+        safeSetItem('rehacoin_badges_shown', JSON.stringify(shown));
         setTimeout(() => showBadgeReveal(badge), 1500);
         break;
       }
@@ -957,7 +963,7 @@ const App = (() => {
 
     // First login bonus
     if (!data.lastDate) {
-      localStorage.setItem(key, JSON.stringify({ lastDate: today, streak: 1, firstLogin: true }));
+      safeSetItem(key, JSON.stringify({ lastDate: today, streak: 1, firstLogin: true }));
       setTimeout(() => showFirstLoginBonus(), 800);
       return;
     }
@@ -973,7 +979,7 @@ const App = (() => {
       const daysSince = Math.floor((Date.now() - lastDate.getTime()) / 86400000);
       if (daysSince >= 7) {
         streak = 0;
-        localStorage.setItem(key, JSON.stringify({ lastDate: today, streak: 1 }));
+        safeSetItem(key, JSON.stringify({ lastDate: today, streak: 1 }));
         setTimeout(() => showComebackBonus(daysSince), 800);
         return;
       }
@@ -981,7 +987,7 @@ const App = (() => {
 
     streak++;
     const reward = LOGIN_BONUS_REWARDS[streak - 1] || 1;
-    localStorage.setItem(key, JSON.stringify({ lastDate: today, streak }));
+    safeSetItem(key, JSON.stringify({ lastDate: today, streak }));
     setTimeout(() => showLoginBonusOverlay(streak, reward), 800);
   }
 
@@ -1251,7 +1257,9 @@ const App = (() => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (!await showConfirm(I18n.t('deleteRecordConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) return;
-        await Store.deleteRecord(btn.dataset.id);
+        const res = await Store.deleteRecord(btn.dataset.id);
+        if (res.error) { showToast(res.error); return; }
+        const ja = I18n.getLang() === 'ja'; showToast(ja ? '削除しました' : 'Deleted');
         renderHistory(); updateHeaderCoins();
       });
     });
@@ -1300,7 +1308,7 @@ const App = (() => {
       else container.insertAdjacentHTML('beforeend', html);
 
       loadMoreBtn.hidden = items.length < 50;
-      loadMoreBtn.onclick = () => { _coinHistoryOffset += 50; renderCoinHistory(); };
+      loadMoreBtn.onclick = async () => { loadMoreBtn.disabled = true; loadMoreBtn.textContent = '...'; _coinHistoryOffset += 50; await renderCoinHistory(); };
     } catch (e) {
       console.error('Coin history failed:', e);
       container.innerHTML = `<div class="history-empty">${ja ? 'エラーが発生しました' : 'Error loading history'}</div>`;
@@ -1314,7 +1322,10 @@ const App = (() => {
       const input = document.getElementById('friend-code-input');
       const code = input.value.trim().toUpperCase();
       if (!code) return;
+      const btn = document.getElementById('btn-send-friend-request');
+      btn.disabled = true;
       const res = await Store.sendFriendRequest(code);
+      btn.disabled = false;
       if (res.error) showToast(res.error);
       else { showToast(I18n.t('friendRequestSent')); input.value = ''; }
     });
@@ -1325,7 +1336,7 @@ const App = (() => {
     // Copy friend code
     document.getElementById('btn-copy-friend-code').addEventListener('click', () => {
       const code = document.getElementById('my-friend-code').textContent;
-      navigator.clipboard.writeText(code).then(() => showToast('Copied!'));
+      navigator.clipboard.writeText(code).then(() => showToast('Copied!')).catch(() => showToast('Copy failed'));
     });
 
     // User nickname search
@@ -1409,10 +1420,10 @@ const App = (() => {
       </div>`;
     }).join('');
     container.querySelectorAll('.btn-accept').forEach(btn => {
-      btn.addEventListener('click', async () => { await Store.acceptFriendRequest(btn.dataset.id); showToast(I18n.t('friendAdded')); renderFriends(); updateFriendBadge(); });
+      btn.addEventListener('click', async () => { const res = await Store.acceptFriendRequest(btn.dataset.id); if (res.error) { showToast(res.error); return; } showToast(I18n.t('friendAdded')); renderFriends(); updateFriendBadge(); });
     });
     container.querySelectorAll('.btn-reject').forEach(btn => {
-      btn.addEventListener('click', async () => { await Store.rejectFriendRequest(btn.dataset.id); renderFriends(); updateFriendBadge(); });
+      btn.addEventListener('click', async () => { const res = await Store.rejectFriendRequest(btn.dataset.id); if (res.error) { showToast(res.error); return; } const ja = I18n.getLang() === 'ja'; showToast(ja ? '申請を拒否しました' : 'Request rejected'); renderFriends(); updateFriendBadge(); });
     });
   }
 
@@ -1435,7 +1446,7 @@ const App = (() => {
     container.querySelectorAll('.fi-remove').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!await showConfirm(I18n.t('removeFriendConfirm'), 'user-minus', { okText: I18n.getLang() === 'ja' ? '削除' : 'Remove', danger: true })) return;
-        await Store.removeFriend(btn.dataset.id); renderFriends();
+        const res = await Store.removeFriend(btn.dataset.id); if (res.error) { showToast(res.error); return; } const ja = I18n.getLang() === 'ja'; showToast(ja ? 'フレンドを削除しました' : 'Friend removed'); renderFriends();
       });
     });
   }
@@ -1458,6 +1469,7 @@ const App = (() => {
       if (!name || !cost || cost < 1) return;
       await Store.addReward(name, cost);
       nameInput.value = ''; costInput.value = '';
+      const ja = I18n.getLang() === 'ja'; showToast(ja ? 'ご褒美を追加しました' : 'Reward added');
       renderExchange();
     });
   }
@@ -1498,7 +1510,7 @@ const App = (() => {
       });
       rewardList.querySelectorAll('.rw-del').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (await showConfirm(I18n.t('deleteRewardConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) { await Store.deleteReward(btn.dataset.id); renderExchange(); }
+          if (await showConfirm(I18n.t('deleteRewardConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) { const res = await Store.deleteReward(btn.dataset.id); if (res && res.error) { showToast(res.error); return; } showToast(I18n.getLang() === 'ja' ? '削除しました' : 'Deleted'); renderExchange(); }
         });
       });
     }
@@ -1519,7 +1531,7 @@ const App = (() => {
     return JSON.parse(localStorage.getItem('rehacoin_themes') || '["default"]');
   }
   function setOwnedThemes(arr) {
-    localStorage.setItem('rehacoin_themes', JSON.stringify(arr));
+    safeSetItem('rehacoin_themes', JSON.stringify(arr));
   }
   function getCurrentTheme() {
     return localStorage.getItem('rehacoin_current_theme') || 'default';
@@ -1527,7 +1539,7 @@ const App = (() => {
   function applyTheme(id) {
     const theme = THEMES.find(t => t.id === id);
     if (!theme) return;
-    localStorage.setItem('rehacoin_current_theme', id);
+    safeSetItem('rehacoin_current_theme', id);
     document.documentElement.style.setProperty('--accent', theme.accent);
     document.documentElement.style.setProperty('--accent-dark', theme.accent);
     document.documentElement.style.setProperty('--bg', theme.bg);
@@ -1569,7 +1581,7 @@ const App = (() => {
 
     const visSelect = document.getElementById('profile-visibility');
     visSelect.value = profile.feedVisibility;
-    visSelect.onchange = async () => { await API.updateProfile({ feedVisibility: visSelect.value }); };
+    visSelect.onchange = async () => { const res = await API.updateProfile({ feedVisibility: visSelect.value }); const ja = I18n.getLang() === 'ja'; if (res.error) showToast(ja ? '設定の保存に失敗しました' : 'Failed to save'); else showToast(ja ? '保存しました' : 'Saved'); };
 
     const langSelect = document.getElementById('profile-lang');
     langSelect.value = I18n.getLang();
@@ -1792,6 +1804,7 @@ const App = (() => {
       feedRefreshTimer = null;
     }
   }
+  window.addEventListener('beforeunload', stopFeedRefresh);
 
   // --- Daily Missions ---
   const MISSION_POOL = [
@@ -1808,7 +1821,7 @@ const App = (() => {
   }
   function incrementDailyCheer() {
     const key = 'rehacoin_daily_cheers_' + getTodayKey();
-    localStorage.setItem(key, (parseInt(localStorage.getItem(key) || '0') + 1).toString());
+    safeSetItem(key, (parseInt(localStorage.getItem(key) || '0') + 1).toString());
   }
   function getTodayKey() {
     const d = new Date();
@@ -1824,7 +1837,7 @@ const App = (() => {
     const shuffled = MISSION_POOL.slice().sort(() => Math.random() - 0.5);
     const missions = shuffled.slice(0, 3).map(m => ({ ...m, claimed: false }));
     const newData = { date: today, missions };
-    localStorage.setItem(key, JSON.stringify(newData));
+    safeSetItem(key, JSON.stringify(newData));
     return newData;
   }
 
@@ -1853,11 +1866,12 @@ const App = (() => {
     else if (missionSection) missionSection.hidden = false;
     container.querySelectorAll('.mission-claim-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
+        btn.disabled = true;
         const idx = parseInt(btn.dataset.idx);
         const data = getDailyMissions();
         const mission = data.missions[idx];
         data.missions[idx].claimed = true;
-        localStorage.setItem('rehacoin_daily_missions', JSON.stringify(data));
+        safeSetItem('rehacoin_daily_missions', JSON.stringify(data));
         await API.addBonusCoins(mission.reward, 'mission', ja ? mission.label : mission.labelEn);
         showToast(ja ? `ミッション達成！ +${mission.reward}コイン` : `Mission complete! +${mission.reward} coins`);
         if (window.confetti) confetti({ particleCount: 30, spread: 40 });
@@ -1901,11 +1915,11 @@ const App = (() => {
     else if (r < 0.40) pool = GACHA_ITEMS.filter(g => g.rarity === 'uncommon');
     else pool = GACHA_ITEMS.filter(g => g.rarity === 'common');
     const item = pool[Math.floor(Math.random() * pool.length)];
-    localStorage.setItem('rehacoin_gacha_date', getTodayKey());
+    safeSetItem('rehacoin_gacha_date', getTodayKey());
     // Save to collection
     const collection = JSON.parse(localStorage.getItem('rehacoin_gacha_collection') || '[]');
     collection.push({ ...item, date: Date.now() });
-    localStorage.setItem('rehacoin_gacha_collection', JSON.stringify(collection));
+    safeSetItem('rehacoin_gacha_collection', JSON.stringify(collection));
     // Add bonus coins via API
     const ja = I18n.getLang() === 'ja';
     await API.addBonusCoins(item.coins, 'gacha', ja ? `ガチャ: ${item.label}` : `Gacha: ${item.labelEn}`);
@@ -1952,7 +1966,9 @@ const App = (() => {
         ${available ? (ja ? 'ガチャを回す（1日1回）' : 'Daily Gacha (1/day)') : (ja ? 'また明日！' : 'Come back tomorrow!')}
       </button>`;
     if (available) {
-      container.querySelector('#btn-gacha').addEventListener('click', async () => {
+      container.querySelector('#btn-gacha').addEventListener('click', async (e) => {
+        e.target.disabled = true;
+        e.target.textContent = '...';
         const item = await doGacha();
         showGachaOverlay(item);
         renderGachaSection();
@@ -1991,7 +2007,7 @@ const App = (() => {
       if (!canBuy) return;
       const res = await API.spendCoinsGeneric(STREAK_FREEZE_COST, ja ? 'ストリークフリーズ' : 'Streak Freeze');
       if (res.ok) {
-        localStorage.setItem('rehacoin_streak_freezes', (freezes + 1).toString());
+        safeSetItem('rehacoin_streak_freezes', (freezes + 1).toString());
         showToast(ja ? 'ストリークフリーズ獲得！' : 'Streak Freeze acquired!');
         if (navigator.vibrate) navigator.vibrate(50);
         renderStreakFreeze();
@@ -2010,9 +2026,7 @@ const App = (() => {
     const friends = Store.getFriends();
     const profile = Store.getProfile();
     if (!profile || friends.length === 0) {
-      const rankSection = container.closest('.section');
-      if (rankSection) rankSection.hidden = true;
-      container.innerHTML = '';
+      container.innerHTML = `<div class="history-empty">${ja ? 'フレンドを追加するとランキングが表示されます' : 'Add friends to see ranking'}</div>`;
       return;
     }
     // Build ranking: self + friends by totalCoins

@@ -36,15 +36,30 @@ const API = (() => {
     const opts = { method, headers };
     if (body) opts.body = JSON.stringify(body);
 
-    const res = await fetch(BASE + path, opts);
-    const data = await res.json();
+    let res;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      opts.signal = controller.signal;
+      res = await fetch(BASE + path, opts);
+      clearTimeout(timeout);
+    } catch (e) {
+      if (e.name === 'AbortError') return { error: 'timeout', ok: false };
+      return { error: 'network', ok: false };
+    }
+
+    let data;
+    try { data = await res.json(); } catch { data = {}; }
 
     if (res.status === 401) {
       clearAuth();
       location.reload();
       return data;
     }
-
+    if (!res.ok && !data.error) {
+      data.error = data.error || 'server_error';
+      data.ok = false;
+    }
     return data;
   }
 
