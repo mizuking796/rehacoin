@@ -577,12 +577,12 @@ const App = (() => {
       const ja = I18n.getLang() === 'ja';
       if (res.witnessBonus) {
         showToast(ja
-          ? `${rd.emoji} ${rd.label}\n🪙 あなたと相手に +1コイン！`
-          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin for you & them!`);
+          ? `${rd.emoji} ${rd.label}\n🪙 +1コインゲット！相手にも+1！`
+          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin! +1 for them too!`);
       } else {
         showToast(ja
-          ? `${rd.emoji} ${rd.label}\n🪙 応援を送りました！`
-          : `${rd.emoji} ${rd.labelEn}\n🪙 Cheered!`);
+          ? `${rd.emoji} ${rd.label}\n🪙 +1コインゲット！`
+          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin earned!`);
       }
       updateHeaderCoins(true, trigger);
     }
