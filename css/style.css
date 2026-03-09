@@ -789,9 +789,12 @@ body {
 }
 
 .confirm-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.confirm-icon:empty { display: none; }
 
 .confirm-text {
   font-size: 1rem;
@@ -3364,10 +3367,11 @@ body {
   border-radius: 7px;
 }
 
-/* Confirm dialog: use Lucide check-circle */
-.confirm-icon:empty {
-  display: none;
+.confirm-danger {
+  background: #dc2626 !important;
+  color: #fff !important;
 }
+.confirm-danger:active { background: #b91c1c !important; }
 
 /* === Profile Tabs === */
 .profile-tabs {

@@ -911,14 +911,28 @@ const App = (() => {
   }
 
   // --- Custom Confirm Modal ---
-  function showConfirm(text, icon) {
+  function showConfirm(text, icon, opts = {}) {
     return new Promise(resolve => {
       const modal = document.getElementById('confirm-modal');
-      document.getElementById('confirm-text').textContent = text;
-      const iconEl = document.getElementById('confirm-icon'); if (icon) iconEl.textContent = icon; else iconEl.innerHTML = '<img src="img/coin.svg" width="32" height="32">';
-      modal.hidden = false;
+      const textEl = document.getElementById('confirm-text');
+      textEl.textContent = text;
+      const iconEl = document.getElementById('confirm-icon');
+      if (icon) {
+        iconEl.innerHTML = '<i data-lucide="' + icon + '" style="width:36px;height:36px;color:var(--accent)"></i>';
+      } else {
+        iconEl.innerHTML = '<img src="img/coin.svg" width="36" height="36">';
+      }
       const ok = document.getElementById('confirm-ok');
       const cancel = document.getElementById('confirm-cancel');
+      ok.textContent = opts.okText || I18n.t('btnConfirmRecord');
+      cancel.textContent = opts.cancelText || I18n.t('btnCancel');
+      if (opts.danger) {
+        ok.classList.add('confirm-danger');
+      } else {
+        ok.classList.remove('confirm-danger');
+      }
+      modal.hidden = false;
+      refreshLucideIcons();
       function cleanup(result) {
         modal.hidden = true;
         ok.replaceWith(ok.cloneNode(true));
@@ -927,6 +941,8 @@ const App = (() => {
       }
       ok.addEventListener('click', () => cleanup(true), { once: true });
       cancel.addEventListener('click', () => cleanup(false), { once: true });
+      // Close on backdrop click
+      modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); }, { once: true });
     });
   }
 
@@ -1234,7 +1250,7 @@ const App = (() => {
     container.querySelectorAll('.hi-delete').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm(I18n.t('deleteRecordConfirm'))) return;
+        if (!await showConfirm(I18n.t('deleteRecordConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) return;
         await Store.deleteRecord(btn.dataset.id);
         renderHistory(); updateHeaderCoins();
       });
@@ -1418,7 +1434,7 @@ const App = (() => {
     }).join('');
     container.querySelectorAll('.fi-remove').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm(I18n.t('removeFriendConfirm'))) return;
+        if (!await showConfirm(I18n.t('removeFriendConfirm'), 'user-minus', { okText: I18n.getLang() === 'ja' ? '削除' : 'Remove', danger: true })) return;
         await Store.removeFriend(btn.dataset.id); renderFriends();
       });
     });
@@ -1471,7 +1487,7 @@ const App = (() => {
       `).join('');
       rewardList.querySelectorAll('.rw-use').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (confirm(`${btn.dataset.cost} ${I18n.t('coin')} - ${I18n.t('spendConfirm')}`)) {
+          if (await showConfirm(`${btn.dataset.cost} ${I18n.t('coin')} - ${I18n.t('spendConfirm')}`, 'gift', { okText: I18n.t('btnExchange') })) {
             if (await Store.spendCoins(btn.dataset.id)) {
               showToast(I18n.t('exchanged'));
               if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
@@ -1482,7 +1498,7 @@ const App = (() => {
       });
       rewardList.querySelectorAll('.rw-del').forEach(btn => {
         btn.addEventListener('click', async () => {
-          if (confirm(I18n.t('deleteRewardConfirm'))) { await Store.deleteReward(btn.dataset.id); renderExchange(); }
+          if (await showConfirm(I18n.t('deleteRewardConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) { await Store.deleteReward(btn.dataset.id); renderExchange(); }
         });
       });
     }
@@ -1714,10 +1730,10 @@ const App = (() => {
       a.click(); URL.revokeObjectURL(url);
     });
     document.getElementById('btn-logout').addEventListener('click', () => {
-      if (confirm(I18n.t('logoutConfirm'))) API.logout();
+      showConfirm(I18n.t('logoutConfirm'), 'log-out', { okText: I18n.t('logout'), danger: true }).then(ok => { if (ok) API.logout(); });
     });
     document.getElementById('btn-delete-account').addEventListener('click', async () => {
-      if (!confirm(I18n.t('deleteAccountConfirm'))) return;
+      if (!await showConfirm(I18n.t('deleteAccountConfirm'), 'alert-triangle', { okText: I18n.t('deleteAccount'), danger: true })) return;
       const res = await API.deleteAccount();
       if (res.ok) {
         showToast(I18n.t('deleteAccountDone'));
@@ -1996,6 +2012,7 @@ const App = (() => {
     if (!profile || friends.length === 0) {
       const rankSection = container.closest('.section');
       if (rankSection) rankSection.hidden = true;
+      container.innerHTML = '';
       return;
     }
     // Build ranking: self + friends by totalCoins
@@ -2012,6 +2029,8 @@ const App = (() => {
         <span class="ranking-coins"><img src="img/coin.svg" width="14" height="14" class="inline-coin"> ${e.totalCoins}</span>
       </div>`;
     }).join('');
+    const rankSection = container.closest('.section');
+    if (rankSection) rankSection.hidden = false;
   }
 
   return { init };
