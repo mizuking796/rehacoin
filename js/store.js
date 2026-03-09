@@ -107,17 +107,45 @@ const Store = (() => {
       const d = new Date(r.timestamp);
       days.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
     }
+
+    // Check which dates have been frozen (already consumed)
+    let frozenDates;
+    try { frozenDates = JSON.parse(localStorage.getItem('rehacoin_frozen_dates') || '[]'); }
+    catch { frozenDates = []; }
+    const frozenSet = new Set(frozenDates);
+
+    const freezesAvailable = parseInt(localStorage.getItem('rehacoin_streak_freezes') || '0');
+    const newFrozenDates = [];
+
     let streak = 0;
     const d = new Date();
     d.setHours(0, 0, 0, 0);
+    let freezesUsedNow = 0;
+
     while (true) {
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       if (days.has(key)) {
         streak++;
         d.setDate(d.getDate() - 1);
+      } else if (frozenSet.has(key)) {
+        // Already frozen on a previous call
+        streak++;
+        d.setDate(d.getDate() - 1);
+      } else if (freezesUsedNow < freezesAvailable) {
+        // Use a new freeze ticket
+        freezesUsedNow++;
+        newFrozenDates.push(key);
+        streak++;
+        d.setDate(d.getDate() - 1);
       } else {
         break;
       }
+    }
+
+    // Persist newly frozen dates and deduct tickets
+    if (freezesUsedNow > 0) {
+      localStorage.setItem('rehacoin_streak_freezes', (freezesAvailable - freezesUsedNow).toString());
+      localStorage.setItem('rehacoin_frozen_dates', JSON.stringify([...frozenDates, ...newFrozenDates]));
     }
     return streak;
   }

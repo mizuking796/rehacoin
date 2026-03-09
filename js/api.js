@@ -177,6 +177,19 @@ const API = (() => {
     return request(`/coin-history?limit=${limit}&offset=${offset}`);
   }
 
+  // --- Push Notifications ---
+  async function getVapidKey() {
+    return request('/push/vapid-key');
+  }
+
+  async function subscribePush(subscription) {
+    return request('/push/subscribe', 'POST', subscription);
+  }
+
+  async function unsubscribePush() {
+    return request('/push/unsubscribe', 'POST');
+  }
+
   return {
     isLoggedIn, getUser, logout,
     register, login, resetPassword, deleteAccount,
@@ -187,6 +200,7 @@ const API = (() => {
     getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
     witnessRecord,
     cheerRecord,
-    addBonusCoins, spendCoinsGeneric, getCoinHistory
+    addBonusCoins, spendCoinsGeneric, getCoinHistory,
+    getVapidKey, subscribePush, unsubscribePush
   };
 })();

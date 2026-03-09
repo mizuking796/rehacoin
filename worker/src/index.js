@@ -2,6 +2,7 @@
 
 const ALLOWED_ORIGINS = [
   'https://rehacoin.pages.dev',
+  'https://rehacoin.manabu-lab.com',
   'https://mizuking796.github.io',
   'http://localhost:8080',
   'http://localhost:3000',
@@ -146,6 +147,17 @@ export default {
       if (path.match(/^\/records\/[^/]+\/cheer$/) && method === 'POST') {
         const id = path.split('/')[2];
         return json(await cheerRecord(env, user, id, await request.json()), headers);
+      }
+
+      // Push subscription
+      if (path === '/push/subscribe' && method === 'POST') {
+        return json(await subscribePush(env, user, await request.json()), headers);
+      }
+      if (path === '/push/unsubscribe' && method === 'POST') {
+        return json(await unsubscribePush(env, user), headers);
+      }
+      if (path === '/push/vapid-key' && method === 'GET') {
+        return json({ key: env.VAPID_PUBLIC_KEY || '' }, headers);
       }
 
       // Bonus coins (gacha, missions, login bonus)
@@ -1009,4 +1021,25 @@ async function getCoinHistory(env, user, url) {
   `).bind(user.id, user.id, user.id, user.id, limit, offset).all();
 
   return { history: history.results };
+}
+
+// --- Push Subscriptions ---
+async function subscribePush(env, user, body) {
+  const { endpoint, keys } = body;
+  if (!endpoint || !keys || !keys.p256dh || !keys.auth) return { error: 'Invalid subscription' };
+
+  // Remove existing subscription for this user
+  await env.DB.prepare('DELETE FROM push_subscriptions WHERE user_id = ?').bind(user.id).run();
+
+  const id = genId('ps_');
+  await env.DB.prepare(
+    'INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(id, user.id, endpoint, keys.p256dh, keys.auth, Date.now()).run();
+
+  return { ok: true };
+}
+
+async function unsubscribePush(env, user) {
+  await env.DB.prepare('DELETE FROM push_subscriptions WHERE user_id = ?').bind(user.id).run();
+  return { ok: true };
 }

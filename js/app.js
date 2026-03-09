@@ -1510,6 +1510,8 @@ const App = (() => {
     const langSelect = document.getElementById('profile-lang');
     langSelect.value = I18n.getLang();
 
+    // Push notification toggle
+    setupPushToggle();
     // Theme store
     renderThemeStore();
     // Daily missions
@@ -1523,6 +1525,87 @@ const App = (() => {
 
     // Exchange content (merged into profile)
     renderExchange();
+  }
+
+  async function setupPushToggle() {
+    const btn = document.getElementById('btn-toggle-push');
+    const setting = document.getElementById('push-setting');
+    if (!btn || !setting) return;
+
+    // Hide if push not supported
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setting.style.display = 'none';
+      return;
+    }
+
+    const ja = I18n.getLang() === 'ja';
+
+    async function getSubscription() {
+      const reg = await navigator.serviceWorker.ready;
+      return reg.pushManager.getSubscription();
+    }
+
+    function updateBtn(subscribed) {
+      btn.textContent = subscribed
+        ? (ja ? '無効にする' : 'Disable')
+        : (ja ? '有効にする' : 'Enable');
+      btn.classList.toggle('btn-primary', !subscribed);
+      btn.classList.toggle('btn-secondary', subscribed);
+    }
+
+    const existing = await getSubscription();
+    updateBtn(!!existing);
+
+    btn.onclick = async () => {
+      btn.disabled = true;
+      try {
+        const sub = await getSubscription();
+        if (sub) {
+          // Unsubscribe
+          await sub.unsubscribe();
+          await API.unsubscribePush();
+          updateBtn(false);
+          showToast(ja ? 'プッシュ通知を無効にしました' : 'Push notifications disabled');
+        } else {
+          // Subscribe
+          const vapidRes = await API.getVapidKey();
+          if (!vapidRes.key) {
+            showToast(ja ? 'サーバーエラー' : 'Server error');
+            return;
+          }
+          const reg = await navigator.serviceWorker.ready;
+          const newSub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidRes.key)
+          });
+          const subJson = newSub.toJSON();
+          await API.subscribePush({
+            endpoint: subJson.endpoint,
+            keys: subJson.keys
+          });
+          updateBtn(true);
+          showToast(ja ? 'プッシュ通知を有効にしました' : 'Push notifications enabled');
+        }
+      } catch (e) {
+        console.error('Push toggle error:', e);
+        if (e.name === 'NotAllowedError') {
+          showToast(ja ? 'ブラウザの通知許可が必要です' : 'Browser notification permission required');
+        } else {
+          showToast(ja ? 'エラーが発生しました' : 'An error occurred');
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    const arr = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
   }
 
   function renderThemeStore() {
