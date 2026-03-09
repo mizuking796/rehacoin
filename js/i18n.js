@@ -25,29 +25,30 @@ const I18n = (() => {
       navMyPage: 'マイページ',
 
       // Home
-      searchPlaceholder: '活動を検索...',
-      sectionRecent: '最近の記録',
-      sectionFavorites: 'よく使う活動',
+      searchPlaceholder: 'かつどうをさがす...',
+      sectionRecent: 'さいきんのきろく',
+      sectionFavorites: 'よくつかうもの',
       sectionCategories: 'カテゴリ',
       sectionFreeInput: '自由入力',
-      freeInputPlaceholder: '活動を自由に入力...',
+      freeInputPlaceholder: 'じゆうにかつどうをにゅうりょく...',
       btnRecord: '記録',
       btnConfirmRecord: '記録する',
       btnCancel: 'やめる',
-      myRecord: 'じぶんの記録',
+      myRecord: 'じぶんのきろく',
       btnBack: '← 戻る',
 
       // History
       screenRecords: 'きろく',
-      tabRecords: '記録',
-      totalCoins: '総コイン',
-      today: '今日',
-      streak: '連続',
+      tabRecords: 'かつどう',
+      tabCoinHistory: 'コインりれき',
+      totalCoins: 'もちコイン',
+      today: 'きょう',
+      streak: 'れんぞく',
       streakUnit: '日',
       top: 'トップ',
-      noRecords: 'まだ記録がありません。\n活動をタップして記録しましょう！',
-      deleteRecordConfirm: 'この記録を削除しますか？',
-      confirmed: '確認済',
+      noRecords: 'まだきろくがないよ。\nかつどうをタップしてはじめよう！',
+      deleteRecordConfirm: 'このきろくをけしますか？',
+      confirmed: 'かくにんずみ',
 
       // Friends
       screenFriends: 'フレンド',
@@ -74,8 +75,8 @@ const I18n = (() => {
       btnReject: '拒否',
       sectionFriends: 'フレンド一覧',
       sectionFeed: 'フレンドの活動',
-      noFriends: 'まだフレンドがいません。\nコードを共有しよう！',
-      noFeed: 'フレンドの活動はまだありません。',
+      noFriends: 'まだフレンドがいないよ。\nコードをきょうゆうしよう！',
+      noFeed: 'フレンドのかつどうはまだないよ。',
       removeFriendConfirm: 'このフレンドを削除しますか？',
       friendAdded: 'フレンドになりました！',
       friendRequestSent: 'フレンド申請を送信しました！',
@@ -85,13 +86,13 @@ const I18n = (() => {
 
       // Exchange
       screenExchange: '交換',
-      availableCoins: '使えるコイン',
+      availableCoins: 'つかえるコイン',
       sectionBadges: 'バッジ',
-      sectionRewards: 'ご褒美リスト',
+      sectionRewards: 'ごほうびリスト',
       rewardNamePlaceholder: 'ご褒美の名前',
       rewardCostPlaceholder: 'コイン',
       btnAdd: '追加',
-      noRewards: 'ご褒美を追加しよう！\n「50コインでカフェ」「100コインで映画」など',
+      noRewards: 'ごほうびをついかしよう！\n「50コインでカフェ」「100コインでえいが」など',
       btnExchange: '交換',
       spendConfirm: 'コインを使って交換しますか？',
       exchanged: 'ご褒美と交換しました！',
@@ -100,8 +101,8 @@ const I18n = (() => {
 
       // Profile
       screenProfile: 'プロフィール',
-      profileTotalCoins: '総コイン',
-      profileWitnessBonus: '目撃ボーナス',
+      profileTotalCoins: 'もちコイン',
+      profileWitnessBonus: 'おうえんボーナス',
       profileFriends: 'フレンド',
       friendCode: 'フレンドコード',
       feedPrivacy: 'フィード公開範囲',
@@ -109,7 +110,7 @@ const I18n = (() => {
       coinsOnly: 'コインのみ',
       joined: '登録日',
       version: 'バージョン',
-      exportData: 'データエクスポート',
+      exportData: 'データをほぞん',
       logout: 'ログアウト',
       logoutConfirm: 'ログアウトしますか？',
       language: '言語',
@@ -122,16 +123,16 @@ const I18n = (() => {
       badgeUnlocked: 'バッジ解放！',
 
       // Loading
-      loading: '読み込み中...',
-      loadingFriends: 'フレンド読み込み中...',
+      loading: 'よみこみちゅう...',
+      loadingFriends: 'フレンドよみこみちゅう...',
 
       // Time
-      justNow: 'たった今',
+      justNow: 'たったいま',
       mAgo: '分前',
       hAgo: '時間前',
 
       // Search
-      notFound: '見つかりませんでした',
+      notFound: 'みつかりませんでした',
 
       // Recovery / Reset
       recoveryCodeTitle: 'リカバリーコード',
@@ -145,7 +146,7 @@ const I18n = (() => {
       resetSuccess: 'パスワードをリセットしました',
       backToLogin: 'ログインに戻る',
       deleteAccount: 'アカウント削除',
-      deleteAccountConfirm: 'アカウントを削除しますか？\n全てのデータが完全に削除されます。\nこの操作は元に戻せません。',
+      deleteAccountConfirm: 'アカウントをけしますか？\nすべてのデータがかんぜんにけされます。\nこのそうさはもとにもどせません。',
       deleteAccountDone: 'アカウントを削除しました',
       passwordMinLength: 'パスワードは8文字以上で入力してください',
       privacyPolicy: 'プライバシーポリシー',
@@ -185,7 +186,8 @@ const I18n = (() => {
       btnBack: '← Back',
 
       screenRecords: 'Records',
-      tabRecords: 'Records',
+      tabRecords: 'Activities',
+      tabCoinHistory: 'Coin History',
       totalCoins: 'Total Coins',
       today: 'Today',
       streak: 'Streak',

@@ -83,7 +83,7 @@ body {
 }
 
 .header-nickname {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: rgba(255,255,255,0.85);
   font-weight: 600;
 }
@@ -115,7 +115,7 @@ body {
 }
 
 .header-coins {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #FFE066;
   background: rgba(255, 215, 0, 0.15);
@@ -161,9 +161,10 @@ body {
 }
 
 .section-title {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-light);
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -337,7 +338,7 @@ body {
 }
 
 .category-card .cat-label {
-  font-size: 0.65rem;
+  font-size: 0.88rem;
   font-weight: 600;
   text-align: center;
   line-height: 1.2;
@@ -389,7 +390,7 @@ body {
 }
 
 .screen-title-fixed {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
   height: 36px;
   line-height: 36px;
@@ -433,7 +434,7 @@ body {
 
 .activity-item .act-label {
   flex: 1;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1.3;
 }
@@ -599,13 +600,13 @@ body {
 }
 
 .stat-value {
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--accent);
 }
 
 .stat-label {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--text-light);
   margin-top: 4px;
   font-weight: 500;
@@ -643,7 +644,7 @@ body {
 
 .history-item .hi-label {
   flex: 1;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
 }
 
@@ -798,7 +799,7 @@ body {
 .confirm-icon:empty { display: none; }
 
 .confirm-text {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: var(--text);
   line-height: 1.5;
@@ -929,7 +930,7 @@ body {
 }
 
 .nav-label {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.2px;
 }
@@ -1143,8 +1144,9 @@ body {
 
 .history-tab {
   flex: 1;
-  padding: 10px 0;
+  padding: 12px 0;
   background: none;
+  font-size: 0.95rem;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
@@ -1329,13 +1331,13 @@ body {
 }
 
 .balance-amount {
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   font-weight: 800;
   line-height: 1;
 }
 
 .balance-label {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   opacity: 0.9;
   margin-top: 6px;
   font-weight: 500;
@@ -1371,7 +1373,7 @@ body {
 }
 
 .badge-card .badge-label {
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -1742,13 +1744,13 @@ body {
 }
 
 .profile-stat .ps-value {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: var(--accent);
 }
 
 .profile-stat .ps-label {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   color: var(--text-light);
   margin-top: 4px;
   font-weight: 500;
@@ -1930,7 +1932,7 @@ body {
 }
 
 .fi-name {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -2875,7 +2877,7 @@ body {
 }
 .mission-label {
   flex: 1;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 500;
 }
 .mission-claim-btn {
@@ -3054,7 +3056,7 @@ body {
 }
 .ranking-name {
   flex: 1;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 .ranking-coins {
   font-size: 0.85rem;
@@ -3194,12 +3196,12 @@ body {
 /* === Dark Mode === */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0F172A;
-    --bg-card: #1E293B;
+    --bg: #0F1419;
+    --bg-card: #1C2733;
     --text: #F1F5F9;
     --text-muted: #94A3B8;
     --text-light: #64748B;
-    --border: #334155;
+    --border: #2F3336;
     --border-light: #1E293B;
     --accent-light: rgba(13, 148, 136, 0.15);
     --toast-bg: #334155;
