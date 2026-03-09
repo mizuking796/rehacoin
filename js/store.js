@@ -297,11 +297,11 @@ const Store = (() => {
 
   // --- Ranks ---
   const RANKS = [
-    { id: 'bronze',   minCoins: 0,    color: '#CD7F32', label: 'リハビリ見習い', labelEn: 'Beginner',   icon: '🟤' },
-    { id: 'silver',   minCoins: 50,   color: '#C0C0C0', label: 'リハビリ初段',   labelEn: 'Silver',     icon: '⚪' },
-    { id: 'gold',     minCoins: 200,  color: '#FFD700', label: 'リハビリ戦士',   labelEn: 'Gold',       icon: '🟡' },
-    { id: 'platinum', minCoins: 500,  color: '#E5E4E2', label: 'リハビリ達人',   labelEn: 'Platinum',   icon: '💠' },
-    { id: 'diamond',  minCoins: 1000, color: '#B9F2FF', label: 'リハビリマスター', labelEn: 'Diamond', icon: '💎' },
+    { id: 'bronze',   minCoins: 0,    color: '#CD7F32', label: 'リハビリ見習い', labelEn: 'Beginner',   icon: 'circle', iconColor: '#CD7F32' },
+    { id: 'silver',   minCoins: 50,   color: '#C0C0C0', label: 'リハビリ初段',   labelEn: 'Silver',     icon: 'circle', iconColor: '#C0C0C0' },
+    { id: 'gold',     minCoins: 200,  color: '#FFD700', label: 'リハビリ戦士',   labelEn: 'Gold',       icon: 'circle', iconColor: '#FFD700' },
+    { id: 'platinum', minCoins: 500,  color: '#E5E4E2', label: 'リハビリ達人',   labelEn: 'Platinum',   icon: 'hexagon', iconColor: '#E5E4E2' },
+    { id: 'diamond',  minCoins: 1000, color: '#B9F2FF', label: 'リハビリマスター', labelEn: 'Diamond', icon: 'gem', iconColor: '#B9F2FF' },
   ];
 
   function getRank() {

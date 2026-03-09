@@ -327,7 +327,7 @@ const App = (() => {
     else if (streak >= 7) colorClass = 'streak-high';
     else if (streak >= 3) colorClass = 'streak-mid';
     el.className = `streak-display ${colorClass}`;
-    el.innerHTML = `<span class="streak-flame">🔥</span><span class="streak-num">${streak}</span>`;
+    el.innerHTML = `<span class="streak-flame"><i data-lucide="flame" style="width:16px;height:16px"></i></span><span class="streak-num">${streak}</span>`;
   }
 
   function checkRankUp() {
@@ -346,7 +346,7 @@ const App = (() => {
       <div class="rankup-flash"></div>
       <div class="rankup-content">
         <div class="rankup-label">RANK UP!</div>
-        <div class="rankup-icon" style="color:${rank.color}">${rank.icon}</div>
+        <div class="rankup-icon" style="color:${rank.color}"><i data-lucide="${rank.icon}" style="width:48px;height:48px;color:${rank.iconColor || rank.color}"></i></div>
         <div class="rankup-name" style="color:${rank.color}">${ja ? rank.label : rank.labelEn}</div>
       </div>`;
     document.body.appendChild(overlay);
@@ -393,8 +393,8 @@ const App = (() => {
     }
     const names = requests.map(r => r.from_nickname).join(', ');
     const msg = I18n.getLang() === 'ja'
-      ? `👥 ${names} からフレンド申請が${requests.length}件届いています`
-      : `👥 ${requests.length} friend request${requests.length > 1 ? 's' : ''} from ${names}`;
+      ? `${names} からフレンド申請が${requests.length}件届いています`
+      : `${requests.length} friend request${requests.length > 1 ? 's' : ''} from ${names}`;
     banner.innerHTML = `<span class="banner-text">${msg}</span><span class="banner-arrow">→</span>`;
     banner.hidden = false;
     banner.onclick = () => {
@@ -412,10 +412,10 @@ const App = (() => {
   }
 
   const REACTIONS = [
-    { type: 'like', emoji: '👍', label: 'いいね！', labelEn: 'Like' },
-    { type: 'cheer', emoji: '💪', label: '頑張ったね！', labelEn: 'Great job!' },
-    { type: 'empathy', emoji: '🤝', label: 'わかるよ！', labelEn: 'I get you!' },
-    { type: 'amazing', emoji: '👏', label: 'すごい！', labelEn: 'Amazing!' },
+    { type: 'like', emoji: '👍', lucide: 'thumbs-up', label: 'いいね！', labelEn: 'Like' },
+    { type: 'cheer', emoji: '💪', lucide: 'biceps-flexed', label: '頑張ったね！', labelEn: 'Great job!' },
+    { type: 'empathy', emoji: '🤝', lucide: 'handshake', label: 'わかるよ！', labelEn: 'I get you!' },
+    { type: 'amazing', emoji: '👏', lucide: 'party-popper', label: 'すごい！', labelEn: 'Amazing!' },
   ];
 
   // SVG icons for reaction button (outline = unreacted, filled = reacted)
@@ -454,7 +454,7 @@ const App = (() => {
       const reactors = item.reactors || [];
       const tooltipItems = reactors.map(r => {
         const rd = REACTIONS.find(x => x.type === r.type);
-        return `<div class="rt-line">${rd ? rd.emoji : '👍'} ${escapeHtml(r.nickname)}</div>`;
+        return `<div class="rt-line">${escapeHtml(r.nickname)}</div>`;
       }).join('');
       reactionSummaryHtml = `<div class="reaction-summary"><span class="reaction-icons">${badges}</span><span class="reaction-count">${totalReactions}</span><div class="reactor-tooltip">${tooltipItems}</div></div>`;
     }
@@ -480,7 +480,7 @@ const App = (() => {
             <button class="${triggerClass}" data-id="${item.id}"><span class="rt-icon">${triggerIcon}</span>${triggerLabel}</button>
           </div>
           <div class="reaction-picker" hidden>
-            ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}">${r.emoji}</button>`).join('')}
+            ${REACTIONS.map(r => `<button class="reaction-option" data-id="${item.id}" data-type="${r.type}" title="${I18n.getLang() === 'ja' ? r.label : r.labelEn}"><i data-lucide="${r.lucide}" style="width:24px;height:24px"></i></button>`).join('')}
           </div>
         </div>`;
     }
@@ -598,7 +598,7 @@ const App = (() => {
       const reactors = item.reactors || [];
       const tooltipItems = reactors.map(r => {
         const rd = REACTIONS.find(x => x.type === r.type);
-        return `<div class="rt-line">${rd ? rd.emoji : '👍'} ${escapeHtml(r.nickname)}</div>`;
+        return `<div class="rt-line">${escapeHtml(r.nickname)}</div>`;
       }).join('');
       const html = `<span class="reaction-icons">${badges}</span><span class="reaction-count">${total}</span><div class="reactor-tooltip">${tooltipItems}</div>`;
       if (summaryEl) {
@@ -617,18 +617,18 @@ const App = (() => {
       incrementDailyCheer();
       const rd = REACTIONS.find(r => r.type === type);
       if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
-      showFloatingEmoji(rd.emoji, trigger);
+      // floating emoji removed for clean UI
       showCoinBurst(trigger);
 
       const ja = I18n.getLang() === 'ja';
       if (res.witnessBonus) {
         showToast(ja
-          ? `${rd.emoji} ${rd.label}\n🪙 +1コインゲット！相手にも+1！`
-          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin! +1 for them too!`);
+          ? `${rd.label}\n🪙 +1コインゲット！相手にも+1！`
+          : `${rd.labelEn}\n🪙 +1 coin! +1 for them too!`);
       } else {
         showToast(ja
-          ? `${rd.emoji} ${rd.label}\n🪙 +1コインゲット！`
-          : `${rd.emoji} ${rd.labelEn}\n🪙 +1 coin earned!`);
+          ? `${rd.label}\n🪙 +1コインゲット！`
+          : `${rd.labelEn}\n🪙 +1 coin earned!`);
       }
       updateHeaderCoins(true, trigger);
     }
@@ -787,8 +787,8 @@ const App = (() => {
       const rand = Math.random();
       let multiplier = 1;
       let bonusLabel = '';
-      if (rand < 0.01) { multiplier = 5; bonusLabel = '🎰 JACKPOT! x5'; }
-      else if (rand < 0.11) { multiplier = 2; bonusLabel = '✨ BONUS! x2'; }
+      if (rand < 0.01) { multiplier = 5; bonusLabel = 'JACKPOT! x5'; }
+      else if (rand < 0.11) { multiplier = 2; bonusLabel = 'BONUS! x2'; }
 
       const startTime = Date.now();
       let nonce = 0;
@@ -815,8 +815,8 @@ const App = (() => {
 
       const ja = I18n.getLang() === 'ja';
       const msg = multiplier > 1
-        ? `⛓️ ${I18n.t('blockConfirmed')}\n${bonusLabel}`
-        : `⛓️ ${I18n.t('blockConfirmed')}`;
+        ? `${I18n.t('blockConfirmed')}\n${bonusLabel}`
+        : `${I18n.t('blockConfirmed')}`;
       showToast(msg);
       if (navigator.vibrate) navigator.vibrate([50, 50, 100]);
     } catch (e) {
@@ -915,7 +915,7 @@ const App = (() => {
     return new Promise(resolve => {
       const modal = document.getElementById('confirm-modal');
       document.getElementById('confirm-text').textContent = text;
-      document.getElementById('confirm-icon').textContent = icon || '🪙';
+      const iconEl = document.getElementById('confirm-icon'); if (icon) iconEl.textContent = icon; else iconEl.innerHTML = '<img src="img/coin.svg" width="32" height="32">';
       modal.hidden = false;
       const ok = document.getElementById('confirm-ok');
       const cancel = document.getElementById('confirm-cancel');
@@ -977,7 +977,7 @@ const App = (() => {
     overlay.innerHTML = `
       <div class="login-bonus-card">
         <div class="lb-title">${ja ? 'ようこそ！初回ボーナス' : 'Welcome! First Login Bonus'}</div>
-        <div class="lb-streak">🎉</div>
+        <div class="lb-streak"></div>
         <div class="lb-reward-msg" style="font-size:1.5rem"><img src="img/coin.svg" width="32" height="32" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
         <button class="lb-claim btn-primary">${ja ? '受け取る' : 'Claim'}</button>
       </div>`;
@@ -1024,13 +1024,13 @@ const App = (() => {
     for (let i = 1; i <= 7; i++) {
       const r = LOGIN_BONUS_REWARDS[i - 1];
       const cls = i < day ? 'lb-day claimed' : (i === day ? 'lb-day today' : 'lb-day');
-      const icon = i === 7 ? '🎁' : '<img src="img/coin.svg" width="20" height="20">';
+      const icon = i === 7 ? '<i data-lucide="gift" style="width:20px;height:20px;color:#FFD700"></i>' : '<img src="img/coin.svg" width="20" height="20">';
       daysHtml += `<div class="${cls}"><div class="lb-day-num">${ja ? `${i}日目` : `Day ${i}`}</div><div class="lb-day-icon">${icon}</div><div class="lb-day-reward">+${r}</div></div>`;
     }
 
     const isDay7 = day === 7;
     const titleText = isDay7
-      ? (ja ? '🎁 宝箱オープン！' : '🎁 Treasure Chest!')
+      ? (ja ? '宝箱オープン！' : 'Treasure Chest!')
       : (ja ? 'ログインボーナス' : 'Login Bonus');
 
     overlay.innerHTML = `
@@ -1038,7 +1038,7 @@ const App = (() => {
         <div class="lb-title">${titleText}</div>
         <div class="lb-streak">${ja ? `${day}日目！` : `Day ${day}!`}</div>
         <div class="lb-days">${daysHtml}</div>
-        ${isDay7 ? '<div class="lb-treasure-icon">🎁</div>' : ''}
+        ${isDay7 ? '<div class="lb-treasure-icon"><i data-lucide="gift" style="width:48px;height:48px;color:#FFD700"></i></div>' : ''}
         <div class="lb-reward-msg"><img src="img/coin.svg" width="24" height="24" class="inline-coin"> +${reward} ${I18n.t('coin')}</div>
         <button class="lb-claim btn-primary">${isDay7 ? (ja ? '宝箱を開ける！' : 'Open Chest!') : (ja ? '受け取る' : 'Claim')}</button>
       </div>`;
@@ -1132,8 +1132,8 @@ const App = (() => {
       const msg = I18n.getLang() === 'ja'
         ? `「${label}」を記録しますか？`
         : `Record "${label}"?`;
-      if (!await showConfirm(msg, '✏️')) return;
-      recordActivity({ id: null, label, icon: '✏️', categoryCode: 'free' });
+      if (!await showConfirm(msg, '')) return;
+      recordActivity({ id: null, label, icon: '', categoryCode: 'free' });
       input.value = ''; btn.disabled = true;
     });
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) btn.click(); });
@@ -1186,12 +1186,12 @@ const App = (() => {
 
     container.innerHTML = `
       <div class="stat-card stat-rank" style="border-top: 3px solid ${rp.current.color}">
-        <div class="stat-value" style="color:${rp.current.color}">${rp.current.icon} ${rankLabel}</div>
+        <div class="stat-value" style="color:${rp.current.color}"><i data-lucide="${rp.current.icon}" style="width:18px;height:18px;color:${rp.current.color};vertical-align:middle"></i> ${rankLabel}</div>
         ${rp.next ? `<div class="rank-progress-bar"><div class="rank-progress-fill" style="width:${progressPct}%;background:${rp.current.color}"></div></div><div class="rank-next-label">${nextLabel} ${ja ? 'まで' : 'to'} ${rp.next.minCoins - total} ${I18n.t('coin')}</div>` : '<div class="rank-next-label">MAX</div>'}
       </div>
       <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">${I18n.t('totalCoins')}</div></div>
       <div class="stat-card"><div class="stat-value">${today}</div><div class="stat-label">${I18n.t('today')}</div></div>
-      <div class="stat-card"><div class="stat-value"><span class="streak-flame-sm ${streak >= 7 ? 'streak-active' : ''}">🔥</span>${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
+      <div class="stat-card"><div class="stat-value"><span class="streak-flame-sm ${streak >= 7 ? 'streak-active' : ''}"><i data-lucide="flame" style="width:16px;height:16px"></i></span>${streak}${I18n.t('streakUnit')}</div><div class="stat-label">${I18n.t('streak')}</div></div>
       ${weekData.some(d => d.count > 0) ? `<div class="stat-chart-card"><div class="sc-title">${ja ? '過去7日間' : 'Last 7 Days'}</div><div class="week-chart">${weekChartHtml}</div></div>` : ''}
       ${catEntries.length > 0 ? `<div class="stat-chart-card"><div class="sc-title">${ja ? 'カテゴリ別（30日）' : 'Categories (30 days)'}</div>${catChartHtml}</div>` : ''}
     `;
@@ -1226,7 +1226,7 @@ const App = (() => {
       const items = group.records.map(r => {
         const time = new Date(r.timestamp);
         const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-        const witnessHtml = r.witnessed ? `<span class="hi-witnessed">👁️ ${I18n.t('confirmed')}</span>` : '';
+        const witnessHtml = r.witnessed ? `<span class="hi-witnessed">${I18n.t('confirmed')}</span>` : '';
         return `<div class="history-item"><span class="hi-icon">${getCategoryIcon(r.categoryCode, 18)}</span><span class="hi-label">${escapeHtml(r.label)}</span>${witnessHtml}<span class="hi-time">${timeStr}</span><button class="hi-delete" data-id="${r.id}">×</button></div>`;
       }).join('');
       return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
@@ -1266,10 +1266,10 @@ const App = (() => {
         let typeIcon, typeLabel, amountClass;
         switch (item.type) {
           case 'record': typeIcon = ''; typeLabel = item.label; amountClass = 'ch-plus'; break;
-          case 'bonus': typeIcon = '🎁'; typeLabel = item.label || item.detail; amountClass = 'ch-plus'; break;
-          case 'witness': typeIcon = '👁️'; typeLabel = ja ? `目撃ボーナス: ${item.label}` : `Witness: ${item.label}`; amountClass = 'ch-plus'; break;
-          case 'spend': typeIcon = '🛒'; typeLabel = item.label; amountClass = 'ch-minus'; break;
-          default: typeIcon = '❓'; typeLabel = item.label; amountClass = '';
+          case 'bonus': typeIcon = '<i data-lucide="gift" style="width:16px;height:16px;color:var(--accent)"></i>'; typeLabel = item.label || item.detail; amountClass = 'ch-plus'; break;
+          case 'witness': typeIcon = '<i data-lucide="eye" style="width:16px;height:16px;color:#9C27B0"></i>'; typeLabel = ja ? `目撃ボーナス: ${item.label}` : `Witness: ${item.label}`; amountClass = 'ch-plus'; break;
+          case 'spend': typeIcon = '<i data-lucide="shopping-cart" style="width:16px;height:16px;color:var(--danger)"></i>'; typeLabel = item.label; amountClass = 'ch-minus'; break;
+          default: typeIcon = '<i data-lucide="help-circle" style="width:16px;height:16px;color:var(--text-light)"></i>'; typeLabel = item.label; amountClass = '';
         }
         const sign = item.amount > 0 ? '+' : '';
         return `<div class="ch-item">
@@ -1549,7 +1549,7 @@ const App = (() => {
     }
     // Rank title
     let rankEl = document.getElementById('profile-rank-title');
-    if (rankEl) rankEl.innerHTML = `<span style="color:${rank.color}">${rank.icon} ${ja ? rank.label : rank.labelEn}</span>`;
+    if (rankEl) rankEl.innerHTML = `<span style="color:${rank.color}"><i data-lucide="${rank.icon}" style="width:16px;height:16px;vertical-align:middle;color:${rank.iconColor || rank.color}"></i> ${ja ? rank.label : rank.labelEn}</span>`;
 
     const visSelect = document.getElementById('profile-visibility');
     visSelect.value = profile.feedVisibility;
@@ -1687,14 +1687,14 @@ const App = (() => {
       btn.addEventListener('click', async () => {
         const theme = THEMES.find(t => t.id === btn.dataset.id);
         const ja = I18n.getLang() === 'ja';
-        if (await showConfirm(ja ? `「${theme.label}」テーマを${theme.cost}コインで購入？` : `Buy "${theme.labelEn}" for ${theme.cost} coins?`, '🎨')) {
+        if (await showConfirm(ja ? `「${theme.label}」テーマを${theme.cost}コインで購入？` : `Buy "${theme.labelEn}" for ${theme.cost} coins?`, '')) {
           const res = await API.spendCoinsGeneric(theme.cost, ja ? `テーマ: ${theme.label}` : `Theme: ${theme.labelEn}`);
           if (!res.ok) { showToast(res.error || 'Error'); return; }
           const owned = getOwnedThemes();
           owned.push(theme.id);
           setOwnedThemes(owned);
           applyTheme(theme.id);
-          showToast(ja ? `🎨 ${theme.label}テーマ獲得！` : `🎨 ${theme.labelEn} theme unlocked!`);
+          showToast(ja ? `${theme.label}テーマ獲得！` : `${theme.labelEn} theme unlocked!`);
           if (window.confetti) confetti({ particleCount: 40, spread: 50 });
           renderThemeStore();
           updateHeaderCoins();
@@ -1825,11 +1825,16 @@ const App = (() => {
       else if (done) btnHtml = `<button class="mission-claim-btn" data-idx="${i}"><img src="img/coin.svg" width="12" height="12" class="inline-coin"> +${m.reward}</button>`;
       else btnHtml = `<span class="mission-pending">${ja ? '未達成' : 'In Progress'}</span>`;
       return `<div class="mission-item ${claimed ? 'claimed' : done ? 'ready' : ''}">
-        <span class="mission-check">${claimed ? '✅' : done ? '🟢' : '⬜'}</span>
+        <span class="mission-check">${claimed ? '<i data-lucide="check-circle-2" style="width:18px;height:18px;color:var(--success)"></i>' : done ? '<i data-lucide="circle-check" style="width:18px;height:18px;color:var(--success)"></i>' : '<i data-lucide="circle" style="width:18px;height:18px;color:var(--text-light)"></i>'}</span>
         <span class="mission-label">${ja ? m.label : m.labelEn}</span>
         ${btnHtml}
       </div>`;
     }).join('');
+
+    // Hide section if empty
+    const missionSection = container.closest('.section');
+    if (missionSection && data.missions.length === 0) missionSection.hidden = true;
+    else if (missionSection) missionSection.hidden = false;
     container.querySelectorAll('.mission-claim-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const idx = parseInt(btn.dataset.idx);
@@ -1838,7 +1843,7 @@ const App = (() => {
         data.missions[idx].claimed = true;
         localStorage.setItem('rehacoin_daily_missions', JSON.stringify(data));
         await API.addBonusCoins(mission.reward, 'mission', ja ? mission.label : mission.labelEn);
-        showToast(ja ? `🎯 ミッション達成！ +${mission.reward}コイン` : `🎯 Mission complete! +${mission.reward} coins`);
+        showToast(ja ? `ミッション達成！ +${mission.reward}コイン` : `Mission complete! +${mission.reward} coins`);
         if (window.confetti) confetti({ particleCount: 30, spread: 40 });
         updateHeaderCoins(true);
         renderDailyMissions();
@@ -1849,19 +1854,19 @@ const App = (() => {
   // --- Daily Gacha ---
   const GACHA_ITEMS = [
     // Common (60%)
-    { rarity: 'common', icon: '💊', label: 'ビタミン剤', labelEn: 'Vitamin', coins: 1 },
-    { rarity: 'common', icon: '🩹', label: 'ばんそうこう', labelEn: 'Bandage', coins: 1 },
-    { rarity: 'common', icon: '🧴', label: 'ハンドクリーム', labelEn: 'Hand Cream', coins: 1 },
-    { rarity: 'common', icon: '🧊', label: 'アイスパック', labelEn: 'Ice Pack', coins: 1 },
+    { rarity: 'common', icon: 'pill', label: 'ビタミン剤', labelEn: 'Vitamin', coins: 1 },
+    { rarity: 'common', icon: 'bandage', label: 'ばんそうこう', labelEn: 'Bandage', coins: 1 },
+    { rarity: 'common', icon: 'droplets', label: 'ハンドクリーム', labelEn: 'Hand Cream', coins: 1 },
+    { rarity: 'common', icon: 'snowflake', label: 'アイスパック', labelEn: 'Ice Pack', coins: 1 },
     // Uncommon (25%)
-    { rarity: 'uncommon', icon: '🎗️', label: '応援リボン', labelEn: 'Cheer Ribbon', coins: 3 },
-    { rarity: 'uncommon', icon: '🧃', label: 'エナジードリンク', labelEn: 'Energy Drink', coins: 3 },
-    { rarity: 'uncommon', icon: '🌟', label: 'スターチャーム', labelEn: 'Star Charm', coins: 3 },
+    { rarity: 'uncommon', icon: 'ribbon', label: '応援リボン', labelEn: 'Cheer Ribbon', coins: 3 },
+    { rarity: 'uncommon', icon: 'cup-soda', label: 'エナジードリンク', labelEn: 'Energy Drink', coins: 3 },
+    { rarity: 'uncommon', icon: 'sparkles', label: 'スターチャーム', labelEn: 'Star Charm', coins: 3 },
     // Rare (12%)
-    { rarity: 'rare', icon: '💎', label: 'クリスタル', labelEn: 'Crystal', coins: 5 },
-    { rarity: 'rare', icon: '🏅', label: 'ゴールドメダル', labelEn: 'Gold Medal', coins: 5 },
+    { rarity: 'rare', icon: 'gem', label: 'クリスタル', labelEn: 'Crystal', coins: 5 },
+    { rarity: 'rare', icon: 'medal', label: 'ゴールドメダル', labelEn: 'Gold Medal', coins: 5 },
     // Legendary (3%)
-    { rarity: 'legendary', icon: '👑', label: '黄金の王冠', labelEn: 'Golden Crown', coins: 10 },
+    { rarity: 'legendary', icon: 'crown', label: '黄金の王冠', labelEn: 'Golden Crown', coins: 10 },
   ];
   const GACHA_RARITY_COLORS = {
     common: '#9E9E9E', uncommon: '#4CAF50', rare: '#2196F3', legendary: '#FFD700'
@@ -1900,7 +1905,7 @@ const App = (() => {
     el.innerHTML = `
       <div class="gacha-card" style="--gacha-color: ${color}">
         <div class="gacha-rarity">${rarityLabel[item.rarity]}</div>
-        <div class="gacha-icon">${item.icon}</div>
+        <div class="gacha-icon"><i data-lucide="${item.icon}" style="width:56px;height:56px;color:${color}"></i></div>
         <div class="gacha-name">${ja ? item.label : item.labelEn}</div>
         <div class="gacha-reward"><img src="img/coin.svg" width="16" height="16" class="inline-coin"> +${item.coins}</div>
         <button class="btn-primary gacha-close">${ja ? '閉じる' : 'Close'}</button>
@@ -1928,7 +1933,7 @@ const App = (() => {
     const available = canDoGacha();
     container.innerHTML = `
       <button id="btn-gacha" class="gacha-btn ${available ? '' : 'disabled'}" ${available ? '' : 'disabled'}>
-        ${available ? (ja ? '🎰 ガチャを回す（1日1回）' : '🎰 Daily Gacha (1/day)') : (ja ? '🎰 また明日！' : '🎰 Come back tomorrow!')}
+        ${available ? (ja ? 'ガチャを回す（1日1回）' : 'Daily Gacha (1/day)') : (ja ? 'また明日！' : 'Come back tomorrow!')}
       </button>`;
     if (available) {
       container.querySelector('#btn-gacha').addEventListener('click', async () => {
@@ -1956,7 +1961,7 @@ const App = (() => {
     const canBuy = balance >= STREAK_FREEZE_COST;
     container.innerHTML = `
       <div class="sf-info">
-        <span class="sf-icon">🧊</span>
+        <span class="sf-icon"><i data-lucide="snowflake" style="width:28px;height:28px;color:#00BCD4"></i></span>
         <div class="sf-detail">
           <div class="sf-label">${ja ? 'ストリークフリーズ' : 'Streak Freeze'}</div>
           <div class="sf-desc">${ja ? '1日休んでも連続記録が途切れない' : 'Protect your streak for 1 missed day'}</div>
@@ -1971,7 +1976,7 @@ const App = (() => {
       const res = await API.spendCoinsGeneric(STREAK_FREEZE_COST, ja ? 'ストリークフリーズ' : 'Streak Freeze');
       if (res.ok) {
         localStorage.setItem('rehacoin_streak_freezes', (freezes + 1).toString());
-        showToast(ja ? '🧊 ストリークフリーズ獲得！' : '🧊 Streak Freeze acquired!');
+        showToast(ja ? 'ストリークフリーズ獲得！' : 'Streak Freeze acquired!');
         if (navigator.vibrate) navigator.vibrate(50);
         renderStreakFreeze();
         updateHeaderCoins();
@@ -1989,7 +1994,8 @@ const App = (() => {
     const friends = Store.getFriends();
     const profile = Store.getProfile();
     if (!profile || friends.length === 0) {
-      container.innerHTML = `<div class="ranking-empty">${ja ? 'フレンドを追加してランキングに参加しよう！' : 'Add friends to see rankings!'}</div>`;
+      const rankSection = container.closest('.section');
+      if (rankSection) rankSection.hidden = true;
       return;
     }
     // Build ranking: self + friends by totalCoins
@@ -1999,7 +2005,7 @@ const App = (() => {
     ].sort((a, b) => b.totalCoins - a.totalCoins);
 
     container.innerHTML = entries.map((e, i) => {
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`;
+      const medal = i === 0 ? '<i data-lucide="medal" style="width:18px;height:18px;color:#FFD700"></i>' : i === 1 ? '<i data-lucide="medal" style="width:18px;height:18px;color:#C0C0C0"></i>' : i === 2 ? '<i data-lucide="medal" style="width:18px;height:18px;color:#CD7F32"></i>' : `${i + 1}`;
       return `<div class="ranking-item ${e.isMe ? 'ranking-me' : ''}">
         <span class="ranking-pos">${medal}</span>
         <span class="ranking-name">${escapeHtml(e.nickname)}</span>

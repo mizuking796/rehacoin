@@ -34,12 +34,12 @@ const I18n = (() => {
       btnRecord: '記録',
       btnConfirmRecord: '記録する',
       btnCancel: 'やめる',
-      myRecord: '✏️ じぶんの記録',
+      myRecord: 'じぶんの記録',
       btnBack: '← 戻る',
 
       // History
       screenRecords: 'きろく',
-      tabRecords: '📊 記録',
+      tabRecords: '記録',
       totalCoins: '総コイン',
       today: '今日',
       streak: '連続',
@@ -79,7 +79,7 @@ const I18n = (() => {
       removeFriendConfirm: 'このフレンドを削除しますか？',
       friendAdded: 'フレンドになりました！',
       friendRequestSent: 'フレンド申請を送信しました！',
-      witnessConfirm: '👁️ 確認しました！',
+      witnessConfirm: '確認しました！',
       witnessBonus: '+1 ボーナスコイン',
       feedActivityRecorded: '活動を記録',
 
@@ -94,7 +94,7 @@ const I18n = (() => {
       noRewards: 'ご褒美を追加しよう！\n「50コインでカフェ」「100コインで映画」など',
       btnExchange: '交換',
       spendConfirm: 'コインを使って交換しますか？',
-      exchanged: '🎉 ご褒美と交換しました！',
+      exchanged: 'ご褒美と交換しました！',
       deleteRewardConfirm: 'このご褒美を削除しますか？',
       coin: 'コイン',
 
@@ -151,7 +151,7 @@ const I18n = (() => {
       privacyPolicy: 'プライバシーポリシー',
       privacyAgree: 'に同意する',
       privacyRequired: 'プライバシーポリシーへの同意が必要です',
-      cheerSent: '💪 頑張れ！を送りました',
+      cheerSent: '頑張れ！を送りました',
     },
 
     en: {
@@ -181,11 +181,11 @@ const I18n = (() => {
       btnRecord: 'Record',
       btnConfirmRecord: 'Record it',
       btnCancel: 'Cancel',
-      myRecord: '✏️ My Record',
+      myRecord: 'My Record',
       btnBack: '← Back',
 
       screenRecords: 'Records',
-      tabRecords: '📊 Records',
+      tabRecords: 'Records',
       totalCoins: 'Total Coins',
       today: 'Today',
       streak: 'Streak',
@@ -224,7 +224,7 @@ const I18n = (() => {
       removeFriendConfirm: 'Remove this friend?',
       friendAdded: 'Friend added!',
       friendRequestSent: 'Friend request sent!',
-      witnessConfirm: '👁️ Witnessed!',
+      witnessConfirm: 'Witnessed!',
       witnessBonus: '+1 bonus coin',
       feedActivityRecorded: 'Activity recorded',
 
@@ -238,7 +238,7 @@ const I18n = (() => {
       noRewards: 'Add rewards!\n"50 coins for coffee" etc.',
       btnExchange: 'Exchange',
       spendConfirm: 'Spend coins to exchange?',
-      exchanged: '🎉 Exchanged!',
+      exchanged: 'Exchanged!',
       deleteRewardConfirm: 'Delete this reward?',
       coin: 'coin',
 
@@ -289,7 +289,7 @@ const I18n = (() => {
       privacyPolicy: 'Privacy Policy',
       privacyAgree: ' - I agree',
       privacyRequired: 'You must agree to the Privacy Policy',
-      cheerSent: '💪 Cheer sent!',
+      cheerSent: 'Cheer sent!',
     }
   };
 
