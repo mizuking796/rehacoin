@@ -726,7 +726,7 @@ const App = (() => {
     if (favorites.length === 0) { section.hidden = true; return; }
     section.hidden = false;
     list.innerHTML = favorites.map(act => `
-      <div class="favorite-chip" data-id="${act.id}"><span class="fav-icon">${act.icon}</span><span class="fav-label">${escapeHtml(act.label)}</span></div>
+      <div class="favorite-chip" data-id="${act.id}"><span class="fav-icon">${getCategoryIconFromAct(act, 16)}</span><span class="fav-label">${escapeHtml(act.label)}</span></div>
     `).join('');
     list.querySelectorAll('.favorite-chip').forEach(chip => {
       chip.addEventListener('click', async () => {
