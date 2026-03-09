@@ -25,7 +25,7 @@
 - [x] Friend ranking (total coins leaderboard)
 - [x] Daily gacha (card flip + rarity glow + 4 tiers)
 - [x] Daily missions (3 random objectives per day + coin rewards)
-- [ ] Coin history timeline (unified log) — requires Worker API
+- [x] Coin history timeline (unified log) — Worker API + UI completed
 
 ## Animation Library
 - canvas-confetti (6KB) - only external dependency
