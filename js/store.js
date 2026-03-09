@@ -326,35 +326,35 @@ const Store = (() => {
   // --- Badges ---
   const BADGES = [
     // Milestone badges
-    { id: 'b1', coins: 10, icon: '🥉', label: 'はじめの一歩', labelEn: 'First Steps' },
-    { id: 'b2', coins: 50, icon: '🥈', label: '習慣マスター', labelEn: 'Habit Master' },
-    { id: 'b3', coins: 100, icon: '🥇', label: 'リハビリスト', labelEn: 'Rehabist' },
-    { id: 'b4', coins: 250, icon: '💎', label: 'ゴールドリハビリスト', labelEn: 'Gold Rehabist' },
-    { id: 'b5', coins: 500, icon: '👑', label: 'プラチナリハビリスト', labelEn: 'Platinum Rehabist' },
-    { id: 'b6', coins: 1000, icon: '🏆', label: 'レジェンド', labelEn: 'Legend' },
+    { id: 'b1', coins: 10, icon: 'award', iconColor: '#CD7F32', label: 'はじめの一歩', labelEn: 'First Steps' },
+    { id: 'b2', coins: 50, icon: 'award', iconColor: '#C0C0C0', label: '習慣マスター', labelEn: 'Habit Master' },
+    { id: 'b3', coins: 100, icon: 'award', iconColor: '#FFD700', label: 'リハビリスト', labelEn: 'Rehabist' },
+    { id: 'b4', coins: 250, icon: 'gem', iconColor: '#00BCD4', label: 'ゴールドリハビリスト', labelEn: 'Gold Rehabist' },
+    { id: 'b5', coins: 500, icon: 'crown', iconColor: '#FFD700', label: 'プラチナリハビリスト', labelEn: 'Platinum Rehabist' },
+    { id: 'b6', coins: 1000, icon: 'trophy', iconColor: '#FFD700', label: 'レジェンド', labelEn: 'Legend' },
     // Streak badges
-    { id: 's3', streak: 3, icon: '🔥', label: '3日連続', labelEn: '3 Day Streak' },
-    { id: 's7', streak: 7, icon: '🔥', label: '1週間連続', labelEn: '7 Day Streak' },
-    { id: 's30', streak: 30, icon: '🔥', label: '1ヶ月連続', labelEn: '30 Day Streak' },
-    { id: 's100', streak: 100, icon: '🔥', label: '100日連続', labelEn: '100 Day Streak' },
+    { id: 's3', streak: 3, icon: 'flame', iconColor: '#FF9800', label: '3日連続', labelEn: '3 Day Streak' },
+    { id: 's7', streak: 7, icon: 'flame', iconColor: '#FF5722', label: '1週間連続', labelEn: '7 Day Streak' },
+    { id: 's30', streak: 30, icon: 'flame', iconColor: '#F44336', label: '1ヶ月連続', labelEn: '30 Day Streak' },
+    { id: 's100', streak: 100, icon: 'flame', iconColor: '#E91E63', label: '100日連続', labelEn: '100 Day Streak' },
     // Activity count badges
-    { id: 'a10', records: 10, icon: '📝', label: '10回記録', labelEn: '10 Records' },
-    { id: 'a50', records: 50, icon: '📝', label: '50回記録', labelEn: '50 Records' },
-    { id: 'a100', records: 100, icon: '📝', label: '100回記録', labelEn: '100 Records' },
-    { id: 'a500', records: 500, icon: '📝', label: '500回記録', labelEn: '500 Records' },
+    { id: 'a10', records: 10, icon: 'file-text', iconColor: '#0D9488', label: '10回記録', labelEn: '10 Records' },
+    { id: 'a50', records: 50, icon: 'file-text', iconColor: '#0D9488', label: '50回記録', labelEn: '50 Records' },
+    { id: 'a100', records: 100, icon: 'file-text', iconColor: '#0D9488', label: '100回記録', labelEn: '100 Records' },
+    { id: 'a500', records: 500, icon: 'file-text', iconColor: '#0D9488', label: '500回記録', labelEn: '500 Records' },
     // Social badges
-    { id: 'f1', friends: 1, icon: '🤝', label: '初めてのフレンド', labelEn: 'First Friend' },
-    { id: 'f5', friends: 5, icon: '🤝', label: '5人のフレンド', labelEn: '5 Friends' },
+    { id: 'f1', friends: 1, icon: 'handshake', iconColor: '#FFD700', label: '初めてのフレンド', labelEn: 'First Friend' },
+    { id: 'f5', friends: 5, icon: 'handshake', iconColor: '#FFD700', label: '5人のフレンド', labelEn: '5 Friends' },
     // Witness badges
-    { id: 'w1', witness: 1, icon: '👁️', label: '初めての応援', labelEn: 'First Cheer' },
-    { id: 'w10', witness: 10, icon: '👁️', label: '10回応援', labelEn: '10 Cheers' },
-    { id: 'w50', witness: 50, icon: '👁️', label: '応援マスター', labelEn: 'Cheer Master' },
+    { id: 'w1', witness: 1, icon: 'eye', iconColor: '#9C27B0', label: '初めての応援', labelEn: 'First Cheer' },
+    { id: 'w10', witness: 10, icon: 'eye', iconColor: '#9C27B0', label: '10回応援', labelEn: '10 Cheers' },
+    { id: 'w50', witness: 50, icon: 'eye', iconColor: '#9C27B0', label: '応援マスター', labelEn: 'Cheer Master' },
     // Seasonal badges (active during specific months)
-    { id: 'spring', seasonal: [3, 4, 5], icon: '🌸', label: '春のリハビリスト', labelEn: 'Spring Rehabist' },
-    { id: 'summer', seasonal: [6, 7, 8], icon: '🌻', label: '夏のリハビリスト', labelEn: 'Summer Rehabist' },
-    { id: 'autumn', seasonal: [9, 10, 11], icon: '🍂', label: '秋のリハビリスト', labelEn: 'Autumn Rehabist' },
-    { id: 'winter', seasonal: [12, 1, 2], icon: '❄️', label: '冬のリハビリスト', labelEn: 'Winter Rehabist' },
-    { id: 'newyear', seasonal: [1], icon: '🎍', label: '新年リハビラー', labelEn: 'New Year Rehabber' },
+    { id: 'spring', seasonal: [3, 4, 5], icon: 'flower-2', iconColor: '#F48FB1', label: '春のリハビリスト', labelEn: 'Spring Rehabist' },
+    { id: 'summer', seasonal: [6, 7, 8], icon: 'sun', iconColor: '#FF9800', label: '夏のリハビリスト', labelEn: 'Summer Rehabist' },
+    { id: 'autumn', seasonal: [9, 10, 11], icon: 'leaf', iconColor: '#FF7043', label: '秋のリハビリスト', labelEn: 'Autumn Rehabist' },
+    { id: 'winter', seasonal: [12, 1, 2], icon: 'snowflake', iconColor: '#64B5F6', label: '冬のリハビリスト', labelEn: 'Winter Rehabist' },
+    { id: 'newyear', seasonal: [1], icon: 'sparkles', iconColor: '#FFD700', label: '新年リハビラー', labelEn: 'New Year Rehabber' },
   ];
 
   function _isBadgeUnlocked(b) {

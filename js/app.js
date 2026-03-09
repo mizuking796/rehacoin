@@ -850,7 +850,7 @@ const App = (() => {
     el.innerHTML = `
       <div class="badge-reveal-card">
         <div class="badge-reveal-label">${ja ? 'バッジ獲得！' : 'Badge Unlocked!'}</div>
-        <div class="badge-reveal-icon">${badge.icon}</div>
+        <div class="badge-reveal-icon"><i data-lucide="${badge.icon}" style="width:64px;height:64px;color:${badge.iconColor || '#FFD700'}"></i></div>
         <div class="badge-reveal-name">${ja ? badge.label : badge.labelEn}</div>
       </div>`;
     document.body.appendChild(el);
@@ -1457,7 +1457,7 @@ const App = (() => {
       else if (b.records) condLabel = ja2 ? `${b.records}回記録` : `${b.records} records`;
       else if (b.friends) condLabel = ja2 ? `${b.friends}人のフレンド` : `${b.friends} friends`;
       else if (b.witness) condLabel = ja2 ? `${b.witness}回応援` : `${b.witness} cheers`;
-      return `<div class="badge-card ${b.unlocked ? '' : 'locked'}"><span class="badge-icon">${b.icon}</span><span class="badge-label">${ja2 ? b.label : b.labelEn}</span><span class="badge-coins">${condLabel}</span></div>`;
+      return `<div class="badge-card ${b.unlocked ? '' : 'locked'}"><span class="badge-icon"><i data-lucide="${b.icon}" style="width:32px;height:32px;color:${b.iconColor || 'var(--accent)'}"></i></span><span class="badge-label">${ja2 ? b.label : b.labelEn}</span><span class="badge-coins">${condLabel}</span></div>`;
     }).join('');
 
     const rewardList = document.getElementById('reward-list');
