@@ -252,6 +252,8 @@ const App = (() => {
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => showScreen(btn.dataset.screen));
     });
+    const homeLink = document.getElementById('header-home-link');
+    if (homeLink) homeLink.addEventListener('click', () => showScreen('screen-home'));
   }
 
 
