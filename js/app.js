@@ -1576,6 +1576,40 @@ const App = (() => {
   function getCurrentTheme() {
     return localStorage.getItem('rehacoin_current_theme') || 'default';
   }
+  // Theme mascot characters (inline SVG data URIs)
+  const THEME_MASCOTS = {
+    'sakura': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="35" r="22" fill="%23FFB6C1"/><circle cx="33" cy="30" r="3" fill="%23333"/><circle cx="47" cy="30" r="3" fill="%23333"/><path d="M35 38 Q40 44 45 38" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><circle cx="27" cy="36" r="5" fill="%23FF69B4" opacity="0.3"/><circle cx="53" cy="36" r="5" fill="%23FF69B4" opacity="0.3"/><path d="M30 15 Q35 5 40 15" fill="%23E91E63" opacity="0.6"/><path d="M40 13 Q45 3 50 13" fill="%23E91E63" opacity="0.6"/><path d="M25 18 Q28 8 33 16" fill="%23E91E63" opacity="0.4"/><path d="M47 16 Q52 6 55 18" fill="%23E91E63" opacity="0.4"/></svg>`,
+    'ocean': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><ellipse cx="40" cy="38" rx="22" ry="20" fill="%234DD0E1"/><circle cx="33" cy="33" r="3.5" fill="%23333"/><circle cx="47" cy="33" r="3.5" fill="%23333"/><circle cx="33" cy="32" r="1.5" fill="%23FFF"/><circle cx="47" cy="32" r="1.5" fill="%23FFF"/><path d="M36 42 Q40 47 44 42" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><path d="M18 38 L12 28 L18 33" fill="%234DD0E1"/><path d="M62 38 L68 28 L62 33" fill="%234DD0E1"/><ellipse cx="40" cy="58" rx="12" ry="3" fill="%230097A7" opacity="0.15"/></svg>`,
+    'forest': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="20" ry="18" fill="%2381C784"/><circle cx="34" cy="37" r="3" fill="%23333"/><circle cx="46" cy="37" r="3" fill="%23333"/><path d="M37 44 Q40 48 43 44" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><path d="M30 26 L34 16 L38 26" fill="%234CAF50"/><path d="M42 26 L46 14 L50 26" fill="%23388E3C"/><path d="M36 28 L40 19 L44 28" fill="%2366BB6A"/><circle cx="26" cy="48" r="4" fill="%23A5D6A7" opacity="0.5"/><circle cx="54" cy="46" r="3" fill="%23C8E6C9" opacity="0.5"/></svg>`,
+    'night': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="22" fill="%23B39DDB"/><circle cx="33" cy="33" r="3.5" fill="%23333"/><circle cx="47" cy="33" r="3.5" fill="%23333"/><circle cx="34" cy="32" r="1.5" fill="%23FFF"/><circle cx="48" cy="32" r="1.5" fill="%23FFF"/><path d="M36 42 Q40 46 44 42" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><path d="M18 18 L20 12 L22 18 L28 20 L22 22 L20 28 L18 22 L12 20Z" fill="%23FDD835" opacity="0.7"/><path d="M58 14 L59 11 L60 14 L63 15 L60 16 L59 19 L58 16 L55 15Z" fill="%23FDD835" opacity="0.5"/><path d="M62 42 Q56 50 62 58 Q72 50 62 42Z" fill="%23FDD835" opacity="0.25"/></svg>`,
+    'sunset': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="22" fill="%23FFCC80"/><circle cx="33" cy="33" r="3" fill="%23333"/><circle cx="47" cy="33" r="3" fill="%23333"/><path d="M35 42 Q40 47 45 42" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><circle cx="27" cy="38" r="4" fill="%23FF8A65" opacity="0.3"/><circle cx="53" cy="38" r="4" fill="%23FF8A65" opacity="0.3"/><circle cx="40" cy="10" r="8" fill="%23FF6D00" opacity="0.3"/><path d="M40 2 L40 6 M32 5 L35 8 M48 5 L45 8" stroke="%23FFB74D" stroke-width="1.5" opacity="0.4"/></svg>`,
+    'tropical': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="18" ry="20" fill="%23FFCC80"/><circle cx="34" cy="37" r="3" fill="%23333"/><circle cx="46" cy="37" r="3" fill="%23333"/><path d="M37 45 Q40 50 43 45" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round"/><path d="M26 22 Q18 8 12 22" fill="%2300BFA5" opacity="0.7"/><path d="M30 19 Q24 5 18 17" fill="%2326A69A" opacity="0.5"/><path d="M54 22 Q62 8 68 22" fill="%2300BFA5" opacity="0.7"/><path d="M50 19 Q56 5 62 17" fill="%2326A69A" opacity="0.5"/><circle cx="40" cy="16" r="6" fill="%23FF7043" opacity="0.6"/><circle cx="40" cy="16" r="2.5" fill="%23FF5722" opacity="0.6"/></svg>`,
+    'space': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="18" fill="%2390CAF9"/><circle cx="40" cy="38" r="15" fill="%23E3F2FD"/><circle cx="34" cy="35" r="3.5" fill="%231A237E"/><circle cx="46" cy="35" r="3.5" fill="%231A237E"/><circle cx="35" cy="34" r="1.5" fill="%23FFF"/><circle cx="47" cy="34" r="1.5" fill="%23FFF"/><path d="M37 42 Q40 46 43 42" fill="none" stroke="%231A237E" stroke-width="2" stroke-linecap="round"/><ellipse cx="40" cy="38" rx="28" ry="5" fill="none" stroke="%23FFB74D" stroke-width="2" opacity="0.35" transform="rotate(-15 40 38)"/><circle cx="15" cy="15" r="2.5" fill="%23FFF59D"/><circle cx="65" cy="12" r="2" fill="%23FFF59D"/><circle cx="60" cy="60" r="1.5" fill="%23FFF59D"/><path d="M10 55 L12 49 L14 55 L20 57 L14 59 L12 65 L10 59 L4 57Z" fill="%23FFF59D" opacity="0.5"/></svg>`,
+    'candy': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="22" fill="%23F8BBD0"/><circle cx="33" cy="33" r="3.5" fill="%23333"/><circle cx="47" cy="33" r="3.5" fill="%23333"/><path d="M34 42 Q40 50 46 42" fill="%23E91E63" opacity="0.2"/><path d="M34 42 Q40 48 46 42" fill="none" stroke="%23333" stroke-width="2"/><circle cx="16" cy="18" r="7" fill="%23FF4081" opacity="0.5"/><circle cx="16" cy="18" r="4" fill="%23FF80AB" opacity="0.5"/><circle cx="64" cy="20" r="6" fill="%2300BCD4" opacity="0.5"/><circle cx="64" cy="20" r="3" fill="%2380DEEA" opacity="0.5"/><rect x="12" y="55" width="14" height="6" rx="3" fill="%23CE93D8" opacity="0.5"/><circle cx="60" cy="58" r="5" fill="%23FFD740" opacity="0.5"/><circle cx="60" cy="58" r="2.5" fill="%23FFF176" opacity="0.5"/></svg>`,
+    'retro': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect x="22" y="18" width="36" height="36" rx="2" fill="%2376FF03"/><rect x="26" y="22" width="28" height="28" fill="%231A1A2E"/><rect x="31" y="29" width="5" height="5" fill="%2376FF03"/><rect x="44" y="29" width="5" height="5" fill="%2376FF03"/><rect x="33" y="40" width="14" height="3" fill="%2376FF03"/><rect x="18" y="60" width="7" height="7" fill="%23FF1744" opacity="0.7"/><rect x="55" y="60" width="7" height="7" fill="%23FFEA00" opacity="0.7"/><rect x="36" y="60" width="7" height="7" fill="%2300E5FF" opacity="0.7"/></svg>`,
+    'zen': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="20" fill="%23D7CCC8"/><circle cx="35" cy="35" r="2.5" fill="%235D4037"/><circle cx="45" cy="35" r="2.5" fill="%235D4037"/><path d="M38 42 Q40 44 42 42" fill="none" stroke="%235D4037" stroke-width="1.5" stroke-linecap="round"/><circle cx="40" cy="68" r="8" fill="none" stroke="%23A1887F" stroke-width="0.8" opacity="0.4"/><circle cx="40" cy="68" r="5" fill="none" stroke="%23A1887F" stroke-width="0.8" opacity="0.3"/><path d="M16 60 Q20 45 24 60" fill="%2381C784" opacity="0.35"/><path d="M20 60 Q24 42 28 60" fill="%23A5D6A7" opacity="0.3"/><circle cx="58" cy="55" r="4" fill="%23BCAAA4" opacity="0.35"/><circle cx="64" cy="59" r="3" fill="%23D7CCC8" opacity="0.35"/><circle cx="60" cy="63" r="2" fill="%23EFEBE9" opacity="0.35"/></svg>`,
+    'aurora': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="38" r="20" fill="%2380DEEA"/><circle cx="40" cy="38" r="17" fill="%23E0F7FA"/><circle cx="34" cy="35" r="3" fill="%23006064"/><circle cx="46" cy="35" r="3" fill="%23006064"/><circle cx="35" cy="34" r="1.2" fill="%23FFF"/><circle cx="47" cy="34" r="1.2" fill="%23FFF"/><path d="M37 42 Q40 46 43 42" fill="none" stroke="%23006064" stroke-width="2" stroke-linecap="round"/><path d="M8 65 Q18 30 28 50 Q38 70 48 35 Q58 5 68 40 Q75 60 78 55" fill="none" stroke="%2300E5FF" stroke-width="2.5" opacity="0.25"/><path d="M5 70 Q15 40 25 55 Q35 70 45 40 Q55 10 65 45" fill="none" stroke="%2376FF03" stroke-width="2" opacity="0.15"/></svg>`,
+    'cafe': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><path d="M22 60 Q22 32 30 32 L50 32 Q58 32 58 60Z" fill="%238D6E63"/><ellipse cx="40" cy="32" rx="20" ry="5" fill="%23A1887F"/><path d="M58 40 Q68 40 68 48 Q68 56 58 56" fill="none" stroke="%238D6E63" stroke-width="3"/><path d="M30 26 Q34 14 38 26" fill="none" stroke="%23D7CCC8" stroke-width="2" opacity="0.5"/><path d="M38 23 Q42 8 46 23" fill="none" stroke="%23D7CCC8" stroke-width="2" opacity="0.5"/><path d="M46 26 Q50 14 54 26" fill="none" stroke="%23D7CCC8" stroke-width="2" opacity="0.5"/><circle cx="40" cy="46" r="4" fill="%23FFF" opacity="0.1"/></svg>`,
+    'neon': `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect x="20" y="16" width="40" height="44" rx="5" fill="none" stroke="%23FF1744" stroke-width="2" opacity="0.7"/><rect x="25" y="21" width="30" height="14" fill="%23FF1744" opacity="0.12"/><circle cx="33" cy="40" r="4" fill="%2300E5FF" opacity="0.9"/><circle cx="47" cy="40" r="4" fill="%2300E5FF" opacity="0.9"/><circle cx="33" cy="39" r="1.5" fill="%23FFF" opacity="0.6"/><circle cx="47" cy="39" r="1.5" fill="%23FFF" opacity="0.6"/><path d="M35 50 Q40 55 45 50" fill="none" stroke="%23E040FB" stroke-width="2.5" stroke-linecap="round"/><rect x="8" y="8" width="10" height="16" rx="2" fill="none" stroke="%23FFEA00" stroke-width="1" opacity="0.35"/><rect x="62" y="10" width="12" height="20" rx="2" fill="none" stroke="%23E040FB" stroke-width="1" opacity="0.35"/><line x1="10" y1="68" x2="70" y2="68" stroke="%2376FF03" stroke-width="1.5" opacity="0.35"/></svg>`,
+  };
+
+  // Floating decoration particles per theme
+  const THEME_PARTICLES = {
+    'sakura': { emoji: '🌸', count: 6, animation: 'float-fall' },
+    'ocean': { emoji: '🫧', count: 5, animation: 'float-rise' },
+    'forest': { emoji: '🍃', count: 4, animation: 'float-fall' },
+    'night': { emoji: '✨', count: 6, animation: 'float-twinkle' },
+    'sunset': { emoji: '🌅', count: 0 },
+    'tropical': { emoji: '🌺', count: 5, animation: 'float-fall' },
+    'space': { emoji: '⭐', count: 8, animation: 'float-twinkle' },
+    'candy': { emoji: '🍬', count: 5, animation: 'float-fall' },
+    'retro': { emoji: '👾', count: 4, animation: 'float-fall' },
+    'zen': { emoji: '🍂', count: 3, animation: 'float-fall' },
+    'aurora': { emoji: '❄️', count: 5, animation: 'float-fall' },
+    'cafe': { emoji: '☕', count: 0 },
+    'neon': { emoji: '💜', count: 4, animation: 'float-rise' },
+  };
+
   function applyTheme(id) {
     const theme = THEMES.find(t => t.id === id);
     if (!theme) return;
@@ -1590,8 +1624,53 @@ const App = (() => {
     root.style.setProperty('--text-muted', theme.textMuted || '#65676B');
     root.style.setProperty('--border', theme.border || '#E4E6EB');
     root.style.setProperty('--radius', theme.radius || '14px');
+    root.style.setProperty('--border-light', theme.bg);
     document.getElementById('app-header').style.background =
       `linear-gradient(135deg, ${theme.accent} 0%, ${adjustColor(theme.accent, 30)} 100%)`;
+    // Update mascot
+    updateThemeMascot(id);
+    // Update floating particles
+    updateThemeParticles(id);
+  }
+
+  function updateThemeMascot(id) {
+    let el = document.getElementById('theme-mascot');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'theme-mascot';
+      document.body.appendChild(el);
+    }
+    const src = THEME_MASCOTS[id];
+    if (src) {
+      el.innerHTML = `<img src="${src}" alt="" width="64" height="64">`;
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+
+  function updateThemeParticles(id) {
+    let container = document.getElementById('theme-particles');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'theme-particles';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = '';
+    const p = THEME_PARTICLES[id];
+    if (!p || !p.count) return;
+    for (let i = 0; i < p.count; i++) {
+      const span = document.createElement('span');
+      span.className = 'theme-particle';
+      span.textContent = p.emoji;
+      span.style.left = `${Math.random() * 90 + 5}%`;
+      span.style.animationDelay = `${Math.random() * 8}s`;
+      span.style.animationDuration = `${6 + Math.random() * 6}s`;
+      span.style.fontSize = `${12 + Math.random() * 10}px`;
+      span.style.opacity = `${0.3 + Math.random() * 0.4}`;
+      if (p.animation) span.classList.add(p.animation);
+      container.appendChild(span);
+    }
   }
   function adjustColor(hex, amount) {
     const num = parseInt(hex.replace('#', ''), 16);
@@ -1752,10 +1831,13 @@ const App = (() => {
       const premiumTag = t.premium ? `<span class="theme-premium-tag">PREMIUM</span>` : '';
       const costBadge = t.cost === 0 ? `<span class="theme-free-badge">FREE</span>` : `<span class="theme-cost-badge"><img src="img/coin.svg" width="10" height="10"> ${t.cost}</span>`;
 
+      const mascotSrc = THEME_MASCOTS[t.id] || '';
+      const mascotImg = mascotSrc ? `<img src="${mascotSrc}" alt="" style="position:absolute;right:4px;bottom:0;width:40px;height:40px">` : '';
       return `<div class="theme-card ${isCurrent ? 'theme-current' : ''}">
         ${premiumTag}
         <div class="theme-preview" style="background:${t.bg};border-top:3px solid ${t.accent}">
           <div style="width:100%;height:100%;background:linear-gradient(135deg, ${t.accent} 0%, ${adjustColor(t.accent, 40)} 100%);opacity:0.15;border-radius:inherit"></div>
+          ${mascotImg}
         </div>
         <div class="theme-name">${ja ? t.label : t.labelEn}</div>
         ${desc ? `<div class="theme-desc">${desc}</div>` : ''}

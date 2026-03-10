@@ -3791,3 +3791,78 @@ select:focus-visible {
   border-radius: 6px;
   margin-bottom: 4px;
 }
+
+/* ============================================
+   Theme Mascot & Floating Particles
+   ============================================ */
+
+/* Mascot character - bottom right of screen */
+#theme-mascot {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 12px);
+  right: 12px;
+  z-index: 10;
+  pointer-events: none;
+  animation: mascot-bounce 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  transition: opacity 0.3s;
+}
+#theme-mascot img {
+  display: block;
+}
+
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Floating particles container */
+#theme-particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.theme-particle {
+  position: absolute;
+  top: -30px;
+  animation: particle-fall 8s linear infinite;
+}
+
+/* Fall animation (sakura, forest, candy, tropical, retro, zen, aurora) */
+.theme-particle.float-fall {
+  animation-name: particle-fall;
+}
+@keyframes particle-fall {
+  0% { top: -5%; transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(15px) rotate(90deg); }
+  50% { transform: translateX(-10px) rotate(180deg); }
+  75% { transform: translateX(20px) rotate(270deg); }
+  100% { top: 105%; transform: translateX(5px) rotate(360deg); }
+}
+
+/* Rise animation (ocean, neon) */
+.theme-particle.float-rise {
+  top: auto;
+  bottom: -5%;
+  animation-name: particle-rise;
+}
+@keyframes particle-rise {
+  0% { bottom: -5%; transform: translateX(0) scale(0.8); opacity: 0.6; }
+  50% { transform: translateX(15px) scale(1); opacity: 0.4; }
+  100% { bottom: 105%; transform: translateX(-10px) scale(0.6); opacity: 0; }
+}
+
+/* Twinkle animation (night, space) */
+.theme-particle.float-twinkle {
+  animation-name: particle-twinkle;
+}
+@keyframes particle-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  25% { opacity: 0.7; transform: scale(1.1); top: 10%; }
+  50% { opacity: 0.3; transform: scale(0.9); top: 50%; }
+  75% { opacity: 0.8; transform: scale(1.2); top: 70%; }
+}
