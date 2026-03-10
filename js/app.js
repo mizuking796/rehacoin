@@ -605,9 +605,9 @@ const App = (() => {
       btn.addEventListener('click', async () => {
         const ja = I18n.getLang() === 'ja';
         const currentLabel = btn.dataset.label;
-        const newLabel = prompt(ja ? '活動名を編集' : 'Edit activity name', currentLabel);
-        if (!newLabel || newLabel.trim() === '' || newLabel.trim() === currentLabel) return;
-        const res = await Store.updateRecord(btn.dataset.id, newLabel.trim());
+        const newLabel = await showPrompt(ja ? '活動名を編集' : 'Edit activity name', currentLabel, { icon: 'pencil' });
+        if (!newLabel || newLabel === currentLabel) return;
+        const res = await Store.updateRecord(btn.dataset.id, newLabel);
         if (res.error) { showToast(res.error); return; }
         showToast(ja ? '更新しました' : 'Updated');
         renderHome();
@@ -995,6 +995,44 @@ const App = (() => {
       cancel.addEventListener('click', () => cleanup(false), { once: true });
       // Close on backdrop click
       modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); }, { once: true });
+    });
+  }
+
+  function showPrompt(title, defaultValue, opts = {}) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirm-modal');
+      const textEl = document.getElementById('confirm-text');
+      const iconEl = document.getElementById('confirm-icon');
+      iconEl.innerHTML = opts.icon ? '<i data-lucide="' + opts.icon + '" style="width:36px;height:36px;color:var(--accent)"></i>' : '';
+      textEl.innerHTML = '';
+      const label = document.createElement('div');
+      label.textContent = title;
+      label.style.cssText = 'margin-bottom:8px;font-weight:600;';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = defaultValue || '';
+      input.style.cssText = 'width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.95rem;background:var(--bg);color:var(--text);outline:none;';
+      input.maxLength = 200;
+      textEl.appendChild(label);
+      textEl.appendChild(input);
+      const ok = document.getElementById('confirm-ok');
+      const cancel = document.getElementById('confirm-cancel');
+      ok.textContent = opts.okText || (I18n.getLang() === 'ja' ? '保存' : 'Save');
+      cancel.textContent = I18n.t('btnCancel');
+      ok.classList.remove('confirm-danger');
+      modal.hidden = false;
+      input.focus();
+      input.select();
+      function cleanup(result) {
+        modal.hidden = true;
+        ok.replaceWith(ok.cloneNode(true));
+        cancel.replaceWith(cancel.cloneNode(true));
+        resolve(result);
+      }
+      ok.addEventListener('click', () => { const v = input.value.trim(); cleanup(v || null); }, { once: true });
+      cancel.addEventListener('click', () => cleanup(null), { once: true });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { const v = input.value.trim(); cleanup(v || null); } });
+      modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(null); }, { once: true });
     });
   }
 
