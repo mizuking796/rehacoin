@@ -410,7 +410,7 @@ const App = (() => {
 
   const REACTIONS = [
     { type: 'like', emoji: '👍', lucide: 'thumbs-up', label: 'いいね！', labelEn: 'Like' },
-    { type: 'cheer', emoji: '💪', lucide: 'biceps-flexed', label: '頑張ったね！', labelEn: 'Great job!' },
+    { type: 'cheer', emoji: '💪', lucide: 'dumbbell', label: '頑張ったね！', labelEn: 'Great job!' },
     { type: 'empathy', emoji: '🤝', lucide: 'handshake', label: 'わかるよ！', labelEn: 'I get you!' },
     { type: 'amazing', emoji: '👏', lucide: 'party-popper', label: 'すごい！', labelEn: 'Amazing!' },
   ];
