@@ -96,10 +96,21 @@ const Store = (() => {
     const res = await API.deleteRecord(id);
     if (res.error) return res;
     _records = _records.filter(r => r.id !== id);
+    _feed = _feed.filter(f => f.id !== id);
     if (_profile) {
       _profile.totalCoins--;
       _profile.balance--;
     }
+    return { ok: true };
+  }
+
+  async function updateRecord(id, label) {
+    const res = await API.updateRecord(id, label);
+    if (res.error) return res;
+    const rec = _records.find(r => r.id === id);
+    if (rec) rec.label = label;
+    const feedItem = _feed.find(f => f.id === id);
+    if (feedItem) feedItem.label = label;
     return { ok: true };
   }
 
@@ -462,7 +473,7 @@ const Store = (() => {
   }
 
   return {
-    loadAll, getRecords, addRecord, deleteRecord, getCoinHistory,
+    loadAll, getRecords, addRecord, deleteRecord, updateRecord, getCoinHistory,
     getTotalCoins, getTodayCount, getStreak,
     getRecentRecords, getFrequentActivities,
     getMonthlyCounts, getActivityMonthlyCounts, getTopCategory,

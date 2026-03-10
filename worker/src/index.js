@@ -89,6 +89,10 @@ export default {
         const id = path.split('/')[2];
         return json(await deleteRecord(env, user, id), headers);
       }
+      if (path.match(/^\/records\/[^/]+$/) && method === 'PATCH') {
+        const id = path.split('/')[2];
+        return json(await updateRecord(env, user, id, await request.json()), headers);
+      }
 
       // Rewards
       if (path === '/rewards' && method === 'GET') {
@@ -490,6 +494,15 @@ async function deleteRecord(env, user, id) {
   if (!rec) return { error: 'Record not found' };
   await env.DB.prepare('DELETE FROM records WHERE id = ?').bind(id).run();
   return { ok: true };
+}
+
+async function updateRecord(env, user, id, body) {
+  const rec = await env.DB.prepare('SELECT * FROM records WHERE id = ? AND user_id = ?').bind(id, user.id).first();
+  if (!rec) return { error: 'Record not found' };
+  const label = (body.label || '').trim();
+  if (!label || label.length > 200) return { error: 'Invalid label' };
+  await env.DB.prepare('UPDATE records SET label = ? WHERE id = ? AND user_id = ?').bind(label, id, user.id).run();
+  return { ok: true, label };
 }
 
 // --- Rewards ---

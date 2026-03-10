@@ -67,7 +67,7 @@ const App = (() => {
     bindSearch();
     bindFreeInput();
     bindSettings();
-    bindHistoryTabs();
+    // History tabs removed — stats + coin history shown inline
     bindExchange();
     bindProfileTabs();
     bindFriends();
@@ -475,10 +475,12 @@ const App = (() => {
       ? (I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn)
       : (I18n.getLang() === 'ja' ? 'いいね！' : 'Like');
 
-    // Own posts: show reactions received but no reaction buttons
+    // Own posts: show reactions received + edit/delete actions
+    const ja = I18n.getLang() === 'ja';
     let reactionBar = '';
     if (item.isOwn) {
-      reactionBar = reactionSummaryHtml ? `<div class="reaction-bar">${reactionSummaryHtml}</div>` : '';
+      const ownActions = `<div class="feed-own-actions"><button class="feed-edit-btn" data-id="${item.id}" data-label="${escapeHtml(item.label || '')}">${ja ? '編集' : 'Edit'}</button><button class="feed-delete-btn" data-id="${item.id}">${ja ? '削除' : 'Delete'}</button></div>`;
+      reactionBar = `<div class="reaction-bar">${reactionSummaryHtml}${ownActions}</div>`;
     } else {
       reactionBar = `
         <div class="reaction-bar" data-id="${item.id}">
@@ -566,6 +568,35 @@ const App = (() => {
         const bar = btn.closest('.reaction-bar');
         bar.querySelector('.reaction-picker').hidden = true;
         await sendReaction(recordId, type, bar);
+      });
+    });
+
+    // Own post actions: delete & edit
+    container.querySelectorAll('.feed-delete-btn').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', async () => {
+        const ja = I18n.getLang() === 'ja';
+        if (!await showConfirm(ja ? 'このきろくをけしますか？' : 'Delete this record?', 'trash-2', { okText: ja ? '削除' : 'Delete', danger: true })) return;
+        const res = await Store.deleteRecord(btn.dataset.id);
+        if (res.error) { showToast(res.error); return; }
+        showToast(ja ? '削除しました' : 'Deleted');
+        renderHome(); updateHeaderCoins();
+      });
+    });
+
+    container.querySelectorAll('.feed-edit-btn').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', async () => {
+        const ja = I18n.getLang() === 'ja';
+        const currentLabel = btn.dataset.label;
+        const newLabel = prompt(ja ? '活動名を編集' : 'Edit activity name', currentLabel);
+        if (!newLabel || newLabel.trim() === '' || newLabel.trim() === currentLabel) return;
+        const res = await Store.updateRecord(btn.dataset.id, newLabel.trim());
+        if (res.error) { showToast(res.error); return; }
+        showToast(ja ? '更新しました' : 'Updated');
+        renderHome();
       });
     });
   }
@@ -1163,19 +1194,7 @@ const App = (() => {
   }
 
   // --- History ---
-  function renderHistory() { renderStats(); renderHistoryList(); _coinHistoryOffset = 0; renderCoinHistory(); }
-
-  function bindHistoryTabs() {
-    document.querySelectorAll('.history-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.history-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('#screen-history .tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-        if (tab.dataset.tab === 'coin-history') renderCoinHistory();
-      });
-    });
-  }
+  function renderHistory() { renderStats(); _coinHistoryOffset = 0; renderCoinHistory(); }
 
   function renderStats() {
     const container = document.getElementById('stats-summary');
@@ -1237,36 +1256,6 @@ const App = (() => {
       days.push({ label: dayLabels[d.getDay()], count });
     }
     return days;
-  }
-
-  function renderHistoryList() {
-    const container = document.getElementById('history-list');
-    const groups = Store.getRecordsByDate();
-    if (groups.length === 0) {
-      container.innerHTML = `<div class="history-empty">${I18n.t('noRecords')}</div>`;
-      return;
-    }
-    container.innerHTML = groups.map(group => {
-      const items = group.records.map(r => {
-        const time = new Date(r.timestamp);
-        const timeStr = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-        const witnessHtml = r.witnessed ? `<span class="hi-witnessed">${I18n.t('confirmed')}</span>` : '';
-        return `<div class="history-item"><span class="hi-icon">${getCategoryIcon(r.categoryCode, 18)}</span><span class="hi-label">${escapeHtml(r.label)}</span>${witnessHtml}<span class="hi-time">${timeStr}</span><button class="hi-delete" data-id="${r.id}">×</button></div>`;
-      }).join('');
-      return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
-    }).join('');
-    container.querySelectorAll('.hi-delete').forEach(btn => {
-      if (btn._bound) return;
-      btn._bound = true;
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (!await showConfirm(I18n.t('deleteRecordConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) return;
-        const res = await Store.deleteRecord(btn.dataset.id);
-        if (res.error) { showToast(res.error); return; }
-        const ja = I18n.getLang() === 'ja'; showToast(ja ? '削除しました' : 'Deleted');
-        renderHistory(); updateHeaderCoins();
-      });
-    });
   }
 
   // --- Coin History ---

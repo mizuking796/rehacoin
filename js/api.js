@@ -113,6 +113,10 @@ const API = (() => {
     return request(`/records/${id}`, 'DELETE');
   }
 
+  async function updateRecord(id, label) {
+    return request(`/records/${id}`, 'PATCH', { label });
+  }
+
   // --- Rewards ---
   async function getRewards() {
     return request('/rewards');
@@ -209,7 +213,7 @@ const API = (() => {
     isLoggedIn, getUser, logout,
     register, login, resetPassword, deleteAccount,
     getProfile, updateProfile,
-    getRecords, addRecord, deleteRecord,
+    getRecords, addRecord, deleteRecord, updateRecord,
     getRewards, addReward, deleteReward, exchangeReward,
     getFriends, getFeed, searchUsers, sendFriendRequest, sendFriendRequestById,
     getFriendRequests, acceptFriendRequest, rejectFriendRequest, removeFriend,
