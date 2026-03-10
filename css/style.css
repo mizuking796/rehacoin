@@ -3638,8 +3638,8 @@ select:focus-visible {
    ============================================ */
 
 /* Header illustration base */
+/* app-header illustration support (keep position:fixed from main rule) */
 #app-header {
-  position: relative;
   overflow: hidden;
 }
 #app-header::after {
@@ -3898,7 +3898,7 @@ select:focus-visible {
   transform: scale(0) translateY(20px);
   transform-origin: bottom right;
   opacity: 0;
-  transition: transform 0.3s var(--ease-bounce), opacity 0.2s;
+  transition: transform 0.35s var(--ease-bounce), opacity 0.3s ease;
   pointer-events: none;
 }
 #mascot-chat.open {

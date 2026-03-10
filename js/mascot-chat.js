@@ -157,7 +157,15 @@ const MascotChat = (() => {
 
   function closeChat() {
     isOpen = false;
-    if (chatEl) chatEl.classList.remove('open');
+    if (!chatEl) return;
+    // Fade out gently before closing
+    chatEl.style.opacity = '0.6';
+    chatEl.style.transform = 'scale(0.95) translateY(8px)';
+    setTimeout(() => {
+      chatEl.classList.remove('open');
+      chatEl.style.opacity = '';
+      chatEl.style.transform = '';
+    }, 300);
   }
 
   function getCurrentThemeId() {
