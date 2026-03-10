@@ -3540,11 +3540,18 @@ body {
 }
 
 .profile-tab-content {
-  display: none;
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
 
 .profile-tab-content.active {
-  display: block;
+  visibility: visible;
+  height: auto;
+  overflow: visible;
+  opacity: 1;
 }
 
 /* === Lucide icon spin for loader === */
@@ -3801,11 +3808,15 @@ select:focus-visible {
   position: fixed;
   bottom: calc(var(--nav-height) + 12px);
   right: 12px;
-  z-index: 10;
-  pointer-events: none;
+  z-index: 50;
+  pointer-events: auto;
+  cursor: pointer;
   animation: mascot-bounce 3s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-  transition: opacity 0.3s;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  transition: opacity 0.3s, transform 0.2s;
+}
+#theme-mascot:active {
+  transform: scale(0.9);
 }
 #theme-mascot img {
   display: block;
@@ -3865,4 +3876,154 @@ select:focus-visible {
   25% { opacity: 0.7; transform: scale(1.1); top: 10%; }
   50% { opacity: 0.3; transform: scale(0.9); top: 50%; }
   75% { opacity: 0.8; transform: scale(1.2); top: 70%; }
+}
+
+/* ============================================
+   Mascot Chat UI
+   ============================================ */
+#mascot-chat {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 80px);
+  right: 12px;
+  width: min(320px, calc(100vw - 24px));
+  max-height: 400px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0) translateY(20px);
+  transform-origin: bottom right;
+  opacity: 0;
+  transition: transform 0.3s var(--ease-bounce), opacity 0.2s;
+  pointer-events: none;
+}
+#mascot-chat.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: #FFF;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.mc-close {
+  background: none;
+  border: none;
+  color: #FFF;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.mc-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 120px;
+  max-height: 220px;
+}
+
+.mc-msg {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  word-break: break-word;
+  animation: mc-msg-in 0.25s var(--ease-bounce);
+}
+@keyframes mc-msg-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mc-bot {
+  align-self: flex-start;
+  background: var(--border-light, #F0F2F5);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.mc-user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #FFF;
+  border-bottom-right-radius: 4px;
+}
+
+/* Typing indicator */
+.mc-typing {
+  display: inline-flex;
+  gap: 3px;
+}
+.mc-typing span {
+  animation: mc-dot 1.2s infinite;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.mc-typing span:nth-child(2) { animation-delay: 0.2s; }
+.mc-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes mc-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* Options area */
+.mc-options {
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+  min-height: 0;
+}
+.mc-options:empty {
+  display: none;
+}
+.mc-option-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--accent);
+  background: var(--bg-card);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.mc-option-btn:hover, .mc-option-btn:active {
+  background: var(--accent);
+  color: #FFF;
+}
+.mc-option-sub {
+  border-color: var(--text-muted);
+  color: var(--text);
+  font-weight: 500;
+}
+.mc-option-sub:hover, .mc-option-sub:active {
+  background: var(--text-muted);
+  color: #FFF;
+}
+.mc-option-back {
+  border-color: var(--border);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.mc-option-back:hover, .mc-option-back:active {
+  background: var(--border);
+  color: var(--text);
 }

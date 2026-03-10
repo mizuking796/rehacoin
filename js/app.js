@@ -261,15 +261,23 @@ const App = (() => {
     document.querySelectorAll('.profile-tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
         e.preventDefault();
+        // Lock body height to prevent scroll clamp
+        const body = document.body;
+        const prevHeight = body.scrollHeight;
+        body.style.minHeight = prevHeight + 'px';
         const scrollY = window.scrollY;
+
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.ptab).classList.add('active');
-        // Restore scroll after layout reflow
+
+        // Restore scroll then release height lock
         window.scrollTo(0, scrollY);
-        requestAnimationFrame(() => window.scrollTo(0, scrollY));
-        setTimeout(() => window.scrollTo(0, scrollY), 50);
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+          setTimeout(() => { body.style.minHeight = ''; }, 100);
+        });
       });
     });
   }
@@ -1638,6 +1646,7 @@ const App = (() => {
     if (!el) {
       el = document.createElement('div');
       el.id = 'theme-mascot';
+      el.addEventListener('click', () => MascotChat.toggle());
       document.body.appendChild(el);
     }
     const src = THEME_MASCOTS[id];
