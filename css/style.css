@@ -4027,3 +4027,67 @@ select:focus-visible {
   background: var(--border);
   color: var(--text);
 }
+
+/* ============================================
+   Feed Three-Dot Menu (Facebook-style)
+   ============================================ */
+.feed-more-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  margin-left: auto;
+  transition: background 0.15s;
+  position: relative;
+}
+.feed-more-btn:hover {
+  background: var(--border-light, #F0F2F5);
+}
+.feed-more-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 60;
+  min-width: 140px;
+  overflow: hidden;
+  animation: mc-msg-in 0.15s ease;
+}
+.feed-more-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+.feed-more-menu button:hover {
+  background: var(--border-light, #F0F2F5);
+}
+.feed-more-menu .feed-delete-btn {
+  color: var(--danger);
+}
+
+/* Header row needs relative + flex for menu positioning */
+.home-feed-header, .feed-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Remove old inline edit/delete styles */
+.feed-own-actions {
+  display: none;
+}

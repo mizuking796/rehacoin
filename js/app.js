@@ -489,12 +489,13 @@ const App = (() => {
       ? (I18n.getLang() === 'ja' ? myReactionData.label : myReactionData.labelEn)
       : (I18n.getLang() === 'ja' ? 'いいね！' : 'Like');
 
-    // Own posts: show reactions received + edit/delete actions
+    // Own posts: show reactions received + three-dot menu
     const ja = I18n.getLang() === 'ja';
     let reactionBar = '';
+    let ownMenuHtml = '';
     if (item.isOwn) {
-      const ownActions = `<div class="feed-own-actions"><button class="feed-edit-btn" data-id="${item.id}" data-label="${escapeHtml(item.label || '')}">${ja ? '編集' : 'Edit'}</button><button class="feed-delete-btn" data-id="${item.id}">${ja ? '削除' : 'Delete'}</button></div>`;
-      reactionBar = `<div class="reaction-bar">${reactionSummaryHtml}${ownActions}</div>`;
+      ownMenuHtml = `<button class="feed-more-btn" data-id="${item.id}" data-label="${escapeHtml(item.label || '')}"><i data-lucide="more-horizontal" style="width:18px;height:18px"></i></button><div class="feed-more-menu" hidden><button class="feed-edit-btn" data-id="${item.id}" data-label="${escapeHtml(item.label || '')}"><i data-lucide="pencil" style="width:14px;height:14px"></i> ${ja ? '編集' : 'Edit'}</button><button class="feed-delete-btn" data-id="${item.id}"><i data-lucide="trash-2" style="width:14px;height:14px"></i> ${ja ? '削除' : 'Delete'}</button></div>`;
+      reactionBar = `<div class="reaction-bar">${reactionSummaryHtml}</div>`;
     } else {
       reactionBar = `
         <div class="reaction-bar" data-id="${item.id}">
@@ -517,7 +518,7 @@ const App = (() => {
     <div class="${cardClass}${ownClass}">
       <div class="${avatarClass}">${initial}</div>
       <div class="${contentClass}">
-        <div class="${context === 'home' ? 'home-feed-header' : 'feed-header'}"><span class="${context === 'home' ? 'home-feed-name' : 'feed-name'}">${escapeHtml(item.nickname)}</span><span class="${context === 'home' ? 'home-feed-time' : 'feed-time'}">${time}</span></div>
+        <div class="${context === 'home' ? 'home-feed-header' : 'feed-header'}"><span class="${context === 'home' ? 'home-feed-name' : 'feed-name'}">${escapeHtml(item.nickname)}</span><span class="${context === 'home' ? 'home-feed-time' : 'feed-time'}">${time}</span>${ownMenuHtml}</div>
         <div class="${context === 'home' ? 'home-feed-body' : 'feed-body'}"><span class="${context === 'home' ? 'home-feed-activity' : 'feed-activity'}">${actLabel}</span></div>
         ${reactionBar}
       </div>
@@ -585,11 +586,31 @@ const App = (() => {
       });
     });
 
+    // Three-dot menu toggle
+    container.querySelectorAll('.feed-more-btn').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = btn.nextElementSibling;
+        const wasHidden = menu.hidden;
+        // Close all other menus
+        container.querySelectorAll('.feed-more-menu').forEach(m => m.hidden = true);
+        menu.hidden = !wasHidden;
+        if (!wasHidden) return;
+        // Close on outside click
+        const closeMenu = () => { menu.hidden = true; document.removeEventListener('click', closeMenu); };
+        setTimeout(() => document.addEventListener('click', closeMenu, { once: true }), 0);
+      });
+    });
+
     // Own post actions: delete & edit
     container.querySelectorAll('.feed-delete-btn').forEach(btn => {
       if (btn._bound) return;
       btn._bound = true;
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        btn.closest('.feed-more-menu')?.setAttribute('hidden', '');
         const ja = I18n.getLang() === 'ja';
         if (!await showConfirm(ja ? 'このきろくをけしますか？' : 'Delete this record?', 'trash-2', { okText: ja ? '削除' : 'Delete', danger: true })) return;
         const res = await Store.deleteRecord(btn.dataset.id);
@@ -1671,6 +1692,8 @@ const App = (() => {
     root.style.setProperty('--border', theme.border || '#E4E6EB');
     root.style.setProperty('--radius', theme.radius || '14px');
     root.style.setProperty('--border-light', theme.bg);
+    root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${theme.accent} 0%, ${adjustColor(theme.accent, 30)} 100%)`);
+    root.style.setProperty('--accent-light', theme.bg);
     document.getElementById('app-header').style.background =
       `linear-gradient(135deg, ${theme.accent} 0%, ${adjustColor(theme.accent, 30)} 100%)`;
     // Update mascot
