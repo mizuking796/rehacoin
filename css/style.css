@@ -151,6 +151,8 @@ body {
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   animation: fadeIn 0.2s ease;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .screen.active {
@@ -164,17 +166,19 @@ body {
 
 /* === Section === */
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+.section:last-child {
+  margin-bottom: 0;
 }
 
 .section-title {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.03em;
-  margin-bottom: 10px;
-  text-transform: uppercase;
   letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 /* === Quick Record Bar === */
@@ -604,7 +608,7 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .stat-card {
@@ -1110,8 +1114,9 @@ body {
   grid-column: 1 / -1;
   background: var(--bg-card);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 12px 14px;
   box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
 }
 .sc-title {
   font-size: 0.8rem;
@@ -1152,10 +1157,10 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
 }
+.cc-row:not(:last-child) { margin-bottom: 6px; }
 .cc-label { font-size: 0.78rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
-.cc-bar-wrap { flex: 1; height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; max-width: 300px; }
+.cc-bar-wrap { flex: 1; height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; }
 .cc-bar { height: 100%; background: var(--accent); border-radius: 7px; transition: width 0.5s ease; }
 .cc-count { font-size: 0.78rem; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
 
@@ -1748,7 +1753,7 @@ body {
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .profile-header {
@@ -2924,13 +2929,13 @@ body {
 .daily-missions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 .mission-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: var(--bg);
   border-radius: var(--radius-sm);
   transition: background 0.2s;
@@ -2977,7 +2982,6 @@ body {
 /* === Daily Gacha === */
 .gacha-section {
   text-align: center;
-  padding: 8px 0;
 }
 .gacha-btn {
   width: 100%;
