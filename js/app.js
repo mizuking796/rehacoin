@@ -1,6 +1,6 @@
 // app.js — UI, routing, event handlers (API-backed, i18n)
 
-function safeSetItem(k, v) { try { safeSetItem(k, v); } catch(e) { console.warn('localStorage write failed:', e); } }
+function safeSetItem(k, v) { try { localStorage.setItem(k, v); } catch(e) { console.warn('localStorage write failed:', e); } }
 
 const App = (() => {
   let currentScreen = 'screen-home';
