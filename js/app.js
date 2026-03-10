@@ -245,7 +245,6 @@ const App = (() => {
     else if (screenId === 'screen-friends') loadAndRenderFriends();
     else if (screenId === 'screen-profile') renderProfile();
     window.scrollTo(0, 0);
-    if (typeof lucide !== 'undefined') lucide.createIcons();
   }
 
   function bindNav() {
@@ -1164,7 +1163,7 @@ const App = (() => {
   }
 
   // --- History ---
-  function renderHistory() { renderStats(); renderHistoryList(); renderCoinHistory(); }
+  function renderHistory() { renderStats(); renderHistoryList(); _coinHistoryOffset = 0; renderCoinHistory(); }
 
   function bindHistoryTabs() {
     document.querySelectorAll('.history-tab').forEach(tab => {
@@ -1257,6 +1256,8 @@ const App = (() => {
       return `<div class="history-date-group"><div class="history-date">${group.date}</div>${items}</div>`;
     }).join('');
     container.querySelectorAll('.hi-delete').forEach(btn => {
+      if (btn._bound) return;
+      btn._bound = true;
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         if (!await showConfirm(I18n.t('deleteRecordConfirm'), 'trash-2', { okText: I18n.getLang() === 'ja' ? '削除' : 'Delete', danger: true })) return;
