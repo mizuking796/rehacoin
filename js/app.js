@@ -25,21 +25,17 @@ const App = (() => {
   }
 
 
-  // --- Lucide refresh (debounced) ---
+  // --- Lucide refresh (debounced, batched) ---
   let _lucideTimer;
   function refreshLucideIcons() {
     clearTimeout(_lucideTimer);
     _lucideTimer = setTimeout(() => {
       if (typeof lucide !== 'undefined') lucide.createIcons();
-    }, 50);
+    }, 150);
   }
 
-  // Auto-refresh Lucide icons on DOM changes
-  const _iconObserver = new MutationObserver(() => refreshLucideIcons());
-  document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('app-container');
-    if (container) _iconObserver.observe(container, { childList: true, subtree: true });
-  });
+  // MutationObserver removed — manual refreshLucideIcons() calls only
+  // (Observer was firing on every DOM change, causing heavy re-scans)
   // --- Init ---
   async function init() {
     if (!API.isLoggedIn()) {
@@ -80,6 +76,7 @@ const App = (() => {
     updateHeaderCoins();
     updateHeaderNickname();
     updateFriendBadge();
+    refreshLucideIcons();
     startFeedRefresh();
     checkLoginBonus();
   }
@@ -245,6 +242,7 @@ const App = (() => {
     else if (screenId === 'screen-friends') loadAndRenderFriends();
     else if (screenId === 'screen-profile') renderProfile();
     window.scrollTo(0, 0);
+    refreshLucideIcons();
   }
 
   function bindNav() {
@@ -1638,19 +1636,19 @@ const App = (() => {
 
   // Floating decoration particles per theme
   const THEME_PARTICLES = {
-    'sakura': { emoji: '🌸', count: 6, animation: 'float-fall' },
-    'ocean': { emoji: '🫧', count: 5, animation: 'float-rise' },
-    'forest': { emoji: '🍃', count: 4, animation: 'float-fall' },
-    'night': { emoji: '✨', count: 6, animation: 'float-twinkle' },
+    'sakura': { emoji: '🌸', count: 3, animation: 'float-fall' },
+    'ocean': { emoji: '🫧', count: 3, animation: 'float-rise' },
+    'forest': { emoji: '🍃', count: 2, animation: 'float-fall' },
+    'night': { emoji: '✨', count: 3, animation: 'float-twinkle' },
     'sunset': { emoji: '🌅', count: 0 },
-    'tropical': { emoji: '🌺', count: 5, animation: 'float-fall' },
-    'space': { emoji: '⭐', count: 8, animation: 'float-twinkle' },
-    'candy': { emoji: '🍬', count: 5, animation: 'float-fall' },
-    'retro': { emoji: '👾', count: 4, animation: 'float-fall' },
-    'zen': { emoji: '🍂', count: 3, animation: 'float-fall' },
-    'aurora': { emoji: '❄️', count: 5, animation: 'float-fall' },
+    'tropical': { emoji: '🌺', count: 3, animation: 'float-fall' },
+    'space': { emoji: '⭐', count: 4, animation: 'float-twinkle' },
+    'candy': { emoji: '🍬', count: 3, animation: 'float-fall' },
+    'retro': { emoji: '👾', count: 2, animation: 'float-fall' },
+    'zen': { emoji: '🍂', count: 2, animation: 'float-fall' },
+    'aurora': { emoji: '❄️', count: 3, animation: 'float-fall' },
     'cafe': { emoji: '☕', count: 0 },
-    'neon': { emoji: '💜', count: 4, animation: 'float-rise' },
+    'neon': { emoji: '💜', count: 2, animation: 'float-rise' },
   };
 
   function applyTheme(id) {
@@ -1993,11 +1991,12 @@ const App = (() => {
           Store._updateFeed(newFeed);
           if (currentScreen === 'screen-home') renderHomeFeed();
           else if (currentScreen === 'screen-friends') renderFeed();
+          refreshLucideIcons();
         }
       } catch (e) {
         console.error('Feed refresh failed:', e);
       }
-    }, 30000);
+    }, 60000);
   }
 
   function stopFeedRefresh() {
