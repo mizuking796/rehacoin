@@ -3540,15 +3540,11 @@ body {
 }
 
 .profile-tab-content {
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
+  display: none;
 }
 
 .profile-tab-content.active {
-  height: auto;
-  overflow: visible;
-  visibility: visible;
+  display: block;
 }
 
 /* === Lucide icon spin for loader === */

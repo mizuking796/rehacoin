@@ -259,11 +259,17 @@ const App = (() => {
   // --- Profile Tabs ---
   function bindProfileTabs() {
     document.querySelectorAll('.profile-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        const scrollY = window.scrollY;
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.ptab).classList.add('active');
+        // Restore scroll after layout reflow
+        window.scrollTo(0, scrollY);
+        requestAnimationFrame(() => window.scrollTo(0, scrollY));
+        setTimeout(() => window.scrollTo(0, scrollY), 50);
       });
     });
   }
@@ -1532,28 +1538,28 @@ const App = (() => {
       accent: '#FF6D00', bg: '#FFF3E0', bgCard: '#FFFFFF', text: '#BF360C', textMuted: '#E65100',
       border: '#FFE0B2', radius: '14px', desc: '夕暮れ', descEn: 'Twilight' },
     // Premium
-    { id: 'tropical', label: 'トロピカル', labelEn: 'Tropical', cost: 30, premium: true,
+    { id: 'tropical', label: 'トロピカル', labelEn: 'Tropical', cost: 0, premium: false,
       accent: '#00BFA5', bg: '#E0F2F1', bgCard: '#FFFFFF', text: '#004D40', textMuted: '#26A69A',
       border: '#80CBC4', radius: '20px', desc: 'ヤシの木とハイビスカス', descEn: 'Palm trees & hibiscus' },
-    { id: 'space', label: 'スペース', labelEn: 'Space', cost: 50, premium: true,
+    { id: 'space', label: 'スペース', labelEn: 'Space', cost: 0, premium: false,
       accent: '#651FFF', bg: '#0D1B2A', bgCard: '#1B2838', text: '#E0E0E0', textMuted: '#90A4AE',
       border: '#37474F', radius: '12px', desc: '宇宙と惑星', descEn: 'Planets & galaxies' },
-    { id: 'candy', label: 'キャンディ', labelEn: 'Candy', cost: 30, premium: true,
+    { id: 'candy', label: 'キャンディ', labelEn: 'Candy', cost: 0, premium: false,
       accent: '#FF4081', bg: '#FFF8E1', bgCard: '#FFFFFF', text: '#880E4F', textMuted: '#AD1457',
       border: '#F8BBD0', radius: '24px', desc: 'カラフルなお菓子', descEn: 'Colorful sweets' },
-    { id: 'retro', label: 'レトロゲーム', labelEn: 'Retro Game', cost: 40, premium: true,
+    { id: 'retro', label: 'レトロゲーム', labelEn: 'Retro Game', cost: 0, premium: false,
       accent: '#76FF03', bg: '#1A1A2E', bgCard: '#16213E', text: '#E0E0E0', textMuted: '#81C784',
       border: '#2E4057', radius: '4px', desc: '8ビット風', descEn: '8-bit style' },
-    { id: 'zen', label: '禅', labelEn: 'Zen', cost: 30, premium: true,
+    { id: 'zen', label: '禅', labelEn: 'Zen', cost: 0, premium: false,
       accent: '#795548', bg: '#EFEBE9', bgCard: '#FFFFFF', text: '#3E2723', textMuted: '#8D6E63',
       border: '#D7CCC8', radius: '8px', desc: '和の静寂', descEn: 'Japanese tranquility' },
-    { id: 'aurora', label: 'オーロラ', labelEn: 'Aurora', cost: 50, premium: true,
+    { id: 'aurora', label: 'オーロラ', labelEn: 'Aurora', cost: 0, premium: false,
       accent: '#00E5FF', bg: '#0A1628', bgCard: '#0F2042', text: '#E0F7FA', textMuted: '#80DEEA',
       border: '#1A3A5C', radius: '16px', desc: '幻想的な光', descEn: 'Mystical lights' },
-    { id: 'cafe', label: 'カフェ', labelEn: 'Cafe', cost: 25, premium: true,
+    { id: 'cafe', label: 'カフェ', labelEn: 'Cafe', cost: 0, premium: false,
       accent: '#8D6E63', bg: '#FBF5F0', bgCard: '#FFFFFF', text: '#4E342E', textMuted: '#A1887F',
       border: '#D7CCC8', radius: '16px', desc: 'コーヒーとスイーツ', descEn: 'Coffee & sweets' },
-    { id: 'neon', label: 'ネオン', labelEn: 'Neon', cost: 40, premium: true,
+    { id: 'neon', label: 'ネオン', labelEn: 'Neon', cost: 0, premium: false,
       accent: '#FF1744', bg: '#12001A', bgCard: '#1A0025', text: '#F5F5F5', textMuted: '#CE93D8',
       border: '#4A0072', radius: '14px', desc: 'サイバーパンク', descEn: 'Cyberpunk city' },
   ];
