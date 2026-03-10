@@ -1524,15 +1524,16 @@ const App = (() => {
   // --- Themes ---
   const THEMES = [
     { id: 'default', label: 'デフォルト', labelEn: 'Default', cost: 0, accent: '#1B74E4', bg: '#F0F2F5' },
-    { id: 'sakura', label: '桜', labelEn: 'Sakura', cost: 30, accent: '#E91E63', bg: '#FFF0F5' },
-    { id: 'ocean', label: '海', labelEn: 'Ocean', cost: 30, accent: '#0097A7', bg: '#E0F7FA' },
-    { id: 'forest', label: '森', labelEn: 'Forest', cost: 30, accent: '#2E7D32', bg: '#E8F5E9' },
-    { id: 'night', label: '夜', labelEn: 'Night', cost: 50, accent: '#7C4DFF', bg: '#EDE7F6' },
-    { id: 'sunset', label: '夕焼け', labelEn: 'Sunset', cost: 50, accent: '#FF6D00', bg: '#FFF3E0' },
+    { id: 'sakura', label: '桜', labelEn: 'Sakura', cost: 0, accent: '#E91E63', bg: '#FFF0F5' },
+    { id: 'ocean', label: '海', labelEn: 'Ocean', cost: 0, accent: '#0097A7', bg: '#E0F7FA' },
+    { id: 'forest', label: '森', labelEn: 'Forest', cost: 0, accent: '#2E7D32', bg: '#E8F5E9' },
+    { id: 'night', label: '夜', labelEn: 'Night', cost: 0, accent: '#7C4DFF', bg: '#EDE7F6' },
+    { id: 'sunset', label: '夕焼け', labelEn: 'Sunset', cost: 0, accent: '#FF6D00', bg: '#FFF3E0' },
   ];
 
   function getOwnedThemes() {
-    return JSON.parse(localStorage.getItem('rehacoin_themes') || '["default"]');
+    const allIds = THEMES.map(t => t.id);
+    return JSON.parse(localStorage.getItem('rehacoin_themes') || JSON.stringify(allIds));
   }
   function setOwnedThemes(arr) {
     safeSetItem('rehacoin_themes', JSON.stringify(arr));
