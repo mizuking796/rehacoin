@@ -199,107 +199,105 @@
           </div>
         </div>
 
-        <div class="exchange-balance">
-          <div class="balance-amount" id="exchange-balance">0</div>
-          <div class="balance-label" data-i18n="availableCoins">使えるコイン</div>
-        </div>
+        <!-- Daily Missions -->
+        <section class="section">
+          <h2 class="section-title">デイリーミッション</h2>
+          <div id="daily-missions" class="daily-missions"></div>
+        </section>
 
-        <div class="profile-tabs">
-          <button class="profile-tab active" data-ptab="ptab-game">ゲーム</button>
-          <button class="profile-tab" data-ptab="ptab-rewards">ご褒美</button>
-          <button class="profile-tab" data-ptab="ptab-settings">設定</button>
-        </div>
+        <!-- Daily Gacha -->
+        <section class="section">
+          <h2 class="section-title">デイリーガチャ</h2>
+          <div id="gacha-section" class="gacha-section"></div>
+        </section>
 
-        <div id="ptab-game" class="profile-tab-content active">
-          <section class="section">
-            <h2 class="section-title" >デイリーミッション</h2>
-            <div id="daily-missions" class="daily-missions"></div>
-          </section>
+        <!-- Streak Freeze -->
+        <section class="section">
+          <h2 class="section-title">ストリークフリーズ</h2>
+          <div id="streak-freeze-section"></div>
+        </section>
 
-          <section class="section">
-            <h2 class="section-title" >デイリーガチャ</h2>
-            <div id="gacha-section" class="gacha-section"></div>
-          </section>
+        <!-- Friend Ranking -->
+        <section class="section">
+          <h2 class="section-title">フレンドランキング</h2>
+          <div id="friend-ranking" class="friend-ranking"></div>
+        </section>
 
-          <section class="section">
-            <h2 class="section-title" >ストリークフリーズ</h2>
-            <div id="streak-freeze-section"></div>
-          </section>
+        <!-- Badges -->
+        <section class="section">
+          <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
+          <div id="badge-list" class="badge-list"></div>
+        </section>
 
-          <section class="section">
-            <h2 class="section-title" >フレンドランキング</h2>
-            <div id="friend-ranking" class="friend-ranking"></div>
-          </section>
+        <!-- Theme Store -->
+        <section class="section">
+          <h2 class="section-title">テーマ</h2>
+          <div id="theme-store" class="theme-store"></div>
+        </section>
 
-          <section class="section">
-            <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
-            <div id="badge-list" class="badge-list"></div>
-          </section>
+        <!-- Rewards -->
+        <section class="section">
+          <h2 class="section-title" data-i18n="sectionRewards">ごほうび</h2>
+          <div class="exchange-balance-mini">
+            <span data-i18n="availableCoins">つかえるコイン</span>
+            <span class="exchange-balance-val" id="exchange-balance">0</span>
+          </div>
+          <div id="reward-list" class="reward-list"></div>
+          <div class="reward-add-row">
+            <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
+            <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
+            <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
+          </div>
+        </section>
 
-          <section class="section">
-            <h2 class="section-title" >テーマ</h2>
-            <div id="theme-store" class="theme-store"></div>
-          </section>
-        </div>
-
-        <div id="ptab-rewards" class="profile-tab-content">
-          <section class="section">
-            <h2 class="section-title" data-i18n="sectionRewards">ご褒美リスト</h2>
-            <div id="reward-list" class="reward-list"></div>
-            <div class="reward-add-row">
-              <input type="text" id="reward-name-input" data-i18n-placeholder="rewardNamePlaceholder" placeholder="ご褒美の名前" autocomplete="off">
-              <input type="number" id="reward-cost-input" data-i18n-placeholder="rewardCostPlaceholder" placeholder="コイン" min="1" style="width:80px">
-              <button id="btn-add-reward" class="btn-primary" style="padding:0 12px;font-size:0.85rem" data-i18n="btnAdd">追加</button>
+        <!-- Settings -->
+        <section class="section">
+          <h2 class="section-title">設定</h2>
+          <div class="settings-content">
+            <div class="settings-item">
+              <span data-i18n="friendCode">フレンドコード</span>
+              <span id="profile-friend-code">------</span>
             </div>
-          </section>
-        </div>
-
-        <div id="ptab-settings" class="profile-tab-content">
-        <div class="settings-content">
-          <div class="settings-item">
-            <span data-i18n="friendCode">フレンドコード</span>
-            <span id="profile-friend-code">------</span>
+            <div class="settings-item">
+              <span data-i18n="feedPrivacy">フィード公開範囲</span>
+              <select id="profile-visibility" class="profile-select">
+                <option value="activity_name" data-i18n="showActivityName">活動名を見せる</option>
+                <option value="coin_only" data-i18n="coinsOnly">コインのみ</option>
+              </select>
+            </div>
+            <div class="settings-item">
+              <span data-i18n="language">言語</span>
+              <select id="profile-lang" class="profile-select">
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="settings-item">
+              <span data-i18n="joined">登録日</span>
+              <span id="profile-created">---</span>
+            </div>
+            <div class="settings-item" id="push-setting">
+              <span>プッシュ通知</span>
+              <button id="btn-toggle-push" class="btn-secondary" style="width:auto;padding:0 12px;font-size:0.82rem">有効にする</button>
+            </div>
+            <div class="settings-item">
+              <span data-i18n="version">バージョン</span>
+              <span>4.0.0</span>
+            </div>
+            <div class="settings-item">
+              <a href="privacy.html" target="_blank" data-i18n="privacyPolicy" style="color:var(--accent);text-decoration:none;font-weight:500">プライバシーポリシー</a>
+            </div>
+            <div class="settings-item">
+              <button id="btn-export" class="btn-secondary" data-i18n="exportData">データエクスポート</button>
+            </div>
+            <div class="settings-item">
+              <button id="btn-logout" class="btn-danger" data-i18n="logout">ログアウト</button>
+            </div>
+            <div class="settings-item">
+              <button id="btn-delete-account" class="btn-danger" style="background:#8B0000" data-i18n="deleteAccount">アカウント削除</button>
+            </div>
           </div>
-          <div class="settings-item">
-            <span data-i18n="feedPrivacy">フィード公開範囲</span>
-            <select id="profile-visibility" class="profile-select">
-              <option value="activity_name" data-i18n="showActivityName">活動名を見せる</option>
-              <option value="coin_only" data-i18n="coinsOnly">コインのみ</option>
-            </select>
-          </div>
-          <div class="settings-item">
-            <span data-i18n="language">言語</span>
-            <select id="profile-lang" class="profile-select">
-              <option value="ja">日本語</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-          <div class="settings-item">
-            <span data-i18n="joined">登録日</span>
-            <span id="profile-created">---</span>
-          </div>
-          <div class="settings-item" id="push-setting">
-            <span>プッシュ通知</span>
-            <button id="btn-toggle-push" class="btn-secondary" style="width:auto;padding:0 12px;font-size:0.82rem">有効にする</button>
-          </div>
-          <div class="settings-item">
-            <span data-i18n="version">バージョン</span>
-            <span>4.0.0</span>
-          </div>
-          <div class="settings-item">
-            <a href="privacy.html" target="_blank" data-i18n="privacyPolicy" style="color:var(--accent);text-decoration:none;font-weight:500">プライバシーポリシー</a>
-          </div>
-          <div class="settings-item">
-            <button id="btn-export" class="btn-secondary" data-i18n="exportData">データエクスポート</button>
-          </div>
-          <div class="settings-item">
-            <button id="btn-logout" class="btn-danger" data-i18n="logout">ログアウト</button>
-          </div>
-          <div class="settings-item">
-            <button id="btn-delete-account" class="btn-danger" style="background:#8B0000" data-i18n="deleteAccount">アカウント削除</button>
-          </div>
-        </div>
-        </div>
+        </section>
       </div>
     </main>
 

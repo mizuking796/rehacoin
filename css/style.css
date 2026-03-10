@@ -3511,47 +3511,22 @@ body {
 }
 .confirm-danger:active { background: #b91c1c !important; }
 
-/* === Profile Tabs === */
-.profile-tabs {
+/* === Exchange Balance Mini (inline compact) === */
+.exchange-balance-mini {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: var(--bg);
-  border-radius: var(--radius);
-  padding: 3px;
-  margin-bottom: 4px;
-}
-
-.profile-tab {
-  flex: 1;
-  padding: 10px 0;
-  background: none;
-  border: none;
   border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
   color: var(--text-muted);
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
-
-.profile-tab.active {
-  background: var(--bg-card);
-  color: var(--text);
-  box-shadow: var(--shadow);
-}
-
-.profile-tab-content {
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.profile-tab-content.active {
-  visibility: visible;
-  height: auto;
-  overflow: visible;
-  opacity: 1;
+.exchange-balance-val {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
 }
 
 /* === Lucide icon spin for loader === */

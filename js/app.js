@@ -69,7 +69,7 @@ const App = (() => {
     bindSettings();
     // History tabs removed — stats + coin history shown inline
     bindExchange();
-    bindProfileTabs();
+    // Profile tabs removed — single-scroll layout
     bindFriends();
     bindLangToggle();
     updateLangToggleLabel();
@@ -256,31 +256,7 @@ const App = (() => {
   }
 
 
-  // --- Profile Tabs ---
-  function bindProfileTabs() {
-    document.querySelectorAll('.profile-tab').forEach(tab => {
-      tab.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Lock body height to prevent scroll clamp
-        const body = document.body;
-        const prevHeight = body.scrollHeight;
-        body.style.minHeight = prevHeight + 'px';
-        const scrollY = window.scrollY;
-
-        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.ptab).classList.add('active');
-
-        // Restore scroll then release height lock
-        window.scrollTo(0, scrollY);
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollY);
-          setTimeout(() => { body.style.minHeight = ''; }, 100);
-        });
-      });
-    });
-  }
+  // Profile tabs removed — single-scroll layout
 
   // --- Header ---
   let _prevRankId = null;
