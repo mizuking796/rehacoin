@@ -1642,9 +1642,16 @@ const App = (() => {
     }
     const src = THEME_MASCOTS[id];
     if (src) {
-      el.innerHTML = `<img src="${src}" alt="" width="64" height="64">`;
+      el.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      img.width = 64;
+      img.height = 64;
+      el.appendChild(img);
       el.style.display = 'block';
     } else {
+      el.innerHTML = '';
       el.style.display = 'none';
     }
   }
@@ -1831,13 +1838,10 @@ const App = (() => {
       const premiumTag = t.premium ? `<span class="theme-premium-tag">PREMIUM</span>` : '';
       const costBadge = t.cost === 0 ? `<span class="theme-free-badge">FREE</span>` : `<span class="theme-cost-badge"><img src="img/coin.svg" width="10" height="10"> ${t.cost}</span>`;
 
-      const mascotSrc = THEME_MASCOTS[t.id] || '';
-      const mascotImg = mascotSrc ? `<img src="${mascotSrc}" alt="" style="position:absolute;right:4px;bottom:0;width:40px;height:40px">` : '';
-      return `<div class="theme-card ${isCurrent ? 'theme-current' : ''}">
+      return `<div class="theme-card ${isCurrent ? 'theme-current' : ''}" data-theme-id="${t.id}">
         ${premiumTag}
         <div class="theme-preview" style="background:${t.bg};border-top:3px solid ${t.accent}">
           <div style="width:100%;height:100%;background:linear-gradient(135deg, ${t.accent} 0%, ${adjustColor(t.accent, 40)} 100%);opacity:0.15;border-radius:inherit"></div>
-          ${mascotImg}
         </div>
         <div class="theme-name">${ja ? t.label : t.labelEn}</div>
         ${desc ? `<div class="theme-desc">${desc}</div>` : ''}
@@ -1845,6 +1849,22 @@ const App = (() => {
         ${btnHtml}
       </div>`;
     }).join('');
+
+    // Add mascot images safely via DOM
+    container.querySelectorAll('.theme-card').forEach(card => {
+      const tid = card.dataset.themeId;
+      const src = THEME_MASCOTS[tid];
+      if (src) {
+        const preview = card.querySelector('.theme-preview');
+        if (preview) {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = '';
+          Object.assign(img.style, { position: 'absolute', right: '4px', bottom: '0', width: '40px', height: '40px' });
+          preview.appendChild(img);
+        }
+      }
+    });
 
     container.querySelectorAll('.theme-use-btn').forEach(btn => {
       btn.addEventListener('click', () => { applyTheme(btn.dataset.id); renderThemeStore(); });
