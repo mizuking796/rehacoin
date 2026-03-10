@@ -1512,20 +1512,60 @@ const App = (() => {
   // --- Profile ---
   // --- Themes ---
   const THEMES = [
-    { id: 'default', label: 'デフォルト', labelEn: 'Default', cost: 0, accent: '#1B74E4', bg: '#F0F2F5' },
-    { id: 'sakura', label: '桜', labelEn: 'Sakura', cost: 0, accent: '#E91E63', bg: '#FFF0F5' },
-    { id: 'ocean', label: '海', labelEn: 'Ocean', cost: 0, accent: '#0097A7', bg: '#E0F7FA' },
-    { id: 'forest', label: '森', labelEn: 'Forest', cost: 0, accent: '#2E7D32', bg: '#E8F5E9' },
-    { id: 'night', label: '夜', labelEn: 'Night', cost: 0, accent: '#7C4DFF', bg: '#EDE7F6' },
-    { id: 'sunset', label: '夕焼け', labelEn: 'Sunset', cost: 0, accent: '#FF6D00', bg: '#FFF3E0' },
+    // Free
+    { id: 'default', label: 'デフォルト', labelEn: 'Default', cost: 0, premium: false,
+      accent: '#0D9488', bg: '#F0F2F5', bgCard: '#FFFFFF', text: '#1C1E21', textMuted: '#65676B',
+      border: '#E4E6EB', radius: '14px', desc: '', descEn: '' },
+    { id: 'sakura', label: '桜', labelEn: 'Sakura', cost: 0, premium: false,
+      accent: '#E91E63', bg: '#FFF0F5', bgCard: '#FFFFFF', text: '#3E2723', textMuted: '#8D6E63',
+      border: '#F8BBD0', radius: '16px', desc: '春の桜', descEn: 'Spring cherry blossoms' },
+    { id: 'ocean', label: '海', labelEn: 'Ocean', cost: 0, premium: false,
+      accent: '#0097A7', bg: '#E0F7FA', bgCard: '#FFFFFF', text: '#004D40', textMuted: '#00796B',
+      border: '#B2EBF2', radius: '14px', desc: '穏やかな海', descEn: 'Calm ocean' },
+    { id: 'forest', label: '森', labelEn: 'Forest', cost: 0, premium: false,
+      accent: '#2E7D32', bg: '#E8F5E9', bgCard: '#FFFFFF', text: '#1B5E20', textMuted: '#4CAF50',
+      border: '#C8E6C9', radius: '12px', desc: '深い森', descEn: 'Deep forest' },
+    { id: 'night', label: '夜空', labelEn: 'Night Sky', cost: 0, premium: false,
+      accent: '#7C4DFF', bg: '#EDE7F6', bgCard: '#FFFFFF', text: '#311B92', textMuted: '#7E57C2',
+      border: '#D1C4E9', radius: '14px', desc: '星空', descEn: 'Starry sky' },
+    { id: 'sunset', label: '夕焼け', labelEn: 'Sunset', cost: 0, premium: false,
+      accent: '#FF6D00', bg: '#FFF3E0', bgCard: '#FFFFFF', text: '#BF360C', textMuted: '#E65100',
+      border: '#FFE0B2', radius: '14px', desc: '夕暮れ', descEn: 'Twilight' },
+    // Premium
+    { id: 'tropical', label: 'トロピカル', labelEn: 'Tropical', cost: 30, premium: true,
+      accent: '#00BFA5', bg: '#E0F2F1', bgCard: '#FFFFFF', text: '#004D40', textMuted: '#26A69A',
+      border: '#80CBC4', radius: '20px', desc: 'ヤシの木とハイビスカス', descEn: 'Palm trees & hibiscus' },
+    { id: 'space', label: 'スペース', labelEn: 'Space', cost: 50, premium: true,
+      accent: '#651FFF', bg: '#0D1B2A', bgCard: '#1B2838', text: '#E0E0E0', textMuted: '#90A4AE',
+      border: '#37474F', radius: '12px', desc: '宇宙と惑星', descEn: 'Planets & galaxies' },
+    { id: 'candy', label: 'キャンディ', labelEn: 'Candy', cost: 30, premium: true,
+      accent: '#FF4081', bg: '#FFF8E1', bgCard: '#FFFFFF', text: '#880E4F', textMuted: '#AD1457',
+      border: '#F8BBD0', radius: '24px', desc: 'カラフルなお菓子', descEn: 'Colorful sweets' },
+    { id: 'retro', label: 'レトロゲーム', labelEn: 'Retro Game', cost: 40, premium: true,
+      accent: '#76FF03', bg: '#1A1A2E', bgCard: '#16213E', text: '#E0E0E0', textMuted: '#81C784',
+      border: '#2E4057', radius: '4px', desc: '8ビット風', descEn: '8-bit style' },
+    { id: 'zen', label: '禅', labelEn: 'Zen', cost: 30, premium: true,
+      accent: '#795548', bg: '#EFEBE9', bgCard: '#FFFFFF', text: '#3E2723', textMuted: '#8D6E63',
+      border: '#D7CCC8', radius: '8px', desc: '和の静寂', descEn: 'Japanese tranquility' },
+    { id: 'aurora', label: 'オーロラ', labelEn: 'Aurora', cost: 50, premium: true,
+      accent: '#00E5FF', bg: '#0A1628', bgCard: '#0F2042', text: '#E0F7FA', textMuted: '#80DEEA',
+      border: '#1A3A5C', radius: '16px', desc: '幻想的な光', descEn: 'Mystical lights' },
+    { id: 'cafe', label: 'カフェ', labelEn: 'Cafe', cost: 25, premium: true,
+      accent: '#8D6E63', bg: '#FBF5F0', bgCard: '#FFFFFF', text: '#4E342E', textMuted: '#A1887F',
+      border: '#D7CCC8', radius: '16px', desc: 'コーヒーとスイーツ', descEn: 'Coffee & sweets' },
+    { id: 'neon', label: 'ネオン', labelEn: 'Neon', cost: 40, premium: true,
+      accent: '#FF1744', bg: '#12001A', bgCard: '#1A0025', text: '#F5F5F5', textMuted: '#CE93D8',
+      border: '#4A0072', radius: '14px', desc: 'サイバーパンク', descEn: 'Cyberpunk city' },
   ];
 
   function getOwnedThemes() {
-    const allIds = THEMES.map(t => t.id);
-    return JSON.parse(localStorage.getItem('rehacoin_themes') || JSON.stringify(allIds));
+    const freeIds = THEMES.filter(t => !t.premium).map(t => t.id);
+    const purchased = JSON.parse(localStorage.getItem('rehacoin_themes_purchased') || '[]');
+    return [...new Set([...freeIds, ...purchased])];
   }
-  function setOwnedThemes(arr) {
-    safeSetItem('rehacoin_themes', JSON.stringify(arr));
+  function addPurchasedTheme(id) {
+    const purchased = JSON.parse(localStorage.getItem('rehacoin_themes_purchased') || '[]');
+    if (!purchased.includes(id)) { purchased.push(id); safeSetItem('rehacoin_themes_purchased', JSON.stringify(purchased)); }
   }
   function getCurrentTheme() {
     return localStorage.getItem('rehacoin_current_theme') || 'default';
@@ -1534,9 +1574,16 @@ const App = (() => {
     const theme = THEMES.find(t => t.id === id);
     if (!theme) return;
     safeSetItem('rehacoin_current_theme', id);
-    document.documentElement.style.setProperty('--accent', theme.accent);
-    document.documentElement.style.setProperty('--accent-dark', theme.accent);
-    document.documentElement.style.setProperty('--bg', theme.bg);
+    const root = document.documentElement;
+    root.setAttribute('data-theme', id);
+    root.style.setProperty('--accent', theme.accent);
+    root.style.setProperty('--accent-dark', theme.accent);
+    root.style.setProperty('--bg', theme.bg);
+    root.style.setProperty('--bg-card', theme.bgCard || '#FFFFFF');
+    root.style.setProperty('--text', theme.text || '#1C1E21');
+    root.style.setProperty('--text-muted', theme.textMuted || '#65676B');
+    root.style.setProperty('--border', theme.border || '#E4E6EB');
+    root.style.setProperty('--radius', theme.radius || '14px');
     document.getElementById('app-header').style.background =
       `linear-gradient(135deg, ${theme.accent} 0%, ${adjustColor(theme.accent, 30)} 100%)`;
   }
@@ -1695,9 +1742,18 @@ const App = (() => {
       else if (isOwned) btnHtml = `<button class="theme-use-btn" data-id="${t.id}">${ja ? '使う' : 'Use'}</button>`;
       else btnHtml = `<button class="theme-buy-btn" data-id="${t.id}" ${canBuy ? '' : 'disabled'}><img src="img/coin.svg" width="12" height="12" class="inline-coin"> ${t.cost}</button>`;
 
+      const desc = ja ? (t.desc || '') : (t.descEn || '');
+      const premiumTag = t.premium ? `<span class="theme-premium-tag">PREMIUM</span>` : '';
+      const costBadge = t.cost === 0 ? `<span class="theme-free-badge">FREE</span>` : `<span class="theme-cost-badge"><img src="img/coin.svg" width="10" height="10"> ${t.cost}</span>`;
+
       return `<div class="theme-card ${isCurrent ? 'theme-current' : ''}">
-        <div class="theme-preview" style="background:${t.bg};border-top:3px solid ${t.accent}"></div>
+        ${premiumTag}
+        <div class="theme-preview" style="background:${t.bg};border-top:3px solid ${t.accent}">
+          <div style="width:100%;height:100%;background:linear-gradient(135deg, ${t.accent} 0%, ${adjustColor(t.accent, 40)} 100%);opacity:0.15;border-radius:inherit"></div>
+        </div>
         <div class="theme-name">${ja ? t.label : t.labelEn}</div>
+        ${desc ? `<div class="theme-desc">${desc}</div>` : ''}
+        ${!isOwned ? costBadge : ''}
         ${btnHtml}
       </div>`;
     }).join('');
@@ -1712,9 +1768,7 @@ const App = (() => {
         if (await showConfirm(ja ? `「${theme.label}」テーマを${theme.cost}コインで購入？` : `Buy "${theme.labelEn}" for ${theme.cost} coins?`, '')) {
           const res = await API.spendCoinsGeneric(theme.cost, ja ? `テーマ: ${theme.label}` : `Theme: ${theme.labelEn}`);
           if (!res.ok) { showToast(res.error || 'Error'); return; }
-          const owned = getOwnedThemes();
-          owned.push(theme.id);
-          setOwnedThemes(owned);
+          addPurchasedTheme(theme.id);
           applyTheme(theme.id);
           showToast(ja ? `${theme.label}テーマ獲得！` : `${theme.labelEn} theme unlocked!`);
           if (window.confetti) confetti({ particleCount: 40, spread: 50 });
