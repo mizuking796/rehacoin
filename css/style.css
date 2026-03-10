@@ -1128,7 +1128,7 @@ body {
   margin-bottom: 6px;
 }
 .cc-label { font-size: 0.78rem; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
-.cc-bar-wrap { flex: 1; height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; }
+.cc-bar-wrap { flex: 1; height: 14px; background: var(--border-light); border-radius: 7px; overflow: hidden; max-width: 300px; }
 .cc-bar { height: 100%; background: var(--accent); border-radius: 7px; transition: width 0.5s ease; }
 .cc-count { font-size: 0.78rem; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
 

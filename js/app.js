@@ -1203,7 +1203,8 @@ const App = (() => {
     const catChartHtml = catEntries.map(([code, count]) => {
       const cat = Data.getCategory(code);
       const pct = Math.round((count / maxCat) * 100);
-      return `<div class="cc-row"><span class="cc-label">${cat ? escapeHtml(cat.label) : code}</span><div class="cc-bar-wrap"><div class="cc-bar" style="width:${pct}%"></div></div><span class="cc-count">${count}</span></div>`;
+      const catLabel = cat ? escapeHtml(cat.label) : (code === 'free' ? (I18n.getLang() === 'ja' ? 'じゆうきろく' : 'Free') : code);
+      return `<div class="cc-row"><span class="cc-label">${catLabel}</span><div class="cc-bar-wrap"><div class="cc-bar" style="width:${pct}%"></div></div><span class="cc-count">${count}</span></div>`;
     }).join('');
 
     container.innerHTML = `

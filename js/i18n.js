@@ -29,7 +29,7 @@ const I18n = (() => {
       sectionRecent: 'さいきんのきろく',
       sectionFavorites: 'よくつかうもの',
       sectionCategories: 'カテゴリ',
-      sectionFreeInput: '自由入力',
+      sectionFreeInput: 'じゆうきろく',
       freeInputPlaceholder: 'じゆうにかつどうをにゅうりょく...',
       btnRecord: '記録',
       btnConfirmRecord: '記録する',
@@ -41,7 +41,7 @@ const I18n = (() => {
       screenRecords: 'きろく',
       tabRecords: 'かつどう',
       tabCoinHistory: 'コインりれき',
-      totalCoins: 'もちコイン',
+      totalCoins: 'ほゆうコイン',
       today: 'きょう',
       streak: 'れんぞく',
       streakUnit: '日',
@@ -101,7 +101,7 @@ const I18n = (() => {
 
       // Profile
       screenProfile: 'プロフィール',
-      profileTotalCoins: 'もちコイン',
+      profileTotalCoins: 'ほゆうコイン',
       profileWitnessBonus: 'おうえんボーナス',
       profileFriends: 'フレンド',
       friendCode: 'フレンドコード',
