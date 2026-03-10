@@ -260,10 +260,12 @@ const App = (() => {
   function bindProfileTabs() {
     document.querySelectorAll('.profile-tab').forEach(tab => {
       tab.addEventListener('click', () => {
+        const scrollY = window.scrollY;
         document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.dataset.ptab).classList.add('active');
+        requestAnimationFrame(() => window.scrollTo(0, scrollY));
       });
     });
   }
