@@ -2007,14 +2007,7 @@ const App = (() => {
 
   // --- Settings ---
   function bindSettings() {
-    document.getElementById('btn-export').addEventListener('click', () => {
-      const data = Store.exportData();
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `rehacoin_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click(); URL.revokeObjectURL(url);
-    });
+    document.getElementById('btn-export').addEventListener('click', () => exportToExcel());
     document.getElementById('btn-logout').addEventListener('click', () => {
       showConfirm(I18n.t('logoutConfirm'), 'log-out', { okText: I18n.t('logout'), danger: true }).then(ok => { if (ok) API.logout(); });
     });
@@ -2355,6 +2348,155 @@ const App = (() => {
     }).join('');
     const rankSection = container.closest('.section');
     if (rankSection) rankSection.hidden = false;
+  }
+
+  // --- Excel Export ---
+  async function exportToExcel() {
+    showToast('データを準備中...');
+    const profile = Store.getProfile();
+    const records = Store.getRecords();
+    const rank = Store.getRank();
+    const streak = Store.getStreak();
+    const badges = Store.getAllBadges();
+
+    // Fetch coin history
+    let coinHistory = [];
+    try {
+      const res = await API.getCoinHistory(500, 0);
+      coinHistory = res.history || [];
+    } catch (e) { /* ignore */ }
+
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
+
+    // Category label helper
+    function catLabel(code) {
+      const cat = Data.getCategory(code);
+      return cat ? cat.label : code || 'じゆう';
+    }
+
+    // Style constants
+    const S = {
+      accent: '#0D9488',
+      accentLight: '#E6FAF8',
+      gold: '#FFD700',
+      goldLight: '#FFF8DC',
+      headerBg: '#0D9488',
+      headerText: '#FFFFFF',
+      border: '#D1D5DB',
+      lightGray: '#F9FAFB',
+      text: '#1F2937',
+      muted: '#6B7280',
+      success: '#059669',
+      danger: '#DC2626',
+    };
+
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="UTF-8">
+<style>
+  body { font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; }
+  td, th { padding: 6px 12px; border: 1px solid ${S.border}; vertical-align: middle; }
+  th { background: ${S.headerBg}; color: ${S.headerText}; font-weight: bold; font-size: 12px; }
+  .title { font-size: 18px; font-weight: bold; color: ${S.accent}; border: none; padding: 12px 0 4px; }
+  .subtitle { font-size: 11px; color: ${S.muted}; border: none; padding: 0 0 10px; }
+  .stat-label { background: ${S.accentLight}; font-weight: 600; color: ${S.accent}; width: 160px; }
+  .stat-val { font-weight: bold; font-size: 14px; }
+  .stripe { background: ${S.lightGray}; }
+  .coin { color: ${S.accent}; font-weight: bold; }
+  .badge-on { background: ${S.goldLight}; color: #92400E; }
+  .badge-off { background: #F3F4F6; color: #9CA3AF; }
+  .cat { font-weight: 600; }
+</style>
+</head><body>`;
+
+    // ========== Sheet 1: Profile Summary ==========
+    html += `<table>`;
+    html += `<tr><td class="title" colspan="4">🪙 リハコイン — マイデータ</td></tr>`;
+    html += `<tr><td class="subtitle" colspan="4">エクスポート日: ${dateStr}</td></tr>`;
+    html += `<tr><td colspan="4" style="border:none;height:8px"></td></tr>`;
+
+    // Profile info
+    html += `<tr><td class="title" colspan="4">📋 プロフィール</td></tr>`;
+    const profileRows = [
+      ['ニックネーム', profile?.nickname || '-'],
+      ['ランク', rank ? rank.label : '-'],
+      ['ほゆうコイン', profile?.totalCoins || 0],
+      ['おうえんボーナス', profile?.witnessBonus || 0],
+      ['フレンド数', profile?.friendCount || 0],
+      ['連続記録（ストリーク）', streak + '日'],
+      ['今日の記録数', Store.getTodayCount() + '回'],
+      ['総記録数', records.length + '回'],
+      ['登録日', profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('ja-JP') : '-'],
+    ];
+    profileRows.forEach((row, i) => {
+      html += `<tr><td class="stat-label">${row[0]}</td><td class="stat-val ${i % 2 ? '' : 'stripe'}" colspan="3">${row[1]}</td></tr>`;
+    });
+
+    // Monthly summary
+    html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;
+    html += `<tr><td class="title" colspan="4">📊 月別きろく数</td></tr>`;
+    html += `<tr><th>月</th><th>記録数</th><th colspan="2">グラフ</th></tr>`;
+    const monthly = Store.getMonthlyCounts();
+    const maxCount = Math.max(...monthly.map(m => m.count), 1);
+    monthly.slice(-6).forEach((m, i) => {
+      const barLen = Math.round((m.count / maxCount) * 20);
+      const bar = '█'.repeat(barLen) + '░'.repeat(20 - barLen);
+      html += `<tr class="${i % 2 ? 'stripe' : ''}"><td>${m.label}</td><td class="coin" style="text-align:center">${m.count}</td><td colspan="2" style="font-family:monospace;color:${S.accent};letter-spacing:1px">${bar}</td></tr>`;
+    });
+
+    html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;
+
+    // ========== Badges ==========
+    html += `<tr><td class="title" colspan="4">🏅 バッジ</td></tr>`;
+    html += `<tr><th>バッジ</th><th>条件</th><th>状態</th><th></th></tr>`;
+    badges.forEach((b, i) => {
+      let cond = '';
+      if (b.coins) cond = b.coins + 'コイン';
+      else if (b.streak) cond = b.streak + '日連続';
+      else if (b.records) cond = b.records + '回記録';
+      else if (b.friends) cond = b.friends + '人フレンド';
+      else if (b.witness) cond = b.witness + '回応援';
+      html += `<tr class="${b.unlocked ? 'badge-on' : 'badge-off'}"><td>${b.label}</td><td>${cond}</td><td style="text-align:center">${b.unlocked ? '✅ 解放済' : '🔒 未解放'}</td><td></td></tr>`;
+    });
+
+    html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;
+
+    // ========== Activity Records ==========
+    html += `<tr><td class="title" colspan="4">📝 活動きろく（全${records.length}件）</td></tr>`;
+    html += `<tr><th>日時</th><th>カテゴリ</th><th>活動</th><th>メモ</th></tr>`;
+    records.forEach((r, i) => {
+      const d = new Date(r.timestamp);
+      const dt = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+      html += `<tr class="${i % 2 ? 'stripe' : ''}"><td style="white-space:nowrap">${dt}</td><td class="cat">${escapeHtml(catLabel(r.categoryCode))}</td><td>${escapeHtml(r.label)}</td><td>${escapeHtml(r.memo || '')}</td></tr>`;
+    });
+
+    html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;
+
+    // ========== Coin History ==========
+    if (coinHistory.length > 0) {
+      html += `<tr><td class="title" colspan="4">💰 コインりれき（直近${coinHistory.length}件）</td></tr>`;
+      html += `<tr><th>日時</th><th>種類</th><th>内容</th><th>コイン</th></tr>`;
+      coinHistory.forEach((c, i) => {
+        const d = new Date(c.created_at || c.timestamp);
+        const dt = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const typeLabel = { record: '活動記録', witness: '応援', bonus: 'ボーナス', spend: '交換', gacha: 'ガチャ', mission: 'ミッション' }[c.type] || c.type;
+        const coinColor = c.amount >= 0 ? S.success : S.danger;
+        const sign = c.amount >= 0 ? '+' : '';
+        html += `<tr class="${i % 2 ? 'stripe' : ''}"><td style="white-space:nowrap">${dt}</td><td>${typeLabel}</td><td>${escapeHtml(c.description || c.label || '')}</td><td style="color:${coinColor};font-weight:bold;text-align:center">${sign}${c.amount}</td></tr>`;
+      });
+    }
+
+    html += `</table></body></html>`;
+
+    // Download as .xls
+    const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `リハコイン_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('エクスポートしました！');
   }
 
   return { init };
