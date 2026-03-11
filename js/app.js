@@ -1847,19 +1847,11 @@ const App = (() => {
 
     // Push notification toggle
     setupPushToggle();
-    // Theme store
-    renderThemeStore();
-    // Daily missions
-    renderDailyMissions();
-    // Daily gacha
-    renderGachaSection();
-    // Streak freeze
-    renderStreakFreeze();
-    // Friend ranking
-    renderFriendRanking();
-
-    // Exchange content (merged into profile)
-    renderExchange();
+    // Render sub-sections with error isolation
+    const subRenders = [renderThemeStore, renderDailyMissions, renderGachaSection, renderStreakFreeze, renderFriendRanking, renderExchange];
+    for (const fn of subRenders) {
+      try { fn(); } catch (e) { console.error('renderProfile sub-render failed:', fn.name, e); }
+    }
   }
 
   async function setupPushToggle() {
