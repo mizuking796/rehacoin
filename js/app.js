@@ -642,13 +642,17 @@ const App = (() => {
       item.reactors.unshift({ nickname: myNickname, type });
     }
 
+    // Optimistic coin update
+    const coinDelta = isToggleOff ? -1 : (prevMyReaction ? 0 : 1);
+    if (coinDelta !== 0) Store.adjustCoins(coinDelta);
+
     // Instant UI update
     updateReactionUI(bar, item, trigger);
     if (!isToggleOff) {
       if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
       showCoinBurst(trigger);
     }
-    updateHeaderCoins(true, trigger);
+    updateHeaderCoins(!isToggleOff, isToggleOff ? null : trigger);
 
     // --- API call in background ---
     const res = await Store.cheerRecord(recordId, type);
@@ -656,6 +660,7 @@ const App = (() => {
 
     if (!res.ok) {
       // Rollback on failure
+      if (coinDelta !== 0) Store.adjustCoins(-coinDelta);
       item.myReaction = prevMyReaction;
       item.reactions = prevReactions;
       item.reactors = prevReactors;

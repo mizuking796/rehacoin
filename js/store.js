@@ -301,12 +301,7 @@ const Store = (() => {
           // Update reactors list
           item.reactors = item.reactors.filter(r => r.nickname !== myNickname);
           item.reactors.unshift({ nickname: myNickname, type });
-          // Update local coin balance immediately
-          if (res.witnessBonus && _profile) {
-            _profile.balance++;
-            _profile.totalCoins++;
-            _profile.witnessBonus = (_profile.witnessBonus || 0) + 1;
-          }
+          // Coin balance updated optimistically by app.js (adjustCoins)
         } else {
           // Toggled off
           item.reactions[type] = Math.max(0, (item.reactions[type] || 0) - 1);
@@ -472,6 +467,14 @@ const Store = (() => {
     return API.getCoinHistory(limit, offset);
   }
 
+  // Optimistic coin adjustment (for instant UI feedback)
+  function adjustCoins(delta) {
+    if (_profile) {
+      _profile.totalCoins += delta;
+      _profile.witnessBonus = (_profile.witnessBonus || 0) + delta;
+    }
+  }
+
   return {
     loadAll, getRecords, addRecord, deleteRecord, updateRecord, getCoinHistory,
     getTotalCoins, getTodayCount, getStreak,
@@ -485,6 +488,6 @@ const Store = (() => {
     getUnlockedBadges, getAllBadges,
     loadFriends, getFriends, getFeed, _updateFeed,
     getFriendRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, removeFriend,
-    getProfile
+    getProfile, adjustCoins
   };
 })();
