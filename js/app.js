@@ -2352,19 +2352,37 @@ const App = (() => {
 
   // --- Excel Export ---
   async function exportToExcel() {
-    showToast('データを準備中...');
+    // Show progress overlay
+    const prog = document.createElement('div');
+    prog.className = 'help-overlay';
+    prog.innerHTML = `<div class="help-card" style="max-width:300px;text-align:center;padding:28px 24px">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:14px">📊 エクスポート中...</div>
+      <div style="background:#E5E7EB;border-radius:8px;height:8px;overflow:hidden;margin-bottom:10px">
+        <div id="export-bar" style="width:10%;height:100%;background:var(--accent);border-radius:8px;transition:width 0.3s"></div>
+      </div>
+      <div id="export-status" style="font-size:0.85rem;color:var(--text-muted)">データ取得中...</div>
+    </div>`;
+    document.body.appendChild(prog);
+    const bar = prog.querySelector('#export-bar');
+    const status = prog.querySelector('#export-status');
+
     const profile = Store.getProfile();
     const records = Store.getRecords();
     const rank = Store.getRank();
     const streak = Store.getStreak();
     const badges = Store.getAllBadges();
+    bar.style.width = '30%';
+    status.textContent = 'コイン履歴を取得中...';
 
-    // Fetch coin history
+    // Fetch coin history (limit 50 for speed)
     let coinHistory = [];
     try {
-      const res = await API.getCoinHistory(500, 0);
+      const res = await API.getCoinHistory(50, 0);
       coinHistory = res.history || [];
     } catch (e) { /* ignore */ }
+    bar.style.width = '60%';
+    status.textContent = 'Excelを生成中...';
+    await new Promise(r => setTimeout(r, 50));
 
     const now = new Date();
     const dateStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
@@ -2488,6 +2506,12 @@ const App = (() => {
 
     html += `</table></body></html>`;
 
+    bar.style.width = '90%';
+    status.textContent = 'ダウンロード中...';
+
+    // Small delay to let UI update
+    await new Promise(r => setTimeout(r, 50));
+
     // Download as .xls
     const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -2496,6 +2520,10 @@ const App = (() => {
     a.download = `リハコイン_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.xls`;
     a.click();
     URL.revokeObjectURL(url);
+
+    bar.style.width = '100%';
+    status.textContent = '完了！';
+    setTimeout(() => { prog.classList.add('help-closing'); setTimeout(() => prog.remove(), 200); }, 600);
     showToast('エクスポートしました！');
   }
 
