@@ -295,7 +295,9 @@ const I18n = (() => {
     }
   };
 
-  let lang = localStorage.getItem(LANG_KEY) || 'ja';
+  // Language fixed to Japanese
+  let lang = 'ja';
+  localStorage.removeItem(LANG_KEY);
 
   function t(key) {
     return (translations[lang] && translations[lang][key]) || translations.ja[key] || key;
