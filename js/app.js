@@ -615,17 +615,76 @@ const App = (() => {
     if (_reactionLock.has(recordId)) return;
     _reactionLock.add(recordId);
     const trigger = bar.querySelector('.reaction-trigger');
-    trigger.disabled = true;
-    const res = await Store.cheerRecord(recordId, type);
-    trigger.disabled = false;
-    _reactionLock.delete(recordId);
-    if (!res.ok) return;
-
-    // Update UI in-place (no DOM rebuild)
     const item = Store.getFeed().find(f => f.id === recordId);
-    if (!item) return;
+    if (!item) { _reactionLock.delete(recordId); return; }
 
-    // Update trigger button (outline SVG when unreacted, filled SVG + color when reacted)
+    // --- Optimistic UI: update immediately before API call ---
+    const prevMyReaction = item.myReaction;
+    const prevReactions = JSON.parse(JSON.stringify(item.reactions || {}));
+    const prevReactors = item.reactors ? [...item.reactors] : [];
+    const isToggleOff = (prevMyReaction === type);
+    const myNickname = Store.getProfile()?.nickname || 'You';
+
+    // Predict new state
+    if (isToggleOff) {
+      item.reactions[type] = Math.max(0, (item.reactions[type] || 0) - 1);
+      item.myReaction = null;
+      item.reactors = (item.reactors || []).filter(r => r.nickname !== myNickname);
+    } else {
+      if (!item.reactions) item.reactions = {};
+      if (prevMyReaction && prevMyReaction !== type) {
+        item.reactions[prevMyReaction] = Math.max(0, (item.reactions[prevMyReaction] || 0) - 1);
+      }
+      item.reactions[type] = (item.reactions[type] || 0) + (prevMyReaction === type ? 0 : 1);
+      item.myReaction = type;
+      if (!item.reactors) item.reactors = [];
+      item.reactors = item.reactors.filter(r => r.nickname !== myNickname);
+      item.reactors.unshift({ nickname: myNickname, type });
+    }
+
+    // Instant UI update
+    updateReactionUI(bar, item, trigger);
+    if (!isToggleOff) {
+      if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
+      showCoinBurst(trigger);
+    }
+    updateHeaderCoins(true, trigger);
+
+    // --- API call in background ---
+    const res = await Store.cheerRecord(recordId, type);
+    _reactionLock.delete(recordId);
+
+    if (!res.ok) {
+      // Rollback on failure
+      item.myReaction = prevMyReaction;
+      item.reactions = prevReactions;
+      item.reactors = prevReactors;
+      updateReactionUI(bar, item, trigger);
+      updateHeaderCoins();
+      return;
+    }
+
+    // Show toast after API confirms
+    if (res.reacted) {
+      incrementDailyCheer();
+      const rd = REACTIONS.find(r => r.type === type);
+      const ja = I18n.getLang() === 'ja';
+      if (res.witnessBonus) {
+        showToast(ja
+          ? `${rd.label}\n🪙 +1コインゲット！相手にも+1！`
+          : `${rd.labelEn}\n🪙 +1 coin! +1 for them too!`);
+      } else {
+        showToast(ja
+          ? `${rd.label}\n🪙 +1コインゲット！`
+          : `${rd.labelEn}\n🪙 +1 coin earned!`);
+      }
+    }
+    // Sync final state from store (API may have corrected counts)
+    updateHeaderCoins();
+  }
+
+  function updateReactionUI(bar, item, trigger) {
+    // Update trigger button
     if (item.myReaction) {
       const rd = REACTIONS.find(r => r.type === item.myReaction);
       trigger.className = `reaction-trigger reacted-${item.myReaction}`;
@@ -635,7 +694,7 @@ const App = (() => {
       trigger.innerHTML = `<span class="rt-icon">${REACTION_SVG.like_outline}</span>${I18n.getLang() === 'ja' ? 'いいね！' : 'Like'}`;
     }
 
-    // Update summary (Facebook-style icon badges + tooltip)
+    // Update summary
     const reactions = item.reactions || {};
     const total = Object.values(reactions).reduce((a, b) => a + b, 0);
     let summaryEl = bar.querySelector('.reaction-summary');
@@ -643,10 +702,7 @@ const App = (() => {
       const badges = REACTIONS.filter(r => reactions[r.type] > 0)
         .map(r => `<span class="reaction-icon-badge ri-${r.type}">${r.emoji}</span>`).join('');
       const reactors = item.reactors || [];
-      const tooltipItems = reactors.map(r => {
-        const rd = REACTIONS.find(x => x.type === r.type);
-        return `<div class="rt-line">${escapeHtml(r.nickname)}</div>`;
-      }).join('');
+      const tooltipItems = reactors.map(r => `<div class="rt-line">${escapeHtml(r.nickname)}</div>`).join('');
       const html = `<span class="reaction-icons">${badges}</span><span class="reaction-count">${total}</span><div class="reactor-tooltip">${tooltipItems}</div>`;
       if (summaryEl) {
         summaryEl.innerHTML = html;
@@ -658,26 +714,6 @@ const App = (() => {
       }
     } else if (summaryEl) {
       summaryEl.remove();
-    }
-
-    if (res.reacted) {
-      incrementDailyCheer();
-      const rd = REACTIONS.find(r => r.type === type);
-      if (navigator.vibrate) navigator.vibrate([30, 30, 50]);
-      // floating emoji removed for clean UI
-      showCoinBurst(trigger);
-
-      const ja = I18n.getLang() === 'ja';
-      if (res.witnessBonus) {
-        showToast(ja
-          ? `${rd.label}\n🪙 +1コインゲット！相手にも+1！`
-          : `${rd.labelEn}\n🪙 +1 coin! +1 for them too!`);
-      } else {
-        showToast(ja
-          ? `${rd.label}\n🪙 +1コインゲット！`
-          : `${rd.labelEn}\n🪙 +1 coin earned!`);
-      }
-      updateHeaderCoins(true, trigger);
     }
   }
 
