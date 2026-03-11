@@ -2034,6 +2034,41 @@ const App = (() => {
         setTimeout(() => API.logout(), 1000);
       }
     });
+    // Privacy policy modal (settings + auth screen)
+    const privacyHandler = (e) => { e.preventDefault(); showPrivacyModal(); };
+    const privBtn = document.getElementById('btn-privacy');
+    if (privBtn) privBtn.addEventListener('click', privacyHandler);
+    document.querySelectorAll('.btn-privacy-link').forEach(el => el.addEventListener('click', privacyHandler));
+  }
+
+  function showPrivacyModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'help-overlay';
+    overlay.style.padding = '12px';
+    const card = document.createElement('div');
+    card.className = 'help-card';
+    card.style.maxWidth = '500px';
+    card.style.maxHeight = '80vh';
+    card.style.overflow = 'auto';
+    card.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">読み込み中...</div>';
+    overlay.appendChild(card);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { overlay.classList.add('help-closing'); setTimeout(() => overlay.remove(), 200); }
+    });
+    document.body.appendChild(overlay);
+    // Fetch privacy.html and extract body content
+    fetch('privacy.html').then(r => r.text()).then(html => {
+      const match = html.match(/<div class="card">([\s\S]*?)<\/div>\s*<\/body>/);
+      card.innerHTML = (match ? match[1] : html) + '<button class="help-close btn-primary" style="margin-top:16px">閉じる</button>';
+      card.querySelector('.help-close').addEventListener('click', () => {
+        overlay.classList.add('help-closing'); setTimeout(() => overlay.remove(), 200);
+      });
+    }).catch(() => {
+      card.innerHTML = '<p style="color:var(--text-muted)">読み込めませんでした。</p><button class="help-close btn-primary" style="margin-top:16px">閉じる</button>';
+      card.querySelector('.help-close').addEventListener('click', () => {
+        overlay.classList.add('help-closing'); setTimeout(() => overlay.remove(), 200);
+      });
+    });
   }
 
   // --- Utilities ---
