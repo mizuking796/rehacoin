@@ -84,7 +84,7 @@
       <div id="friend-request-banner" class="friend-request-banner" hidden></div>
 
       <section id="section-home-feed" class="section" hidden>
-        <h2 class="section-title" data-i18n="tabFriendFeed">フィード</h2>
+        <h2 class="section-title" data-i18n="tabFriendFeed" data-help="フレンドの活動がここに表示されるよ。&#10;「いいね！」を送るとお互いに+1コイン！">フィード</h2>
         <div id="home-feed-list" class="home-feed-list"></div>
       </section>
 
@@ -104,12 +104,12 @@
       </section>
 
       <section id="section-favorites" class="section" hidden>
-        <h2 class="section-title" data-i18n="sectionFavorites">よく使う活動</h2>
+        <h2 class="section-title" data-i18n="sectionFavorites" data-help="よく記録する活動がここに表示されるよ。&#10;タップするだけですぐ記録できる！">よく使う活動</h2>
         <div id="favorites-list" class="favorites-list"></div>
       </section>
 
       <section class="section">
-        <h2 class="section-title" data-i18n="sectionCategories">カテゴリ</h2>
+        <h2 class="section-title" data-i18n="sectionCategories" data-help="活動をカテゴリから選んで記録しよう。&#10;タップすると活動リストが出てくるよ。&#10;記録するたびに+1コイン！">カテゴリ</h2>
         <div id="category-grid" class="category-grid"></div>
       </section>
     </main>
@@ -127,7 +127,7 @@
     <main id="screen-history" class="screen">
       <h2 class="screen-title-fixed" data-i18n="screenRecords">きろく</h2>
       <div id="stats-summary" class="stats-summary"></div>
-      <h3 class="section-title" data-i18n="tabCoinHistory">コインりれき</h3>
+      <h3 class="section-title" data-i18n="tabCoinHistory" data-help="コインの獲得りれきだよ。&#10;活動記録・いいね・ミッション・ガチャなど、&#10;どうやってコインをもらったかわかるよ。">コインりれき</h3>
       <div id="coin-history-list" class="coin-history-list"></div>
       <button id="btn-load-more-history" class="btn-secondary" style="width:100%;margin-top:12px" hidden>もっと見る</button>
     </main>
@@ -201,43 +201,43 @@
 
         <!-- Daily Missions -->
         <section class="section">
-          <h2 class="section-title">デイリーミッション</h2>
+          <h2 class="section-title" data-help="毎日のミッションをクリアするとボーナスコインがもらえるよ。&#10;ミッションは毎日リセットされるから、&#10;こまめにチェックしよう！">デイリーミッション</h2>
           <div id="daily-missions" class="daily-missions"></div>
         </section>
 
         <!-- Daily Gacha -->
         <section class="section">
-          <h2 class="section-title">デイリーガチャ</h2>
+          <h2 class="section-title" data-help="1日1回ガチャが回せるよ。&#10;ボーナスコインがもらえるかも！&#10;毎日ログインして回してみよう。">デイリーガチャ</h2>
           <div id="gacha-section" class="gacha-section"></div>
         </section>
 
         <!-- Streak Freeze -->
         <section class="section">
-          <h2 class="section-title">ストリークフリーズ</h2>
+          <h2 class="section-title" data-help="連続記録（ストリーク）を守るためのアイテムだよ。&#10;1日記録を忘れてもストリークが途切れない！&#10;コインを使って購入できるよ。">ストリークフリーズ</h2>
           <div id="streak-freeze-section"></div>
         </section>
 
         <!-- Friend Ranking -->
         <section class="section">
-          <h2 class="section-title">フレンドランキング</h2>
+          <h2 class="section-title" data-help="フレンドの中で今週のコイン獲得数を競おう！&#10;活動を記録するほどランキングが上がるよ。">フレンドランキング</h2>
           <div id="friend-ranking" class="friend-ranking"></div>
         </section>
 
         <!-- Badges -->
         <section class="section">
-          <h2 class="section-title" data-i18n="sectionBadges">バッジ</h2>
+          <h2 class="section-title" data-i18n="sectionBadges" data-help="条件を達成するとバッジがもらえるよ。&#10;コイン数・ストリーク・記録回数・フレンド数など、&#10;いろんなバッジを集めよう！">バッジ</h2>
           <div id="badge-list" class="badge-list"></div>
         </section>
 
         <!-- Theme Store -->
         <section class="section">
-          <h2 class="section-title">テーマ</h2>
+          <h2 class="section-title" data-help="アプリの見た目を変えられるよ。&#10;「使う」ボタンでテーマを切り替えよう。&#10;色・イラスト・キャラクターが変わるよ！">テーマ</h2>
           <div id="theme-store" class="theme-store"></div>
         </section>
 
         <!-- Rewards -->
         <section class="section">
-          <h2 class="section-title" data-i18n="sectionRewards">ごほうび</h2>
+          <h2 class="section-title" data-i18n="sectionRewards" data-help="貯めたコインと「ごほうび」を交換できるよ。&#10;&#10;【使い方】&#10;1.「ご褒美の名前」と「コイン数」を入力して追加&#10;2. コインが貯まったら「交換」ボタンを押す&#10;&#10;例：「50コインでカフェ」「100コインで映画」&#10;自分へのごほうびを決めてモチベUP！">ごほうび</h2>
           <div class="exchange-balance-mini">
             <span data-i18n="availableCoins">つかえるコイン</span>
             <span class="exchange-balance-val" id="exchange-balance">0</span>
@@ -252,7 +252,7 @@
 
         <!-- Settings -->
         <section class="section">
-          <h2 class="section-title">設定</h2>
+          <h2 class="section-title" data-help="フレンドコード：友達にこのコードを教えてフレンドになろう。&#10;&#10;フィード公開範囲：活動名を見せるか、コインだけ見せるかを選べるよ。">設定</h2>
           <div class="settings-content">
             <div class="settings-item">
               <span data-i18n="friendCode">フレンドコード</span>

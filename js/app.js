@@ -77,8 +77,48 @@ const App = (() => {
     updateHeaderNickname();
     updateFriendBadge();
     refreshLucideIcons();
+    bindHelpButtons();
     startFeedRefresh();
     checkLoginBonus();
+  }
+
+  // --- Help buttons (auto-inject "?" next to section titles with data-help) ---
+  function bindHelpButtons() {
+    document.querySelectorAll('[data-help]').forEach(el => {
+      if (el.querySelector('.help-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'help-btn';
+      btn.textContent = '?';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const title = el.textContent.replace('?', '').trim();
+        showHelpModal(title, el.getAttribute('data-help'));
+      });
+      el.appendChild(btn);
+    });
+  }
+
+  function showHelpModal(title, text) {
+    const overlay = document.createElement('div');
+    overlay.className = 'help-overlay';
+    overlay.innerHTML = `
+      <div class="help-card">
+        <div class="help-header"><i data-lucide="help-circle" style="width:22px;height:22px;color:var(--accent)"></i> ${escapeHtml(title)}</div>
+        <div class="help-body">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+        <button class="help-close btn-primary">わかった！</button>
+      </div>`;
+    overlay.querySelector('.help-close').addEventListener('click', () => {
+      overlay.classList.add('help-closing');
+      setTimeout(() => overlay.remove(), 200);
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.add('help-closing');
+        setTimeout(() => overlay.remove(), 200);
+      }
+    });
+    document.body.appendChild(overlay);
+    refreshLucideIcons();
   }
 
   // --- Language toggle ---
