@@ -462,14 +462,26 @@ const App = (() => {
     amazing: '<svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
   };
 
+  let _homeFeedExpanded = false;
+  const HOME_FEED_COLLAPSED_COUNT = 5;
+
   function renderHomeFeed() {
     const section = document.getElementById('section-home-feed');
     const list = document.getElementById('home-feed-list');
     const feed = Store.getFeed();
     if (feed.length === 0) { section.hidden = true; return; }
     section.hidden = false;
-    const items = feed.slice(0, 20);
+    const showCount = _homeFeedExpanded ? 20 : HOME_FEED_COLLAPSED_COUNT;
+    const items = feed.slice(0, showCount);
+    const hasMore = !_homeFeedExpanded && feed.length > HOME_FEED_COLLAPSED_COUNT;
     list.innerHTML = items.map(item => renderFeedCard(item, 'home')).join('');
+    if (hasMore) {
+      list.insertAdjacentHTML('beforeend', '<button class="feed-show-more-btn" id="btn-feed-show-more">' + (I18n.getLang() === 'ja' ? 'もっと見る（' + Math.min(feed.length, 20) + '件）' : 'Show more (' + Math.min(feed.length, 20) + ')') + '</button>');
+      document.getElementById('btn-feed-show-more').addEventListener('click', () => { _homeFeedExpanded = true; renderHomeFeed(); });
+    } else if (_homeFeedExpanded && feed.length > HOME_FEED_COLLAPSED_COUNT) {
+      list.insertAdjacentHTML('beforeend', '<button class="feed-show-more-btn" id="btn-feed-collapse">' + (I18n.getLang() === 'ja' ? '折りたたむ' : 'Collapse') + '</button>');
+      document.getElementById('btn-feed-collapse').addEventListener('click', () => { _homeFeedExpanded = false; renderHomeFeed(); window.scrollTo(0, 0); });
+    }
     bindFeedActions(list);
   }
 
@@ -1229,7 +1241,8 @@ const App = (() => {
     overlay.querySelector('.lb-claim').addEventListener('click', async () => {
       overlay.classList.add('lb-closing');
       const btn = overlay.querySelector('.lb-claim');
-      await API.addBonusCoins(reward, 'login_bonus', ja ? `ログインボーナス${day}日目` : `Login Bonus Day ${day}`);
+      const lbRes = await API.addBonusCoins(reward, 'login_bonus', ja ? `ログインボーナス${day}日目` : `Login Bonus Day ${day}`);
+      if (lbRes.error) { console.warn('Login bonus already claimed:', lbRes.error); }
       updateHeaderCoins(true, btn);
       if (window.confetti) {
         const opts = isDay7
@@ -1275,6 +1288,12 @@ const App = (() => {
     });
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') { input.value = ''; results.hidden = true; results.innerHTML = ''; input.blur(); }
+    });
+    // Close search results on outside click
+    document.addEventListener('click', (e) => {
+      if (!results.hidden && !results.contains(e.target) && e.target !== input) {
+        results.hidden = true;
+      }
     });
   }
 
@@ -1429,6 +1448,8 @@ const App = (() => {
       else container.insertAdjacentHTML('beforeend', html);
 
       loadMoreBtn.hidden = items.length < 50;
+      loadMoreBtn.disabled = false;
+      loadMoreBtn.textContent = I18n.getLang() === 'ja' ? 'もっと見る' : 'Load more';
       loadMoreBtn.onclick = async () => { loadMoreBtn.disabled = true; loadMoreBtn.textContent = '...'; _coinHistoryOffset += 50; await renderCoinHistory(); };
     } catch (e) {
       console.error('Coin history failed:', e);
@@ -1574,8 +1595,14 @@ const App = (() => {
 
   function renderFeed() {
     const container = document.getElementById('feed-list');
+    if (!container) return;
+    const section = document.getElementById('section-friend-feed');
     const feed = Store.getFeed();
-    if (feed.length === 0) { container.innerHTML = `<div class="history-empty">${I18n.t('noFeed')}</div>`; return; }
+    if (feed.length === 0) {
+      if (section) section.hidden = true;
+      return;
+    }
+    if (section) section.hidden = false;
     container.innerHTML = feed.map(item => renderFeedCard(item, 'friends')).join('');
     bindFeedActions(container);
   }
@@ -2218,14 +2245,20 @@ const App = (() => {
     else if (r < 0.40) pool = GACHA_ITEMS.filter(g => g.rarity === 'uncommon');
     else pool = GACHA_ITEMS.filter(g => g.rarity === 'common');
     const item = pool[Math.floor(Math.random() * pool.length)];
+    // Add bonus coins via API first (server has daily limit dedup)
+    const ja = I18n.getLang() === 'ja';
+    const gachaRes = await API.addBonusCoins(item.coins, 'gacha', ja ? `ガチャ: ${item.label}` : `Gacha: ${item.labelEn}`);
+    if (gachaRes.error) {
+      // Server rejected (already claimed today) - mark as done anyway
+      safeSetItem('rehacoin_gacha_date', getTodayKey());
+      return item;
+    }
     safeSetItem('rehacoin_gacha_date', getTodayKey());
     // Save to collection
-    const collection = JSON.parse(localStorage.getItem('rehacoin_gacha_collection') || '[]');
+    let collection = JSON.parse(localStorage.getItem('rehacoin_gacha_collection') || '[]');
     collection.push({ ...item, date: Date.now() });
+    if (collection.length > 365) collection = collection.slice(-365);
     safeSetItem('rehacoin_gacha_collection', JSON.stringify(collection));
-    // Add bonus coins via API
-    const ja = I18n.getLang() === 'ja';
-    await API.addBonusCoins(item.coins, 'gacha', ja ? `ガチャ: ${item.label}` : `Gacha: ${item.labelEn}`);
     return item;
   }
 
@@ -2452,14 +2485,17 @@ const App = (() => {
 
     // Monthly summary
     html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;
-    html += `<tr><td class="title" colspan="4">📊 月別きろく数</td></tr>`;
-    html += `<tr><th>月</th><th>記録数</th><th colspan="2">グラフ</th></tr>`;
-    const monthly = Store.getMonthlyCounts();
-    const maxCount = Math.max(...monthly.map(m => m.count), 1);
-    monthly.slice(-6).forEach((m, i) => {
-      const barLen = Math.round((m.count / maxCount) * 20);
+    html += `<tr><td class="title" colspan="4">📊 カテゴリ別きろく数（30日）</td></tr>`;
+    html += `<tr><th>カテゴリ</th><th>記録数</th><th colspan="2">グラフ</th></tr>`;
+    const monthlyCounts = Store.getMonthlyCounts();
+    const monthlyEntries = Object.entries(monthlyCounts).sort((a, b) => b[1] - a[1]);
+    const maxMonthly = monthlyEntries.length > 0 ? monthlyEntries[0][1] : 1;
+    monthlyEntries.forEach(([code, count], i) => {
+      const cat = Data.getCategory(code);
+      const mLabel = cat ? cat.label : (code === 'free' ? 'じゆうきろく' : code);
+      const barLen = Math.round((count / maxMonthly) * 20);
       const bar = '█'.repeat(barLen) + '░'.repeat(20 - barLen);
-      html += `<tr class="${i % 2 ? 'stripe' : ''}"><td>${m.label}</td><td class="coin" style="text-align:center">${m.count}</td><td colspan="2" style="font-family:monospace;color:${S.accent};letter-spacing:1px">${bar}</td></tr>`;
+      html += `<tr class="${i % 2 ? 'stripe' : ''}"><td>${mLabel}</td><td class="coin" style="text-align:center">${count}</td><td colspan="2" style="font-family:monospace;color:${S.accent};letter-spacing:1px">${bar}</td></tr>`;
     });
 
     html += `<tr><td colspan="4" style="border:none;height:16px"></td></tr>`;

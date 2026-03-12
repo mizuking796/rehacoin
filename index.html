@@ -166,6 +166,12 @@
         <div id="friend-requests-list"></div>
       </div>
 
+      <!-- Feed -->
+      <section id="section-friend-feed" class="section">
+        <div class="fr-section-header"><span data-i18n="tabFriendFeed">フィード</span></div>
+        <div id="feed-list"></div>
+      </section>
+
       <!-- Friend List -->
       <div id="friend-list-container">
         <div class="fr-section-header"><span data-i18n="sectionFriends">フレンド一覧</span> <span id="friend-count-label" class="fr-count"></span></div>
@@ -282,7 +288,7 @@
             </div>
             <div class="settings-item">
               <span data-i18n="version">バージョン</span>
-              <span>4.0.0</span>
+              <span>4.4.0</span>
             </div>
             <div class="settings-item">
               <a href="#" id="btn-privacy" style="color:var(--accent);text-decoration:none;font-weight:500" data-i18n="privacyPolicy">プライバシーポリシー</a>
@@ -370,8 +376,8 @@
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
-      lucide.createIcons();
     }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
   </script>
 </body>
 </html>

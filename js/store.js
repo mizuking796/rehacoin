@@ -471,7 +471,7 @@ const Store = (() => {
   function adjustCoins(delta) {
     if (_profile) {
       _profile.totalCoins += delta;
-      _profile.witnessBonus = (_profile.witnessBonus || 0) + delta;
+      _profile.balance = (_profile.balance || 0) + delta;
     }
   }
 
