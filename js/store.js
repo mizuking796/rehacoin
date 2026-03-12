@@ -59,14 +59,16 @@ const Store = (() => {
     return _records;
   }
 
-  async function addRecord(activity, isFreeInput = false) {
-    const res = await API.addRecord({
+  async function addRecord(activity, isFreeInput = false, customTimestamp = null) {
+    const body = {
       activityId: activity.id || null,
       categoryCode: activity.categoryCode || 'free',
       label: activity.label,
       icon: activity.icon || '',
       isFreeInput
-    });
+    };
+    if (customTimestamp) body.timestamp = customTimestamp;
+    const res = await API.addRecord(body);
     if (res.error) return null;
     if (res.record) {
       const rec = normalizeRecord(res.record);

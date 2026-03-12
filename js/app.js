@@ -875,7 +875,7 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, '')) recordActivity(act);
+        if (await showRecordConfirm(msg)) recordActivity(act);
       });
     });
   }
@@ -906,18 +906,22 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, '')) recordActivity(act, true);
+        if (await showRecordConfirm(msg)) recordActivity(act, true);
       });
     });
   }
 
   // --- Record flow ---
+  let _pendingRecordTimestamp = null;
+
   async function recordActivity(activity, stayInCategory = false) {
     if (isMining) return;
     isMining = true;
     showMiningOverlay();
     try {
-      const record = await Store.addRecord(activity, !activity.id);
+      const customTs = _pendingRecordTimestamp;
+      _pendingRecordTimestamp = null;
+      const record = await Store.addRecord(activity, !activity.id, customTs);
       if (!record) { const ja3 = I18n.getLang() === 'ja'; showToast(ja3 ? '記録に失敗しました' : 'Failed to record'); return; }
       if (navigator.vibrate) navigator.vibrate(50);
       if (stayInCategory && currentCategoryCode) renderActivityList(currentCategoryCode);
@@ -1082,6 +1086,56 @@ const App = (() => {
       ok.addEventListener('click', () => cleanup(true), { once: true });
       cancel.addEventListener('click', () => cleanup(false), { once: true });
       // Close on backdrop click
+      modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); }, { once: true });
+    });
+  }
+
+  // --- Record Confirm with Date Picker (temporary) ---
+  function showRecordConfirm(text) {
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirm-modal');
+      const textEl = document.getElementById('confirm-text');
+      const iconEl = document.getElementById('confirm-icon');
+      iconEl.innerHTML = '<img src="img/coin.svg" width="36" height="36">';
+      textEl.innerHTML = '';
+      const msg = document.createElement('div');
+      msg.textContent = text;
+      msg.style.cssText = 'margin-bottom:10px;font-weight:600;';
+      textEl.appendChild(msg);
+      // Date picker
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:4px;';
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      const now = new Date();
+      dateInput.value = now.toISOString().slice(0, 10);
+      dateInput.style.cssText = 'flex:1;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;background:var(--bg);color:var(--text);';
+      const timeInput = document.createElement('input');
+      timeInput.type = 'time';
+      timeInput.value = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      timeInput.style.cssText = 'width:100px;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;background:var(--bg);color:var(--text);';
+      row.appendChild(dateInput);
+      row.appendChild(timeInput);
+      textEl.appendChild(row);
+      const ok = document.getElementById('confirm-ok');
+      const cancel = document.getElementById('confirm-cancel');
+      ok.textContent = I18n.t('btnConfirmRecord');
+      cancel.textContent = I18n.t('btnCancel');
+      ok.classList.remove('confirm-danger');
+      modal.hidden = false;
+      refreshLucideIcons();
+      function cleanup(result) {
+        if (result) {
+          const d = new Date(dateInput.value + 'T' + timeInput.value);
+          if (!isNaN(d.getTime())) _pendingRecordTimestamp = d.getTime();
+        }
+        modal.hidden = true;
+        ok.replaceWith(ok.cloneNode(true));
+        cancel.replaceWith(cancel.cloneNode(true));
+        resolve(result);
+      }
+      ok.addEventListener('click', () => cleanup(true), { once: true });
+      cancel.addEventListener('click', () => cleanup(false), { once: true });
       modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); }, { once: true });
     });
   }
@@ -1317,7 +1371,7 @@ const App = (() => {
         const msg = I18n.getLang() === 'ja'
           ? `「${act.label}」を記録しますか？`
           : `Record "${act.label}"?`;
-        if (await showConfirm(msg, '')) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
+        if (await showRecordConfirm(msg)) { recordActivity(act); document.getElementById('search-input').value = ''; results.hidden = true; }
       });
     });
   }
@@ -1333,7 +1387,7 @@ const App = (() => {
       const msg = I18n.getLang() === 'ja'
         ? `「${label}」を記録しますか？`
         : `Record "${label}"?`;
-      if (!await showConfirm(msg, '')) return;
+      if (!await showRecordConfirm(msg)) return;
       recordActivity({ id: null, label, icon: '', categoryCode: 'free' });
       input.value = ''; btn.disabled = true;
     });

@@ -476,11 +476,11 @@ async function getRecords(env, user) {
 }
 
 async function addRecord(env, user, body) {
-  const { activityId, categoryCode, label, icon, memo, isFreeInput } = body;
+  const { activityId, categoryCode, label, icon, memo, isFreeInput, timestamp: customTs } = body;
   if (!label || !categoryCode) return { error: 'label and categoryCode are required' };
 
   const id = genId('rec_');
-  const now = Date.now();
+  const now = customTs && Number.isFinite(customTs) ? customTs : Date.now();
 
   await env.DB.prepare(
     'INSERT INTO records (id, user_id, activity_id, category_code, label, icon, memo, is_free_input, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
